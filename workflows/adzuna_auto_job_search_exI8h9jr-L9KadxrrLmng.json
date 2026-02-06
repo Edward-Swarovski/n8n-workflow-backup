@@ -1,0 +1,1750 @@
+{
+  "updatedAt": "2026-02-01T09:59:51.566Z",
+  "createdAt": "2026-01-27T18:59:53.092Z",
+  "id": "exI8h9jr-L9KadxrrLmng",
+  "name": "Adzuna_auto_job_search",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -1008
+      ],
+      "id": "0ca76e86-52f7-4cbf-adb5-abd76ec0f11d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input is already one job per item\nconst jobs = items.map(i => i.json);\n\nconst blacklist = [\n  'software developer',\n  'software engineer',\n  'frontend',\n  'backend',\n  'full stack',\n  'trainee',\n  'coding'\n];\n\nconst whitelist = [\n  'database administrator',\n  'dba',\n  'sql server',\n  'mysql',\n  'sybase',\n  'ase',\n  'replication',\n  'performance tuning'\n];\n\nconst filtered = jobs.filter(job => {\n  const title = (job.title || '').toLowerCase();\n  const body  = (job.description || '').toLowerCase();\n  const fullText = `${title} ${body}`;\n\n  const hasDBA = whitelist.some(w => fullText.includes(w));\n\n  // 🔒 Only kill if title CLEARLY indicates dev role\n  const isDevTitle = blacklist.some(b => title.includes(b));\n\n  return hasDBA && !isDevTitle;\n});\n\n// Return as n8n items\nreturn filtered.map(job => ({ json: job }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -864
+      ],
+      "id": "a9a76971-2fa2-4e42-ac05-976915835e8a",
+      "name": "Filter – Exclude Programming Jobs"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const job = item.json;\n\n  // Detect contract from text (critical fix)\n  const desc = (job.description || '').toLowerCase();\n  const title = (job.title || '').toLowerCase();\n\n  const isDailyRate =\n    /per day|\\/day|daily rate|inside ir35|outside ir35/i.test(desc);\n\n  const isContract =\n    job.contract_type === 'contract' ||\n    job.contract_time === 'contract' ||\n    isDailyRate;\n\n  const isPermanent =\n    !isContract &&\n    (job.contract_time === 'full_time' || job.contract_type === 'permanent');\n\n  return {\n    json: {\n      // Stable identifiers\n      job_id: job.id || null,\n      source: 'Adzuna',\n\n      // Core job info\n      title: job.title || '',\n      company: job.company?.display_name || '',\n      location: job.location?.display_name || '',\n\n      // DBA-critical content\n      job_description: job.description || '',\n\n      // Apply path\n      apply_url: job.redirect_url || '',\n\n      // Compensation\n      salary_min: job.salary_min || null,\n      salary_max: job.salary_max || null,\n      salary_is_estimated: job.salary_is_predicted || false,\n\n      // Job metadata (preserve raw values)\n      contract_type: job.contract_type || job.contract_time || null,\n      employment_type: job.contract_time || null,\n      posted_at: job.created || null,\n      category: job.category?.tag || null,\n\n      // ✅ Derived helpers (FIXED)\n      is_contract: isContract,\n      is_permanent: isPermanent,\n\n      // Text block for LLM (DO NOT CHANGE STRUCTURE)\n      llm_input: `\nJob Title:\n${job.title || 'N/A'}\n\nCompany:\n${job.company?.display_name || 'N/A'}\n\nLocation:\n${job.location?.display_name || 'N/A'}\n\nContract Type:\n${job.contract_type || job.contract_time || 'N/A'}\n\nSalary:\n${job.salary_min || 'N/A'} – ${job.salary_max || 'N/A'}\n\nJob Description:\n${job.description || 'N/A'}\n`.trim()\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        -864
+      ],
+      "id": "ef296042-b1f4-40bd-86b0-88c94cc1f9db",
+      "name": "Normalize – DBA Job for LLM"
+    },
+    {
+      "parameters": {
+        "model": "arcee-ai/trinity-large-preview:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        -768
+      ],
+      "id": "bb30ecd4-7370-4f6e-bf8b-a252f020eeed",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LYXAooPqXDxnww2H",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Evaluate the following job for this candidate.\n\nCANDIDATE ANCHOR:\n- Senior Database Administrator with 25+ years experience.\n- Background: High-stakes Finance and Healthcare sectors.\n- This candidate is an EXPERT.\n- Treat \"Associate\" or \"Junior\" responsibilities as a mismatch.\n- Role preference: Hands-on operational / production DBA\n  (NOT application development, NOT BI, NOT reporting).\n\nCORE TECH STACK (Each is a PRIMARY skill):\n- Microsoft SQL Server (Expert: AlwaysOn, FCI, HA/DR, migrations)\n- Sybase ASE / Replication Server (Expert)\n- MySQL (Production replication & administration)\n\nEVALUATION RULES:\n1. SINGLE-SKILL RULE (OR logic, not AND):\n   A role that is 100% SQL Server OR 100% Sybase OR 100% MySQL can still be a 100% technical match.\n2. OPERATIONAL INFERENCE:\n   If the role mentions maintenance, upgrades, HA/DR, incidents, or ownership,\n   assume on-call and production responsibility even if not explicitly stated.\n3. SENIORITY MISMATCH:\n   If the role emphasises learning, training, mentoring-only, or entry-level growth,\n   score MUST be capped at 15 and recommendation MUST be SKIP.\n4. IGNORE COMPENSATION:\n   Salary, rate, benefits, or contract value MUST NOT affect scoring or recommendation.\n\nTASK:\n1. Assign a technical suitability score from 0–100 (ignore compensation).\n2. Decide: APPLY | MAYBE | SKIP based purely on role fit and seniority.\n3. Classify the role type.\n\nROLE TYPES:\n- DBA_ADMIN        (Production / Operations / Support)\n- DBA_ENGINEER     (Build / Automation / Platform)\n- DATA_ENGINEER    (ETL / Pipelines / Analytics)\n- DEVOPS           (Cloud / Infra-first)\n- MANAGEMENT       (People / Strategy Mgt)\n- NOT_DBA          (Dev / BI / Integration)\n\nOUTPUT (STRICT JSON ONLY):\n{\n  \"score\": number,\n  \"role_type\": \"DBA_ADMIN|DBA_ENGINEER|DATA_ENGINEER|DEVOPS|MANAGEMENT|NOT_DBA\",\n  \"recommendation\": \"APPLY|MAYBE|SKIP\",\n  \"reason\": \"single concise sentence explaining the decision\"\n}\n\nJOB DATA:\n{{ $json.llm_input }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an IT headhunter evaluating senior Database Administrator roles for a highly experienced, 25+ year hands-on DBA.  Judge REAL suitability. Do not be optimistic.  IMPORTANT SCOPE RULE: - Ignore all compensation, salary, rate, or benefits information. - Do NOT make decisions based on pay, rate, or contract value. - Salary filtering is handled externally and must NOT influence scoring or recommendation.  EVALUATION FOCUS: - Hands-on production DBA work (Provisioning, HA/DR, Replication, Performance Tuning). - Mission-critical operational ownership (On-call, Incident response, Upgrades). - Regulated / high-stakes environments (Finance, Banking, Healthcare).  CRITICAL EXCLUSIONS   (Score MUST be capped at 15 and recommendation MUST be SKIP): - JUNIOR / TRAINEE: Titles or descriptions containing \"Junior\", \"Trainee\", \"Graduate\", \"Entry-level\". - INTEGRATION-FOCUSED: Roles centred on SSIS-only, API middleware, system integration, or application glue. - NON-PRODUCTION: Roles lacking ongoing production support, maintenance, or operational ownership.  ROLE INTERPRETATION RULES: - DBA titles are DBA-first unless clearly proven otherwise. - Senior / Lead / Principal DBA roles are hands-on unless explicitly managerial. - SINGLE-PLATFORM = 100% MATCH:   If a role is purely SQL Server, purely Sybase, or purely MySQL, treat technical fit as 100%. - NEVER penalise missing platforms if the primary platform matches the candidate’s expert stack.  REASONING RULES: - Be conservative and realistic. - Do not invent responsibilities not implied by the description. - Do not subtract points for skills not required by the role. - Do not consider salary in any form.  OUTPUT FORMAT (STRICT): Return ONLY valid minified JSON. No markdown. No explanations outside JSON."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1568,
+        -992
+      ],
+      "id": "0e5bb470-dd91-47e4-89ee-4f8c3b271e24",
+      "name": "LLM – DBA Job Scoring",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = item.json.text;\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  throw new Error('Failed to parse LLM JSON output');\n}\n\nreturn {\n  json: {\n    ...item.json,\n    score: parsed.score,\n    role_type: parsed.role_type,\n    recommendation: parsed.recommendation,\n    reason: parsed.reason\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        -864
+      ],
+      "id": "4f0b1231-3106-4894-9ede-25696cda29ce",
+      "name": "Parse LLM Result"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1920,
+        -864
+      ],
+      "id": "e46d9896-b01c-4e85-8682-5eb789f884a8",
+      "name": "Merge – Job + LLM Result"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM",
+          "mode": "list",
+          "cachedResultName": "n8n_sent_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sent_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "job_id",
+              "lookupValue": "={{ $json.job_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3040,
+        -944
+      ],
+      "id": "42919c66-032d-400f-8f36-9b3b144a6d5a",
+      "name": "Check if job already sent",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DgucYvkJJQVWqK51",
+          "name": "Job.Automation Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2dac3a73-d4e1-4b19-b920-f78abfdf5754",
+              "leftValue": "={{ Object.keys($input.item.json).length === 0 }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3264,
+        -944
+      ],
+      "id": "a458b78d-464d-4394-b59b-c115a7614813",
+      "name": "IF – Already Sent Email",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2816,
+        -864
+      ],
+      "id": "f89d5ccb-e45c-46ef-ba5c-bf5d61b1ba1d",
+      "name": "For each match job"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3712,
+        -944
+      ],
+      "id": "8cf5b4fa-60ca-4a84-8778-762cae68e605",
+      "name": "Send Job to GMAIL",
+      "webhookId": "7ee71364-1b86-4af0-bc1f-e10cee2055f2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ON4cMVnRGPKgOQl0",
+          "name": "Job.Automation Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Current job item \nconst job = $('For each match job').item.json;\n\n// Safe helper\nconst safe = (v) => (v === undefined || v === null || v === '' ? 'N/A' : v);\n\n// Description handling\nconst desc = job.job_description || '';\nconst shortDesc =\n  desc.length > 2000\n    ? desc.slice(0, 2000).replace(/\\n/g, '<br>') +\n      '<br><br><em>[Description truncated]</em>'\n    : desc.replace(/\\n/g, '<br>');\n\n// Subject\nconst subject = `[DBA Job Match – ${safe(job.score)}] ${safe(job.title)} – ${safe(job.company)}`;\n\nreturn {\n  json: {\n    to: 'edwardtong@gmail.com',\n    subject,\n    html: `\n<div style=\"font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222;\">\n\n  <h2 style=\"margin-bottom: 4px;\">${safe(job.title)}</h2>\n\n  <p style=\"margin-top: 0; color: #555;\">\n    <strong>${safe(job.company)}</strong> · ${safe(job.location)}\n  </p>\n\n  <hr>\n\n  <table cellpadding=\"6\" cellspacing=\"0\">\n    <tr><td><strong>Score</strong></td><td>${safe(job.score)}</td></tr>\n    <tr><td><strong>Recommendation</strong></td><td>${safe(job.recommendation)}</td></tr>\n    <tr><td><strong>Reason</strong></td><td>${safe(job.reason)}</td></tr>\n    <tr><td><strong>Salary</strong></td>\n        <td>£${safe(job.salary_min)} – £${safe(job.salary_max)}</td></tr>\n    <tr><td><strong>Contract</strong></td><td>${safe(job.contract_type)}</td></tr>\n  </table>\n\n  <p style=\"margin:16px 0;\">\n    <a href=\"${safe(job.apply_url)}\"\n       style=\"background:#1a73e8;color:#fff;padding:10px 16px;\n              text-decoration:none;border-radius:4px;font-weight:bold;\">\n      Apply for this job →\n    </a>\n  </p>\n\n  <hr>\n\n  <h3>Job Description</h3>\n  <p style=\"line-height:1.5;\">${shortDesc || '<em>No description provided</em>'}</p>\n\n  <hr>\n\n  <p style=\"font-size:12px;color:#777;\">\n    Sent automatically by n8n · Source: ${safe(job.source)}\n  </p>\n\n</div>\n`.trim()\n  }\n};\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3488,
+        -944
+      ],
+      "id": "3220929d-533c-460e-a458-c0c0e359a440",
+      "name": "Prepare Gmail HTTP Format"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1-5"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "30 14 * * 1-5"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 16 * * 1-5"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        -720
+      ],
+      "id": "905d61ca-2209-41b5-a530-1dee3c069dc4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst output = [];\n\nfor (const item of items) {\n  const job = item.json;\n\n  // Primary key: Adzuna job ID\n  let key = job.id;\n\n  // Fallback if ID is missing (rare)\n  if (!key) {\n    key = [\n      job.title || '',\n      job.company?.display_name || '',\n      job.location?.display_name || ''\n    ].join('|').toLowerCase();\n  }\n\n  // Deduplicate\n  if (!seen.has(key)) {\n    seen.add(key);\n    output.push({ json: job });\n  }\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -864
+      ],
+      "id": "03c3e702-747d-4169-bfec-cb18def74c97",
+      "name": "Deduplication"
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "app_id",
+              "value": "={{$env.ADZUNA_APP_ID}}"
+            },
+            {
+              "name": "app_key",
+              "value": "={{$env.ADZUNA_APP_KEY}}"
+            },
+            {
+              "name": "what",
+              "value": "database administrator"
+            },
+            {
+              "name": "where",
+              "value": "Berkshire"
+            },
+            {
+              "name": "results_per_page",
+              "value": "20"
+            },
+            {
+              "name": "sort_by",
+              "value": "date"
+            },
+            {
+              "name": "category",
+              "value": "it-jobs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        -960
+      ],
+      "id": "526f0a5e-efec-42f5-b46b-c40035574a3e",
+      "name": "Adzuna – Search IT Jobs in Berkshire"
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "app_id",
+              "value": "={{$env.ADZUNA_APP_ID}}"
+            },
+            {
+              "name": "app_key",
+              "value": "={{$env.ADZUNA_APP_KEY}}"
+            },
+            {
+              "name": "what",
+              "value": "database administrator"
+            },
+            {
+              "name": "where",
+              "value": "London"
+            },
+            {
+              "name": "results_per_page",
+              "value": "20"
+            },
+            {
+              "name": "sort_by",
+              "value": "date"
+            },
+            {
+              "name": "category",
+              "value": "it-jobs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        -768
+      ],
+      "id": "a93814e0-5fb8-41a2-9fc1-3564e4b63936",
+      "name": "Adzuna – Search IT Jobs in London"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        -864
+      ],
+      "id": "3960ea61-9f12-409a-90f2-37348214a635",
+      "name": "Merge Jobs"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -960
+      ],
+      "id": "a99cbe9d-55d5-49fa-bcae-44dc38384c1b",
+      "name": "Convert Jobs - Berkshire"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -768
+      ],
+      "id": "235a724a-be52-4c0c-b711-9863b6a0da18",
+      "name": "Convert Jobs - London"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6c895134-c02f-4827-9cb0-74f9152d697e",
+              "leftValue": "={{ $json.recommendation }}",
+              "rightValue": "APPLY",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "6d8d97b8-fb43-4f1c-893e-f59b72834b2a",
+              "leftValue": "={{ $json.recommendation }}",
+              "rightValue": "=MAYBE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2368,
+        -864
+      ],
+      "id": "38ea6924-557e-493e-8e46-0801f42d387a",
+      "name": "Job Descripton Filter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bed7d60a-2182-46b3-b848-f7f434803e47",
+              "leftValue": "={{\n  (\n    ($json.is_contract === true && $json.salary_max >= 70000) ||\n    ($json.is_permanent === true && $json.salary_max >= 65000)\n  ).toBoolean()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2592,
+        -864
+      ],
+      "id": "589e8b42-e8f4-4776-b990-eec7850baf86",
+      "name": "Job Salary Filter"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM",
+          "mode": "list",
+          "cachedResultName": "n8n_sent_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sent_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $('For each match job').item.json.job_id }}",
+            "source": "={{ $('For each match job').item.json.source }}",
+            "title": "={{ $('For each match job').item.json.title }}",
+            "company": "={{ $('For each match job').item.json.company }}",
+            "score": "={{ $('For each match job').item.json.score }}",
+            "sent_at": "={{ new Date().toISOString() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3936,
+        -864
+      ],
+      "id": "38b953ae-ec5e-4291-96bf-d60a3a6d6556",
+      "name": "Record Sent Email",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DgucYvkJJQVWqK51",
+          "name": "Job.Automation Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Adzuna – Search IT Jobs in Berkshire",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Adzuna – Search IT Jobs in London",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter – Exclude Programming Jobs": {
+      "main": [
+        [
+          {
+            "node": "Normalize – DBA Job for LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM – DBA Job Scoring",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize – DBA Job for LLM": {
+      "main": [
+        [
+          {
+            "node": "Merge – Job + LLM Result",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "LLM – DBA Job Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM – DBA Job Scoring": {
+      "main": [
+        [
+          {
+            "node": "Merge – Job + LLM Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM Result": {
+      "main": [
+        [
+          {
+            "node": "Job Descripton Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge – Job + LLM Result": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if job already sent": {
+      "main": [
+        [
+          {
+            "node": "IF – Already Sent Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF – Already Sent Email": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Prepare Gmail HTTP Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "For each match job": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Check if job already sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Job to GMAIL": {
+      "main": [
+        [
+          {
+            "node": "Record Sent Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Gmail HTTP Format": {
+      "main": [
+        [
+          {
+            "node": "Send Job to GMAIL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Adzuna – Search IT Jobs in Berkshire",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Adzuna – Search IT Jobs in London",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplication": {
+      "main": [
+        [
+          {
+            "node": "Filter – Exclude Programming Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adzuna – Search IT Jobs in Berkshire": {
+      "main": [
+        [
+          {
+            "node": "Convert Jobs - Berkshire",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adzuna – Search IT Jobs in London": {
+      "main": [
+        [
+          {
+            "node": "Convert Jobs - London",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Jobs": {
+      "main": [
+        [
+          {
+            "node": "Deduplication",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Jobs - Berkshire": {
+      "main": [
+        [
+          {
+            "node": "Merge Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Jobs - London": {
+      "main": [
+        [
+          {
+            "node": "Merge Jobs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Job Descripton Filter": {
+      "main": [
+        [
+          {
+            "node": "Job Salary Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Salary Filter": {
+      "main": [
+        [
+          {
+            "node": "For each match job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Sent Email": {
+      "main": [
+        [
+          {
+            "node": "For each match job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "f5a11330-242b-4d1a-94d8-095aa7a63c1d",
+  "activeVersionId": "f5a11330-242b-4d1a-94d8-095aa7a63c1d",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-27T18:59:53.100Z",
+      "createdAt": "2026-01-27T18:59:53.100Z",
+      "role": "workflow:owner",
+      "workflowId": "exI8h9jr-L9KadxrrLmng",
+      "projectId": "Q3g8Vitc84qYTdgN"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-01T10:23:42.000Z",
+    "createdAt": "2026-02-01T09:59:51.568Z",
+    "versionId": "f5a11330-242b-4d1a-94d8-095aa7a63c1d",
+    "workflowId": "exI8h9jr-L9KadxrrLmng",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          -1008
+        ],
+        "id": "0ca76e86-52f7-4cbf-adb5-abd76ec0f11d",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Input is already one job per item\nconst jobs = items.map(i => i.json);\n\nconst blacklist = [\n  'software developer',\n  'software engineer',\n  'frontend',\n  'backend',\n  'full stack',\n  'trainee',\n  'coding'\n];\n\nconst whitelist = [\n  'database administrator',\n  'dba',\n  'sql server',\n  'mysql',\n  'sybase',\n  'ase',\n  'replication',\n  'performance tuning'\n];\n\nconst filtered = jobs.filter(job => {\n  const title = (job.title || '').toLowerCase();\n  const body  = (job.description || '').toLowerCase();\n  const fullText = `${title} ${body}`;\n\n  const hasDBA = whitelist.some(w => fullText.includes(w));\n\n  // 🔒 Only kill if title CLEARLY indicates dev role\n  const isDevTitle = blacklist.some(b => title.includes(b));\n\n  return hasDBA && !isDevTitle;\n});\n\n// Return as n8n items\nreturn filtered.map(job => ({ json: job }));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          -864
+        ],
+        "id": "a9a76971-2fa2-4e42-ac05-976915835e8a",
+        "name": "Filter – Exclude Programming Jobs"
+      },
+      {
+        "parameters": {
+          "jsCode": "return items.map(item => {\n  const job = item.json;\n\n  // Detect contract from text (critical fix)\n  const desc = (job.description || '').toLowerCase();\n  const title = (job.title || '').toLowerCase();\n\n  const isDailyRate =\n    /per day|\\/day|daily rate|inside ir35|outside ir35/i.test(desc);\n\n  const isContract =\n    job.contract_type === 'contract' ||\n    job.contract_time === 'contract' ||\n    isDailyRate;\n\n  const isPermanent =\n    !isContract &&\n    (job.contract_time === 'full_time' || job.contract_type === 'permanent');\n\n  return {\n    json: {\n      // Stable identifiers\n      job_id: job.id || null,\n      source: 'Adzuna',\n\n      // Core job info\n      title: job.title || '',\n      company: job.company?.display_name || '',\n      location: job.location?.display_name || '',\n\n      // DBA-critical content\n      job_description: job.description || '',\n\n      // Apply path\n      apply_url: job.redirect_url || '',\n\n      // Compensation\n      salary_min: job.salary_min || null,\n      salary_max: job.salary_max || null,\n      salary_is_estimated: job.salary_is_predicted || false,\n\n      // Job metadata (preserve raw values)\n      contract_type: job.contract_type || job.contract_time || null,\n      employment_type: job.contract_time || null,\n      posted_at: job.created || null,\n      category: job.category?.tag || null,\n\n      // ✅ Derived helpers (FIXED)\n      is_contract: isContract,\n      is_permanent: isPermanent,\n\n      // Text block for LLM (DO NOT CHANGE STRUCTURE)\n      llm_input: `\nJob Title:\n${job.title || 'N/A'}\n\nCompany:\n${job.company?.display_name || 'N/A'}\n\nLocation:\n${job.location?.display_name || 'N/A'}\n\nContract Type:\n${job.contract_type || job.contract_time || 'N/A'}\n\nSalary:\n${job.salary_min || 'N/A'} – ${job.salary_max || 'N/A'}\n\nJob Description:\n${job.description || 'N/A'}\n`.trim()\n    }\n  };\n});\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1344,
+          -864
+        ],
+        "id": "ef296042-b1f4-40bd-86b0-88c94cc1f9db",
+        "name": "Normalize – DBA Job for LLM"
+      },
+      {
+        "parameters": {
+          "model": "arcee-ai/trinity-large-preview:free",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1648,
+          -768
+        ],
+        "id": "bb30ecd4-7370-4f6e-bf8b-a252f020eeed",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "LYXAooPqXDxnww2H",
+            "name": "OpenRouter account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Evaluate the following job for this candidate.\n\nCANDIDATE ANCHOR:\n- Senior Database Administrator with 25+ years experience.\n- Background: High-stakes Finance and Healthcare sectors.\n- This candidate is an EXPERT.\n- Treat \"Associate\" or \"Junior\" responsibilities as a mismatch.\n- Role preference: Hands-on operational / production DBA\n  (NOT application development, NOT BI, NOT reporting).\n\nCORE TECH STACK (Each is a PRIMARY skill):\n- Microsoft SQL Server (Expert: AlwaysOn, FCI, HA/DR, migrations)\n- Sybase ASE / Replication Server (Expert)\n- MySQL (Production replication & administration)\n\nEVALUATION RULES:\n1. SINGLE-SKILL RULE (OR logic, not AND):\n   A role that is 100% SQL Server OR 100% Sybase OR 100% MySQL can still be a 100% technical match.\n2. OPERATIONAL INFERENCE:\n   If the role mentions maintenance, upgrades, HA/DR, incidents, or ownership,\n   assume on-call and production responsibility even if not explicitly stated.\n3. SENIORITY MISMATCH:\n   If the role emphasises learning, training, mentoring-only, or entry-level growth,\n   score MUST be capped at 15 and recommendation MUST be SKIP.\n4. IGNORE COMPENSATION:\n   Salary, rate, benefits, or contract value MUST NOT affect scoring or recommendation.\n\nTASK:\n1. Assign a technical suitability score from 0–100 (ignore compensation).\n2. Decide: APPLY | MAYBE | SKIP based purely on role fit and seniority.\n3. Classify the role type.\n\nROLE TYPES:\n- DBA_ADMIN        (Production / Operations / Support)\n- DBA_ENGINEER     (Build / Automation / Platform)\n- DATA_ENGINEER    (ETL / Pipelines / Analytics)\n- DEVOPS           (Cloud / Infra-first)\n- MANAGEMENT       (People / Strategy Mgt)\n- NOT_DBA          (Dev / BI / Integration)\n\nOUTPUT (STRICT JSON ONLY):\n{\n  \"score\": number,\n  \"role_type\": \"DBA_ADMIN|DBA_ENGINEER|DATA_ENGINEER|DEVOPS|MANAGEMENT|NOT_DBA\",\n  \"recommendation\": \"APPLY|MAYBE|SKIP\",\n  \"reason\": \"single concise sentence explaining the decision\"\n}\n\nJOB DATA:\n{{ $json.llm_input }}\n",
+          "messages": {
+            "messageValues": [
+              {
+                "message": "You are an IT headhunter evaluating senior Database Administrator roles for a highly experienced, 25+ year hands-on DBA.  Judge REAL suitability. Do not be optimistic.  IMPORTANT SCOPE RULE: - Ignore all compensation, salary, rate, or benefits information. - Do NOT make decisions based on pay, rate, or contract value. - Salary filtering is handled externally and must NOT influence scoring or recommendation.  EVALUATION FOCUS: - Hands-on production DBA work (Provisioning, HA/DR, Replication, Performance Tuning). - Mission-critical operational ownership (On-call, Incident response, Upgrades). - Regulated / high-stakes environments (Finance, Banking, Healthcare).  CRITICAL EXCLUSIONS   (Score MUST be capped at 15 and recommendation MUST be SKIP): - JUNIOR / TRAINEE: Titles or descriptions containing \"Junior\", \"Trainee\", \"Graduate\", \"Entry-level\". - INTEGRATION-FOCUSED: Roles centred on SSIS-only, API middleware, system integration, or application glue. - NON-PRODUCTION: Roles lacking ongoing production support, maintenance, or operational ownership.  ROLE INTERPRETATION RULES: - DBA titles are DBA-first unless clearly proven otherwise. - Senior / Lead / Principal DBA roles are hands-on unless explicitly managerial. - SINGLE-PLATFORM = 100% MATCH:   If a role is purely SQL Server, purely Sybase, or purely MySQL, treat technical fit as 100%. - NEVER penalise missing platforms if the primary platform matches the candidate’s expert stack.  REASONING RULES: - Be conservative and realistic. - Do not invent responsibilities not implied by the description. - Do not subtract points for skills not required by the role. - Do not consider salary in any form.  OUTPUT FORMAT (STRICT): Return ONLY valid minified JSON. No markdown. No explanations outside JSON."
+              }
+            ]
+          },
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          1568,
+          -992
+        ],
+        "id": "0e5bb470-dd91-47e4-89ee-4f8c3b271e24",
+        "name": "LLM – DBA Job Scoring",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const raw = item.json.text;\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  throw new Error('Failed to parse LLM JSON output');\n}\n\nreturn {\n  json: {\n    ...item.json,\n    score: parsed.score,\n    role_type: parsed.role_type,\n    recommendation: parsed.recommendation,\n    reason: parsed.reason\n  }\n};\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2144,
+          -864
+        ],
+        "id": "4f0b1231-3106-4894-9ede-25696cda29ce",
+        "name": "Parse LLM Result"
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineByPosition",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          1920,
+          -864
+        ],
+        "id": "e46d9896-b01c-4e85-8682-5eb789f884a8",
+        "name": "Merge – Job + LLM Result"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM",
+            "mode": "list",
+            "cachedResultName": "n8n_sent_jobs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "sent_jobs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit#gid=0"
+          },
+          "filtersUI": {
+            "values": [
+              {
+                "lookupColumn": "job_id",
+                "lookupValue": "={{ $json.job_id }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          3040,
+          -944
+        ],
+        "id": "42919c66-032d-400f-8f36-9b3b144a6d5a",
+        "name": "Check if job already sent",
+        "alwaysOutputData": true,
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DgucYvkJJQVWqK51",
+            "name": "Job.Automation Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "2dac3a73-d4e1-4b19-b920-f78abfdf5754",
+                "leftValue": "={{ Object.keys($input.item.json).length === 0 }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "false",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          3264,
+          -944
+        ],
+        "id": "a458b78d-464d-4394-b59b-c115a7614813",
+        "name": "IF – Already Sent Email",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          2816,
+          -864
+        ],
+        "id": "f89d5ccb-e45c-46ef-ba5c-bf5d61b1ba1d",
+        "name": "For each match job"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.to }}",
+          "subject": "={{ $json.subject }}",
+          "message": "={{ $json.html }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          3712,
+          -944
+        ],
+        "id": "8cf5b4fa-60ca-4a84-8778-762cae68e605",
+        "name": "Send Job to GMAIL",
+        "webhookId": "7ee71364-1b86-4af0-bc1f-e10cee2055f2",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "ON4cMVnRGPKgOQl0",
+            "name": "Job.Automation Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// Current job item \nconst job = $('For each match job').item.json;\n\n// Safe helper\nconst safe = (v) => (v === undefined || v === null || v === '' ? 'N/A' : v);\n\n// Description handling\nconst desc = job.job_description || '';\nconst shortDesc =\n  desc.length > 2000\n    ? desc.slice(0, 2000).replace(/\\n/g, '<br>') +\n      '<br><br><em>[Description truncated]</em>'\n    : desc.replace(/\\n/g, '<br>');\n\n// Subject\nconst subject = `[DBA Job Match – ${safe(job.score)}] ${safe(job.title)} – ${safe(job.company)}`;\n\nreturn {\n  json: {\n    to: 'edwardtong@gmail.com',\n    subject,\n    html: `\n<div style=\"font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222;\">\n\n  <h2 style=\"margin-bottom: 4px;\">${safe(job.title)}</h2>\n\n  <p style=\"margin-top: 0; color: #555;\">\n    <strong>${safe(job.company)}</strong> · ${safe(job.location)}\n  </p>\n\n  <hr>\n\n  <table cellpadding=\"6\" cellspacing=\"0\">\n    <tr><td><strong>Score</strong></td><td>${safe(job.score)}</td></tr>\n    <tr><td><strong>Recommendation</strong></td><td>${safe(job.recommendation)}</td></tr>\n    <tr><td><strong>Reason</strong></td><td>${safe(job.reason)}</td></tr>\n    <tr><td><strong>Salary</strong></td>\n        <td>£${safe(job.salary_min)} – £${safe(job.salary_max)}</td></tr>\n    <tr><td><strong>Contract</strong></td><td>${safe(job.contract_type)}</td></tr>\n  </table>\n\n  <p style=\"margin:16px 0;\">\n    <a href=\"${safe(job.apply_url)}\"\n       style=\"background:#1a73e8;color:#fff;padding:10px 16px;\n              text-decoration:none;border-radius:4px;font-weight:bold;\">\n      Apply for this job →\n    </a>\n  </p>\n\n  <hr>\n\n  <h3>Job Description</h3>\n  <p style=\"line-height:1.5;\">${shortDesc || '<em>No description provided</em>'}</p>\n\n  <hr>\n\n  <p style=\"font-size:12px;color:#777;\">\n    Sent automatically by n8n · Source: ${safe(job.source)}\n  </p>\n\n</div>\n`.trim()\n  }\n};\n\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3488,
+          -944
+        ],
+        "id": "3220929d-533c-460e-a458-c0c0e359a440",
+        "name": "Prepare Gmail HTTP Format"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 9 * * 1-5"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "30 14 * * 1-5"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 16 * * 1-5"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          -720
+        ],
+        "id": "905d61ca-2209-41b5-a530-1dee3c069dc4",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "jsCode": "const seen = new Set();\nconst output = [];\n\nfor (const item of items) {\n  const job = item.json;\n\n  // Primary key: Adzuna job ID\n  let key = job.id;\n\n  // Fallback if ID is missing (rare)\n  if (!key) {\n    key = [\n      job.title || '',\n      job.company?.display_name || '',\n      job.location?.display_name || ''\n    ].join('|').toLowerCase();\n  }\n\n  // Deduplicate\n  if (!seen.has(key)) {\n    seen.add(key);\n    output.push({ json: job });\n  }\n}\n\nreturn output;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          -864
+        ],
+        "id": "03c3e702-747d-4169-bfec-cb18def74c97",
+        "name": "Deduplication"
+      },
+      {
+        "parameters": {
+          "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "app_id",
+                "value": "={{$env.ADZUNA_APP_ID}}"
+              },
+              {
+                "name": "app_key",
+                "value": "={{$env.ADZUNA_APP_KEY}}"
+              },
+              {
+                "name": "what",
+                "value": "database administrator"
+              },
+              {
+                "name": "where",
+                "value": "Berkshire"
+              },
+              {
+                "name": "results_per_page",
+                "value": "20"
+              },
+              {
+                "name": "sort_by",
+                "value": "date"
+              },
+              {
+                "name": "category",
+                "value": "it-jobs"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          224,
+          -960
+        ],
+        "id": "526f0a5e-efec-42f5-b46b-c40035574a3e",
+        "name": "Adzuna – Search IT Jobs in Berkshire"
+      },
+      {
+        "parameters": {
+          "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "app_id",
+                "value": "={{$env.ADZUNA_APP_ID}}"
+              },
+              {
+                "name": "app_key",
+                "value": "={{$env.ADZUNA_APP_KEY}}"
+              },
+              {
+                "name": "what",
+                "value": "database administrator"
+              },
+              {
+                "name": "where",
+                "value": "London"
+              },
+              {
+                "name": "results_per_page",
+                "value": "20"
+              },
+              {
+                "name": "sort_by",
+                "value": "date"
+              },
+              {
+                "name": "category",
+                "value": "it-jobs"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          224,
+          -768
+        ],
+        "id": "a93814e0-5fb8-41a2-9fc1-3564e4b63936",
+        "name": "Adzuna – Search IT Jobs in London"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          672,
+          -864
+        ],
+        "id": "3960ea61-9f12-409a-90f2-37348214a635",
+        "name": "Merge Jobs"
+      },
+      {
+        "parameters": {
+          "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          -960
+        ],
+        "id": "a99cbe9d-55d5-49fa-bcae-44dc38384c1b",
+        "name": "Convert Jobs - Berkshire"
+      },
+      {
+        "parameters": {
+          "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          -768
+        ],
+        "id": "235a724a-be52-4c0c-b711-9863b6a0da18",
+        "name": "Convert Jobs - London"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "6c895134-c02f-4827-9cb0-74f9152d697e",
+                "leftValue": "={{ $json.recommendation }}",
+                "rightValue": "APPLY",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "6d8d97b8-fb43-4f1c-893e-f59b72834b2a",
+                "leftValue": "={{ $json.recommendation }}",
+                "rightValue": "=MAYBE",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          2368,
+          -864
+        ],
+        "id": "38ea6924-557e-493e-8e46-0801f42d387a",
+        "name": "Job Descripton Filter"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "bed7d60a-2182-46b3-b848-f7f434803e47",
+                "leftValue": "={{\n  (\n    ($json.is_contract === true && $json.salary_max >= 70000) ||\n    ($json.is_permanent === true && $json.salary_max >= 65000)\n  ).toBoolean()\n}}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          2592,
+          -864
+        ],
+        "id": "589e8b42-e8f4-4776-b990-eec7850baf86",
+        "name": "Job Salary Filter"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM",
+            "mode": "list",
+            "cachedResultName": "n8n_sent_jobs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "sent_jobs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "job_id": "={{ $('For each match job').item.json.job_id }}",
+              "source": "={{ $('For each match job').item.json.source }}",
+              "title": "={{ $('For each match job').item.json.title }}",
+              "company": "={{ $('For each match job').item.json.company }}",
+              "score": "={{ $('For each match job').item.json.score }}",
+              "sent_at": "={{ new Date().toISOString() }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "job_id",
+                "displayName": "job_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "company",
+                "displayName": "company",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "score",
+                "displayName": "score",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "sent_at",
+                "displayName": "sent_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          3936,
+          -864
+        ],
+        "id": "38b953ae-ec5e-4291-96bf-d60a3a6d6556",
+        "name": "Record Sent Email",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DgucYvkJJQVWqK51",
+            "name": "Job.Automation Google Sheets account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Adzuna – Search IT Jobs in Berkshire",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Adzuna – Search IT Jobs in London",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter – Exclude Programming Jobs": {
+        "main": [
+          [
+            {
+              "node": "Normalize – DBA Job for LLM",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "LLM – DBA Job Scoring",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize – DBA Job for LLM": {
+        "main": [
+          [
+            {
+              "node": "Merge – Job + LLM Result",
+              "type": "main",
+              "index": 1
+            },
+            {
+              "node": "LLM – DBA Job Scoring",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LLM – DBA Job Scoring": {
+        "main": [
+          [
+            {
+              "node": "Merge – Job + LLM Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse LLM Result": {
+        "main": [
+          [
+            {
+              "node": "Job Descripton Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge – Job + LLM Result": {
+        "main": [
+          [
+            {
+              "node": "Parse LLM Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check if job already sent": {
+        "main": [
+          [
+            {
+              "node": "IF – Already Sent Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF – Already Sent Email": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Prepare Gmail HTTP Format",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "For each match job": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Check if job already sent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Job to GMAIL": {
+        "main": [
+          [
+            {
+              "node": "Record Sent Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Gmail HTTP Format": {
+        "main": [
+          [
+            {
+              "node": "Send Job to GMAIL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Adzuna – Search IT Jobs in Berkshire",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Adzuna – Search IT Jobs in London",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deduplication": {
+        "main": [
+          [
+            {
+              "node": "Filter – Exclude Programming Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Adzuna – Search IT Jobs in Berkshire": {
+        "main": [
+          [
+            {
+              "node": "Convert Jobs - Berkshire",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Adzuna – Search IT Jobs in London": {
+        "main": [
+          [
+            {
+              "node": "Convert Jobs - London",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Jobs": {
+        "main": [
+          [
+            {
+              "node": "Deduplication",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convert Jobs - Berkshire": {
+        "main": [
+          [
+            {
+              "node": "Merge Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convert Jobs - London": {
+        "main": [
+          [
+            {
+              "node": "Merge Jobs",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Job Descripton Filter": {
+        "main": [
+          [
+            {
+              "node": "Job Salary Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Job Salary Filter": {
+        "main": [
+          [
+            {
+              "node": "For each match job",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record Sent Email": {
+        "main": [
+          [
+            {
+              "node": "For each match job",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "DONUT 4YOU",
+    "name": "Version f5a11330",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [],
+  "_backup": {
+    "backed_up_at": "2026-02-06T19:46:05.036Z",
+    "source": "n8n",
+    "backup_type": "workflow"
+  }
+}
