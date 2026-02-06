@@ -1,0 +1,459 @@
+{
+  "updatedAt": "2026-02-06T19:06:50.858Z",
+  "createdAt": "2026-02-05T19:14:27.453Z",
+  "id": "QfCaX4ChMSJ8fSJfmgmuM",
+  "name": "AUTO – Backup n8n Workflows to GitHub",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        712
+      ],
+      "id": "dee5b29e-db33-4b73-955e-958bef1cb84b",
+      "name": "Cron Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5678/api/v1/workflows",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        712
+      ],
+      "id": "d8810eae-dd8e-4768-813e-63a2a434a236",
+      "name": "Export workflows",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2e5fzjiVUbMFCDlD",
+          "name": "n8n workflow backup Header Auth"
+        },
+        "n8nApi": {
+          "id": "2jqtmvQ7rFNYXm56",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Defensive access (future-proof if API shape changes)\nconst workflows = (items[0].json.data || [])\n  // Optional: exclude disabled workflows\n  //.filter(wf => wf.active !== false)\n  // Stable ordering to reduce noisy diffs\n  .sort((a, b) => a.id.localeCompare(b.id));\n\nconst now = new Date().toISOString();\n\nreturn workflows.map(wf => {\n  const safeName = (wf.name || 'unnamed')\n    .trim()\n    .replace(/[^a-z0-9]+/gi, '_')\n    .replace(/^_+|_+$/g, '')\n    .toLowerCase();\n\n  // Add backup metadata (non-destructive)\n  const backupWorkflow = {\n    ...wf,\n    _backup: {\n      backed_up_at: now,\n      source: 'n8n',\n      backup_type: 'workflow',\n    },\n  };\n\n  return {\n    json: {\n      filename: `workflows/${safeName}_${wf.id}.json`,\n      content: JSON.stringify(backupWorkflow, null, 2),\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        712
+      ],
+      "id": "91499400-8062-4987-bacd-b62b6847b635",
+      "name": "Convert workflows into files"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "Edward-Swarovski",
+          "mode": "list"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-workflow-backup",
+          "mode": "list",
+          "cachedResultName": "n8n-workflow-backup",
+          "cachedResultUrl": "https://github.com/Edward-Swarovski/n8n-workflow-backup"
+        },
+        "filePath": "={{ $('Loop for each Workflow File').item.json.filename }}",
+        "fileContent": "={{ $('Loop for each Workflow File').item.json.content }}",
+        "commitMessage": "=Auto backup n8n workflow {{ $('Loop for each Workflow File').item.json.filename }}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        496
+      ],
+      "id": "82924c5d-4f21-474b-a882-3231f3afaee6",
+      "name": "Create file in GitHub",
+      "webhookId": "238f6347-0a89-4890-b585-7c8ec629a1d3",
+      "credentials": {
+        "githubApi": {
+          "id": "wTxV6SuZWka3DaOZ",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        672,
+        712
+      ],
+      "id": "dce166f0-1150-4e7d-b7e8-4d3aeab4aad2",
+      "name": "Loop for each Workflow File"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "Edward-Swarovski",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-workflow-backup",
+          "mode": "name"
+        },
+        "filePath": "={{$json.filename}}",
+        "asBinaryProperty": false,
+        "additionalParameters": {}
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        400
+      ],
+      "id": "f8abc417-3761-4d4c-b203-360e43efb41c",
+      "name": "GitHub Get File",
+      "webhookId": "298b50b2-2f56-4cee-8719-5eaa865e81cb",
+      "credentials": {
+        "githubApi": {
+          "id": "wTxV6SuZWka3DaOZ",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "00595d9f-2213-48d1-8eca-0ead14e7fc0d",
+              "leftValue": "={{$json.sha}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5d0d47d8-b0c6-4e69-bf63-706d39ccd352",
+              "leftValue": "={{$json.error}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        400
+      ],
+      "id": "80d70a4f-c9c7-4b69-9dac-139bf5bac2e5",
+      "name": "File found in GitHub"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "994b8c62-bd05-4b94-abd9-c45daae74737",
+              "leftValue": "={{ $json.isChanged }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        472
+      ],
+      "id": "71fe8853-a617-44a7-8c29-fa95ade0ffaf",
+      "name": "If Workflow changed"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "Edward-Swarovski",
+          "mode": "list",
+          "cachedResultName": "Edward-Swarovski",
+          "cachedResultUrl": "https://github.com/Edward-Swarovski"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-workflow-backup",
+          "mode": "list",
+          "cachedResultName": "n8n-workflow-backup",
+          "cachedResultUrl": "https://github.com/Edward-Swarovski/n8n-workflow-backup"
+        },
+        "filePath": "={{ $('Convert workflows into files').item.json.filename }}",
+        "fileContent": "={{ $('Convert workflows into files').item.json.content }}",
+        "commitMessage": "Workflow auto backup - change detected"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        544
+      ],
+      "id": "ebc0ce6c-2a7e-4be8-b5bc-745439f39eb1",
+      "name": "GitHub Edit file",
+      "webhookId": "8a8d0792-ce4b-4361-aa0d-f2f519ed7385",
+      "credentials": {
+        "githubApi": {
+          "id": "wTxV6SuZWka3DaOZ",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code decodes the GitHub Base64 and prepares both strings for a clean comparison\nconst apiContent = $('Convert workflows into files').item.json.content;\nconst githubBase64 = $('GitHub Get File').item.json.content;\n\n// 1. Decode GitHub content (removing potential newlines from the Base64 string)\nconst decodedGitHub = Buffer.from(githubBase64.replace(/\\s/g, ''), 'base64').toString('utf8');\n\n// 2. Normalize both to ensure the comparison is fair (removes formatting/spacing differences)\nconst normalizedApi = JSON.stringify(JSON.parse(apiContent));\nconst normalizedGitHub = JSON.stringify(JSON.parse(decodedGitHub));\n\nreturn {\n  contentFromApi: normalizedApi,\n  contentFromGitHub: normalizedGitHub,\n  isChanged: normalizedApi !== normalizedGitHub\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        304
+      ],
+      "id": "37315259-e547-49ae-8af0-1fa20d5d47bb",
+      "name": "Prepare Workflow comparsion"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse both strings into objects\nconst apiObj = JSON.parse($json.contentFromApi);\nconst githubObj = JSON.parse($json.contentFromGitHub);\n\n// Remove the fields that change every time the backup runs\ndelete apiObj._backup;\ndelete githubObj._backup;\n\n// Remove version-specific timestamps if necessary\ndelete apiObj.updatedAt;\ndelete githubObj.updatedAt;\n\n// Re-stringify and compare the core workflow logic only\nconst cleanApi = JSON.stringify(apiObj);\nconst cleanGithub = JSON.stringify(githubObj);\n\nreturn {\n  isChanged: cleanApi !== cleanGithub,\n  contentToUpload: cleanApi // This is what you'll send to GitHub if changed\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        304
+      ],
+      "id": "347b0297-29b2-4238-8b4d-1f0550bd3752",
+      "name": "Compare API and GitHub  content"
+    }
+  ],
+  "connections": {
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Export workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Export workflows": {
+      "main": [
+        [
+          {
+            "node": "Convert workflows into files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert workflows into files": {
+      "main": [
+        [
+          {
+            "node": "Loop for each Workflow File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop for each Workflow File": {
+      "main": [
+        [],
+        [
+          {
+            "node": "GitHub Get File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Get File": {
+      "main": [
+        [
+          {
+            "node": "File found in GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File found in GitHub": {
+      "main": [
+        [
+          {
+            "node": "Prepare Workflow comparsion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create file in GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Workflow changed": {
+      "main": [
+        [
+          {
+            "node": "GitHub Edit file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop for each Workflow File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Edit file": {
+      "main": [
+        [
+          {
+            "node": "Loop for each Workflow File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create file in GitHub": {
+      "main": [
+        [
+          {
+            "node": "Loop for each Workflow File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Workflow comparsion": {
+      "main": [
+        [
+          {
+            "node": "Compare API and GitHub  content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare API and GitHub  content": {
+      "main": [
+        [
+          {
+            "node": "If Workflow changed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "d5d0d0da-8531-4f74-bccd-96dc61f8f273",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-05T19:14:27.456Z",
+      "createdAt": "2026-02-05T19:14:27.456Z",
+      "role": "workflow:owner",
+      "workflowId": "QfCaX4ChMSJ8fSJfmgmuM",
+      "projectId": "Q3g8Vitc84qYTdgN"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [],
+  "_backup": {
+    "backed_up_at": "2026-02-06T19:07:04.532Z",
+    "source": "n8n",
+    "backup_type": "workflow"
+  }
+}
