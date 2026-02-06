@@ -1,0 +1,385 @@
+{
+  "updatedAt": "2026-01-28T23:57:29.399Z",
+  "createdAt": "2026-01-28T15:30:58.372Z",
+  "id": "AwOqOlQgldN73cmwrlSHs",
+  "name": "Ansible Job Opportunities",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        -128
+      ],
+      "id": "8595f1f6-26ec-46b5-9ff7-543d3ff9560a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "780cc2f2-9a6e-48fd-8ce7-9ce8b9143ea6",
+              "name": "keywords",
+              "value": "ansible",
+              "type": "string"
+            },
+            {
+              "id": "1c9474f6-cc52-4d0b-b68f-0f7a4abb0888",
+              "name": "locationName",
+              "value": "Reading",
+              "type": "string"
+            },
+            {
+              "id": "148da088-31e2-4495-87a3-3871f9c5937b",
+              "name": "distanceFromLocation",
+              "value": 25,
+              "type": "number"
+            },
+            {
+              "id": "2b371f44-f094-499d-8426-5c142e2cb5ef",
+              "name": "defaultStatus",
+              "value": "To Apply",
+              "type": "string"
+            },
+            {
+              "id": "6fad6590-3d39-4149-9187-b986e69b02ca",
+              "name": "resultsToTake",
+              "value": 50,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -416,
+        -128
+      ],
+      "id": "3443c380-1e31-4c3b-9b6d-361a19e3b65a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.reed.co.uk/api/1.0/search?keywords={{ encodeURIComponent($json.keywords) }}&locationName={{ encodeURIComponent($json.locationName) }}&distanceFromLocation={{ $json.distanceFromLocation }}&resultsToTake={{ $json.resultsToTake }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -192,
+        -128
+      ],
+      "id": "63b18243-1b49-4264-9348-3181391828cc",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "DrFe8GtxCWI27S1E",
+          "name": "Reed API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reed API returns clean JSON structure\nconst response = items[0].json;\nconst jobs = [];\n\nif (response.results && response.results.length > 0) {\n  response.results.forEach(job => {\n    // Format salary\n    let salaryRange = 'Not specified';\n    if (job.minimumSalary && job.maximumSalary) {\n      salaryRange = `£${job.minimumSalary.toLocaleString()} - £${job.maximumSalary.toLocaleString()}`;\n    } else if (job.minimumSalary) {\n      salaryRange = `£${job.minimumSalary.toLocaleString()}+`;\n    } else if (job.maximumSalary) {\n      salaryRange = `Up to £${job.maximumSalary.toLocaleString()}`;\n    }\n    \n    // Format job type\n    let jobType = 'Not specified';\n    if (job.jobType) {\n      jobType = job.jobType; // \"Permanent\", \"Contract\", \"Temporary\"\n    }\n    \n    // Clean description (remove HTML tags if present)\n    let description = job.jobDescription || 'N/A';\n    description = description.replace(/<[^>]*>/g, ''); // Remove HTML tags\n    description = description.substring(0, 500); // Limit to 500 chars\n    \n    // Format location\n    let location = job.locationName || 'Not specified';\n    \n    jobs.push({\n      json: {\n        title: job.jobTitle || 'N/A',\n        company: job.employerName || 'N/A',\n        location: location,\n        url: job.jobUrl || '',\n        salary: salaryRange,\n        jobType: jobType,\n        description: description,\n        dateFound: new Date().toISOString().split('T')[0], // YYYY-MM-DD\n        status: 'To Apply',\n        expirationDate: job.expirationDate || null,\n        jobId: job.jobId || null // Store for duplicate checking\n      }\n    });\n  });\n}\n\n// Return processed jobs\nreturn jobs;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -128
+      ],
+      "id": "3614403a-a6d4-4cac-80f5-30b01ccda9bd",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "5396cea5-07db-4d8b-b9d2-4057fcc42c27",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "4b64308f-c4a8-4e56-bcc7-96cd51d1711c",
+          "mode": "list",
+          "cachedResultName": "Job Applications",
+          "cachedResultUrl": "https://www.notion.so/4b64308fc4a84e56bcc796cd51d1711c"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Job Title|title",
+              "title": "={{ $('Loop Over Items').item.json.title }}"
+            },
+            {
+              "key": "Company|rich_text",
+              "textContent": "={{ $('Loop Over Items').item.json.company }}"
+            },
+            {
+              "key": "Location|rich_text",
+              "textContent": "={{ $('Loop Over Items').item.json.location }}"
+            },
+            {
+              "key": "Job Posting URL|url",
+              "urlValue": "={{ $('Loop Over Items').item.json.url }}"
+            },
+            {
+              "key": "Salary Range|rich_text",
+              "textContent": "={{ $('Loop Over Items').item.json.salary }}"
+            },
+            {
+              "key": "Notes|rich_text",
+              "textContent": "={{ $('Loop Over Items').item.json.description }}"
+            },
+            {
+              "key": "Date Found|date",
+              "date": "={{ $('Loop Over Items').item.json.dateFound }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        96
+      ],
+      "id": "3bd224c5-4ba0-4e4a-b7df-282fde223a01",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "xmHqiN4nVKU9IZS6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "4b64308f-c4a8-4e56-bcc7-96cd51d1711c",
+          "mode": "list",
+          "cachedResultName": "Job Applications",
+          "cachedResultUrl": "https://www.notion.so/4b64308fc4a84e56bcc796cd51d1711c"
+        },
+        "returnAll": true,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Job Posting URL|url",
+              "condition": "equals",
+              "urlValue": "={{ $json.url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        -112
+      ],
+      "id": "2441f4e5-d36a-4c55-99cc-04657e839321",
+      "name": "Check Duplicates",
+      "alwaysOutputData": true,
+      "credentials": {
+        "notionApi": {
+          "id": "xmHqiN4nVKU9IZS6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d1309335-fc41-43c9-b22f-abe91f2cb39e",
+              "leftValue": "={{ Object.keys($input.item.json).length === 0 }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2bfdac61-6405-49ed-b51b-0a714ead3889",
+              "leftValue": "={{ !$input.item.json.results }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        736,
+        -112
+      ],
+      "id": "ba729510-ab3f-408e-a96a-07840a4fcfd1",
+      "name": "If duplicate record found"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Check Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicates": {
+      "main": [
+        [
+          {
+            "node": "If duplicate record found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If duplicate record found": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e276f067-38ad-4a31-a4e4-2538584a3c40",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-28T15:30:58.376Z",
+      "createdAt": "2026-01-28T15:30:58.376Z",
+      "role": "workflow:owner",
+      "workflowId": "AwOqOlQgldN73cmwrlSHs",
+      "projectId": "Q3g8Vitc84qYTdgN"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [],
+  "_backup": {
+    "backed_up_at": "2026-02-06T19:07:04.532Z",
+    "source": "n8n",
+    "backup_type": "workflow"
+  }
+}
