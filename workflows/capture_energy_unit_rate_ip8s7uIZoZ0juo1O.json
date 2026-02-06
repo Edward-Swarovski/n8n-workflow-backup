@@ -1,0 +1,220 @@
+{
+  "updatedAt": "2025-08-03T18:44:19.000Z",
+  "createdAt": "2025-08-03T15:59:21.069Z",
+  "id": "ip8s7uIZoZ0juo1O",
+  "name": "Capture Energy Unit Rate",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        -128
+      ],
+      "id": "fdca039f-30c4-4509-ae15-59f32ba5f9a9",
+      "name": "Daily 4:00pm"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python electricity_unit_rate_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/energy"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        16,
+        -112
+      ],
+      "id": "bf0425b5-05aa-40c0-aced-1464328a4922",
+      "name": "Save Electricity Unit Rate to Mongo",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python gas_unit_rate_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/energy"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        32,
+        112
+      ],
+      "id": "9c2d067e-a12c-494e-b785-9fa039750567",
+      "name": "Save Gas Unit Rate to Mongo",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 4:00pm": {
+      "main": [
+        [
+          {
+            "node": "Save Electricity Unit Rate to Mongo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Gas Unit Rate to Mongo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Daily 4:00pm": {
+      "recurrenceRules": [
+        14
+      ]
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "5b7ac993-3a01-4348-a418-1bc61c0ca533",
+  "activeVersionId": "5b7ac993-3a01-4348-a418-1bc61c0ca533",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-08-03T15:59:21.074Z",
+      "createdAt": "2025-08-03T15:59:21.074Z",
+      "role": "workflow:owner",
+      "workflowId": "ip8s7uIZoZ0juo1O",
+      "projectId": "Q3g8Vitc84qYTdgN"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-26T09:08:26.821Z",
+    "createdAt": "2026-01-26T09:08:26.821Z",
+    "versionId": "5b7ac993-3a01-4348-a418-1bc61c0ca533",
+    "workflowId": "ip8s7uIZoZ0juo1O",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 2
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -448,
+          -128
+        ],
+        "id": "fdca039f-30c4-4509-ae15-59f32ba5f9a9",
+        "name": "Daily 4:00pm"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python electricity_unit_rate_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/energy"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          16,
+          -112
+        ],
+        "id": "bf0425b5-05aa-40c0-aced-1464328a4922",
+        "name": "Save Electricity Unit Rate to Mongo",
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python gas_unit_rate_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/energy"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          32,
+          112
+        ],
+        "id": "9c2d067e-a12c-494e-b785-9fa039750567",
+        "name": "Save Gas Unit Rate to Mongo",
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Daily 4:00pm": {
+        "main": [
+          [
+            {
+              "node": "Save Electricity Unit Rate to Mongo",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Save Gas Unit Rate to Mongo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "system migration",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-02-06T20:32:24.234Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
