@@ -1,0 +1,215 @@
+{
+  "updatedAt": "2025-08-03T18:44:18.000Z",
+  "createdAt": "2025-08-03T15:53:21.419Z",
+  "id": "kYunTOPUAebhATPw",
+  "name": "Capture Energy Standing Charge Rate",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 16
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        -128
+      ],
+      "id": "e2cdf174-1e63-4517-9129-71210eeccef1",
+      "name": "Daily 4:00pm"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python electricity_standing_charge_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/energy"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        16,
+        -112
+      ],
+      "id": "d337a07b-eed5-44df-97bc-b61605b96639",
+      "name": "Save Electricity Standing Charge to Mongo",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python gas_standing_charge_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/energy"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        32,
+        112
+      ],
+      "id": "684dcd76-1c22-4c2e-90b3-55312f6de8d0",
+      "name": "Save Gas Standing Charge to Mongo",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 4:00pm": {
+      "main": [
+        [
+          {
+            "node": "Save Electricity Standing Charge to Mongo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Gas Standing Charge to Mongo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Daily 4:00pm": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "3489f29f-05b6-4d7d-ba65-ab131e7abe6d",
+  "activeVersionId": "3489f29f-05b6-4d7d-ba65-ab131e7abe6d",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-08-03T15:53:21.424Z",
+      "createdAt": "2025-08-03T15:53:21.424Z",
+      "role": "workflow:owner",
+      "workflowId": "kYunTOPUAebhATPw",
+      "projectId": "Q3g8Vitc84qYTdgN"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-26T09:08:26.821Z",
+    "createdAt": "2026-01-26T09:08:26.821Z",
+    "versionId": "3489f29f-05b6-4d7d-ba65-ab131e7abe6d",
+    "workflowId": "kYunTOPUAebhATPw",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 16
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -448,
+          -128
+        ],
+        "id": "e2cdf174-1e63-4517-9129-71210eeccef1",
+        "name": "Daily 4:00pm"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python electricity_standing_charge_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/energy"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          16,
+          -112
+        ],
+        "id": "d337a07b-eed5-44df-97bc-b61605b96639",
+        "name": "Save Electricity Standing Charge to Mongo",
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python gas_standing_charge_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/energy"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          32,
+          112
+        ],
+        "id": "684dcd76-1c22-4c2e-90b3-55312f6de8d0",
+        "name": "Save Gas Standing Charge to Mongo",
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Daily 4:00pm": {
+        "main": [
+          [
+            {
+              "node": "Save Electricity Standing Charge to Mongo",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Save Gas Standing Charge to Mongo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "system migration",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-02-06T19:46:05.036Z",
+    "source": "n8n",
+    "backup_type": "workflow"
+  }
+}
