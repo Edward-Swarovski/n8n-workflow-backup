@@ -93,7 +93,7 @@
   "staticData": {
     "node:Daily 4:00pm": {
       "recurrenceRules": [
-        2
+        20
       ]
     }
   },
@@ -212,7 +212,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-02-07T07:00:40.100Z",
+    "backed_up_at": "2026-02-08T02:00:30.179Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
