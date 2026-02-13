@@ -93,7 +93,7 @@
   "staticData": {
     "node:Daily 4:00pm": {
       "recurrenceRules": [
-        20
+        10
       ]
     }
   },
@@ -112,7 +112,7 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-01-26T09:08:26.821Z",
+    "updatedAt": "2026-02-12T18:30:38.000Z",
     "createdAt": "2026-01-26T09:08:26.821Z",
     "versionId": "5b7ac993-3a01-4348-a418-1bc61c0ca533",
     "workflowId": "ip8s7uIZoZ0juo1O",
@@ -199,8 +199,8 @@
       }
     },
     "authors": "system migration",
-    "name": null,
-    "description": null,
+    "name": "Version 5b7ac993",
+    "description": "",
     "autosaved": false
   },
   "tags": [
@@ -212,7 +212,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-02-08T02:00:30.179Z",
+    "backed_up_at": "2026-02-13T02:00:30.110Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
