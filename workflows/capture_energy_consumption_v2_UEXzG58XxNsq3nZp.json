@@ -1,0 +1,223 @@
+{
+  "updatedAt": "2026-02-12T17:50:35.995Z",
+  "createdAt": "2026-02-12T15:28:09.379Z",
+  "id": "UEXzG58XxNsq3nZp",
+  "name": "Capture Energy Consumption v2",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9cd0fbb2-9bcc-4473-ab44-2bc63a0391a5",
+      "name": "Every 30min"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/electricity_consumption_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        464,
+        16
+      ],
+      "id": "dae8bc4f-a273-4859-8290-a8640777ee76",
+      "name": "Save Electricity Consumptioin to Mongo",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/gas_consumption_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        480,
+        240
+      ],
+      "id": "bea20528-fafb-4978-8e32-79dafd222f77",
+      "name": "Save Gas Consumptioin to Mongo",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 30min": {
+      "main": [
+        [
+          {
+            "node": "Save Electricity Consumptioin to Mongo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Gas Consumptioin to Mongo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Every 30min": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "954afe33-a1e9-41eb-aae6-1ffde868f72b",
+  "activeVersionId": "954afe33-a1e9-41eb-aae6-1ffde868f72b",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-12T15:28:09.390Z",
+      "createdAt": "2026-02-12T15:28:09.390Z",
+      "role": "workflow:owner",
+      "workflowId": "UEXzG58XxNsq3nZp",
+      "projectId": "Q3g8Vitc84qYTdgN"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-12T17:51:10.000Z",
+    "createdAt": "2026-02-12T17:50:35.996Z",
+    "versionId": "954afe33-a1e9-41eb-aae6-1ffde868f72b",
+    "workflowId": "UEXzG58XxNsq3nZp",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 30
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "9cd0fbb2-9bcc-4473-ab44-2bc63a0391a5",
+        "name": "Every 30min"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/electricity_consumption_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          464,
+          16
+        ],
+        "id": "dae8bc4f-a273-4859-8290-a8640777ee76",
+        "name": "Save Electricity Consumptioin to Mongo",
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/gas_consumption_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          480,
+          240
+        ],
+        "id": "bea20528-fafb-4978-8e32-79dafd222f77",
+        "name": "Save Gas Consumptioin to Mongo",
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every 30min": {
+        "main": [
+          [
+            {
+              "node": "Save Electricity Consumptioin to Mongo",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Save Gas Consumptioin to Mongo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "DONUT 4YOU",
+    "name": "Version 954afe33",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-02-13T02:00:30.110Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
