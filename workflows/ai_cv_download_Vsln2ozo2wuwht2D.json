@@ -1,0 +1,262 @@
+{
+  "updatedAt": "2026-03-13T22:58:13.002Z",
+  "createdAt": "2026-03-13T22:58:13.002Z",
+  "id": "Vsln2ozo2wuwht2D",
+  "name": "AI_CV_Download",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "cv-download",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "76d11a4e-27f3-4fba-b3fd-4489cc785fea",
+      "name": "Download Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        144
+      ],
+      "webhookId": "8c7b4e52-a7d6-4a9a-a3e5-d5a518a16548"
+    },
+    {
+      "parameters": {
+        "jsCode": "const q = $json.query || {};\nconst token = q.token || $json.token || '';\nconst file = q.file || $json.file || '';\nreturn [{...$json, token, file}];"
+      },
+      "id": "521dac6d-0940-455e-9812-b5028943fa39",
+      "name": "Normalize Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.token}}",
+              "value2": "={{$env.CV_DOWNLOAD_TOKEN}}",
+              "operation": "equal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "144298fb-831d-42c6-a1ae-2ad671f685ac",
+      "name": "Check Token",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"error\",\"message\":\"Invalid token\"}",
+        "options": {}
+      },
+      "id": "7fcd37eb-2fc7-4608-a148-958c556741a4",
+      "name": "Respond Forbidden",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const file = ($json.file || '').toString();\nconst safe = /^[a-zA-Z0-9._-]+$/.test(file) ? file : '';\nreturn [{...$json, file_safe: safe}];"
+      },
+      "id": "e1c39a52-4974-4bfe-a74e-4e8799825eba",
+      "name": "Sanitize File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.file_safe}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dd7543b2-312f-4402-ab7e-5a0c19a072f4",
+      "name": "Has File?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        224,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"error\",\"message\":\"Invalid file name\"}",
+        "options": {}
+      },
+      "id": "f11747d5-3e20-463d-9d02-0c8e0841f03f",
+      "name": "Respond Bad File",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "filePath": "={{'/cvdata/generated_cv/' + $json.file_safe}}"
+      },
+      "id": "aeab3837-46f8-4dff-bba2-a2ed7e26a8e5",
+      "name": "Read File",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        448,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "id": "fac7fe78-4f00-4c5b-9b12-a7e26e4b84e8",
+      "name": "Respond File",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        672,
+        144
+      ]
+    }
+  ],
+  "connections": {
+    "Download Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Query": {
+      "main": [
+        [
+          {
+            "node": "Check Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Token": {
+      "main": [
+        [
+          {
+            "node": "Sanitize File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Forbidden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sanitize File": {
+      "main": [
+        [
+          {
+            "node": "Has File?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has File?": {
+      "main": [
+        [
+          {
+            "node": "Read File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Bad File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read File": {
+      "main": [
+        [
+          {
+            "node": "Respond File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "b9668154-80c2-4407-bc25-786337db3d64",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-13T22:58:13.004Z",
+      "createdAt": "2026-03-13T22:58:13.004Z",
+      "role": "workflow:owner",
+      "workflowId": "Vsln2ozo2wuwht2D",
+      "projectId": "Q3g8Vitc84qYTdgN"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [],
+  "_backup": {
+    "backed_up_at": "2026-03-14T02:00:32.775Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "unpublished"
+  }
+}
