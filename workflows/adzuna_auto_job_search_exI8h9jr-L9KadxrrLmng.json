@@ -863,7 +863,11 @@
     "timezone": "Europe/London",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "staticData": null,
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
   "meta": {
     "templateCredsSetupCompleted": true
   },
@@ -1764,7 +1768,7 @@
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-03-03T02:00:30.114Z",
+    "backed_up_at": "2026-03-14T02:00:32.775Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
