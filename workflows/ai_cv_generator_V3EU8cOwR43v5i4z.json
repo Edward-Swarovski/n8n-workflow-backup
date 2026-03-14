@@ -1,0 +1,631 @@
+{
+  "updatedAt": "2026-03-13T23:00:00.670Z",
+  "createdAt": "2026-03-13T22:57:53.470Z",
+  "id": "V3EU8cOwR43v5i4z",
+  "name": "AI_CV_Generator",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cv-generator",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "1a4f80ab-ec3d-47dc-985a-f978cf06899d",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        144
+      ],
+      "webhookId": "4d67aebb-7610-43a3-b102-0eb4bf587367"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{!!($json.job_url || $json.job_description)}}",
+              "operation": "isTrue"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5221927d-d865-4849-bdd0-f59cb61a4853",
+      "name": "Has Input?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"error\",\"message\":\"Missing job_description or job_url\"}",
+        "options": {}
+      },
+      "id": "c25cf473-e72b-49c5-8329-836cc381dad1",
+      "name": "Respond Missing",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.job_url}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0971a188-3a8f-4dd3-8fb0-87c926317901",
+      "name": "Has URL?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        0,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.job_url}}",
+        "options": {}
+      },
+      "id": "02e075d6-66b6-42f8-a762-b054c1c0bcc9",
+      "name": "Fetch Job URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        224,
+        64
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "43bc53fd-c4d9-4d9a-96d2-978e12761abc",
+      "name": "HTML Extract",
+      "type": "n8n-nodes-base.htmlExtract",
+      "typeVersion": 2,
+      "position": [
+        448,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9903d2a3-6133-4f19-8340-9f901122f4b2",
+      "name": "Set JD From URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        672,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f7b0af29-00fc-4495-98e4-4d9760a5353d",
+      "name": "Set JD From Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        224,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "passThrough",
+        "options": {}
+      },
+      "id": "b1be1035-1718-4ae2-b273-d540ddc14611",
+      "name": "Merge JD",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        864,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "command": "find /cvdata/cv_kb -type f -print0 | sort -z | xargs -0 cat"
+      },
+      "id": "47f00bdd-6a78-4e8e-b140-91963518fb12",
+      "name": "Load KB",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "options": {}
+      },
+      "id": "ef107f8e-65d9-439f-a395-eac590c09186",
+      "name": "Analyse JD",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1312,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $json.choices?.[0]?.message?.content || \"{}\";\nlet parsed = {};\ntry { parsed = JSON.parse(content); } catch (e) { parsed = {}; }\nreturn [{...$json, analysis: parsed}];"
+      },
+      "id": "9d683f2e-2e79-43cc-bef5-ed62d624146c",
+      "name": "Parse Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "options": {}
+      },
+      "id": "c8d876b5-43eb-4bbe-a270-520b835d055b",
+      "name": "Generate CV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1744,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "options": {}
+      },
+      "id": "b4f4e556-aa0f-4bf0-a284-a2d4d8a5c22c",
+      "name": "Review CV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1968,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "options": {}
+      },
+      "id": "bc743a98-9a5d-4836-8740-096dc4075777",
+      "name": "Generate Cover Letter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2192,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function pad(n){return n.toString().padStart(2,'0');}\nconst now = new Date();\nconst ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}`;\nconst title = ($json.analysis?.job_title || 'job').toString();\nconst company = ($json.analysis?.company || 'company').toString();\nconst safe = s => s.replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').toLowerCase();\nconst base = `${ts}_${safe(title)}_${safe(company)}`;\nconst webhookBase = ($env.WEBHOOK_URL || '').replace(/\\/+$/,'') + '/';\nconst token = $env.CV_DOWNLOAD_TOKEN || '';\nreturn [{\n  ...$json,\n  ts,\n  cv_filename: `${base}.docx`,\n  cover_filename: `${base}_cover.docx`,\n  cv_markdown: $json.choices[0].message.content,\n  cover_markdown: $node[\"Generate Cover Letter\"].json.choices[0].message.content,\n  cv_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(base + '.docx')}&token=${encodeURIComponent(token)}`,\n  cover_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(base + '_cover.docx')}&token=${encodeURIComponent(token)}`\n}];"
+      },
+      "id": "81272eeb-77a7-429a-855c-3a3f9fa3b744",
+      "name": "Make Filenames",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        144
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "8038b285-e31f-4dbe-b89f-9fd6f5525d45",
+      "name": "CV MD to Binary",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "fileName": "=/cvdata/generated_cv/{{$json.cv_filename.replace('.docx','.md')}}",
+        "dataPropertyName": "cv_md",
+        "options": {}
+      },
+      "id": "8a188cdf-f5ff-4522-9980-fa9dfe4ffbce",
+      "name": "Write CV MD",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        2848,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "command": "={{'pandoc /cvdata/generated_cv/' + $json.cv_filename.replace('.docx','.md') + ' -o /cvdata/generated_cv/' + $json.cv_filename}}"
+      },
+      "id": "7e4e1018-ec27-4f45-8a82-0614a3db641f",
+      "name": "CV to DOCX",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        64
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1d755795-f6d2-44dc-860a-d704174fd79b",
+      "name": "Cover MD to Binary",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "fileName": "=/cvdata/generated_cv/{{$json.cover_filename.replace('.docx','.md')}}",
+        "dataPropertyName": "cover_md",
+        "options": {}
+      },
+      "id": "915a4767-4010-4f95-ab48-111ab492bcb5",
+      "name": "Write Cover MD",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        2848,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "command": "={{'pandoc /cvdata/generated_cv/' + $json.cover_filename.replace('.docx','.md') + ' -o /cvdata/generated_cv/' + $json.cover_filename}}"
+      },
+      "id": "b8f68a35-87be-4f71-bb58-23b479bf9f3d",
+      "name": "Cover to DOCX",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"success\",\"timestamp\":\"\" + $json.ts,\"cv_file_path\":\"/cvdata/generated_cv/\" + $json.cv_filename,\"cover_letter_file_path\":\"/cvdata/generated_cv/\" + $json.cover_filename,\"cv_download_url\":\"\" + $json.cv_download_url,\"cover_download_url\":\"\" + $json.cover_download_url}",
+        "options": {}
+      },
+      "id": "afd0feff-2727-48b9-bd7c-2c878784b8d2",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3280,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        1952,
+        528
+      ],
+      "id": "9d838feb-ae04-4784-b049-d82654ee5070",
+      "name": "When chat message received",
+      "webhookId": "07946346-3c84-4fdc-aac4-ec029a89edc0"
+    },
+    {
+      "parameters": {
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2160,
+        528
+      ],
+      "id": "8aa85c28-6c6b-4f66-84e3-c93d8b59379e",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        384
+      ],
+      "id": "4c864840-5cea-4ac1-8150-2810a76c4ab1",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LYXAooPqXDxnww2H",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Has Input?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Input?": {
+      "main": [
+        [
+          {
+            "node": "Has URL?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Missing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has URL?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Job URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set JD From Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set JD From URL": {
+      "main": [
+        [
+          {
+            "node": "Merge JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set JD From Text": {
+      "main": [
+        [
+          {
+            "node": "Merge JD",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge JD": {
+      "main": [
+        [
+          {
+            "node": "Load KB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load KB": {
+      "main": [
+        [
+          {
+            "node": "Analyse JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyse JD": {
+      "main": [
+        [
+          {
+            "node": "Parse Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Analysis": {
+      "main": [
+        [
+          {
+            "node": "Generate CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate CV": {
+      "main": [
+        [
+          {
+            "node": "Review CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review CV": {
+      "main": [
+        [
+          {
+            "node": "Generate Cover Letter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Cover Letter": {
+      "main": [
+        [
+          {
+            "node": "Make Filenames",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write CV MD": {
+      "main": [
+        [
+          {
+            "node": "CV to DOCX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Cover MD": {
+      "main": [
+        [
+          {
+            "node": "Cover to DOCX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CV to DOCX": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cover to DOCX": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "61222089-61a3-4986-93ff-f1a106299c9f",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-13T22:57:53.477Z",
+      "createdAt": "2026-03-13T22:57:53.477Z",
+      "role": "workflow:owner",
+      "workflowId": "V3EU8cOwR43v5i4z",
+      "projectId": "Q3g8Vitc84qYTdgN"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [],
+  "_backup": {
+    "backed_up_at": "2026-03-14T02:00:32.775Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "unpublished"
+  }
+}
