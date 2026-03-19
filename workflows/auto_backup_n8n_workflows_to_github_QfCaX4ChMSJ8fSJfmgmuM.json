@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-02-07T07:35:17.870Z",
+  "updatedAt": "2026-03-19T15:45:12.170Z",
   "createdAt": "2026-02-05T19:14:27.453Z",
   "id": "QfCaX4ChMSJ8fSJfmgmuM",
   "name": "AUTO – Backup n8n Workflows to GitHub",
@@ -42,8 +42,8 @@
       "name": "Export workflows",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "2e5fzjiVUbMFCDlD",
-          "name": "n8n workflow backup Header Auth"
+          "id": "pwVTDyLpUQzknDKe",
+          "name": "X-N8N-API-KEY"
         },
         "n8nApi": {
           "id": "2jqtmvQ7rFNYXm56",
@@ -433,33 +433,32 @@
     "availableInMCP": false,
     "timeSavedMode": "fixed",
     "timezone": "Europe/London",
-    "callerPolicy": "workflowsFromSameOwner"
+    "callerPolicy": "workflowsFromSameOwner",
+    "binaryMode": "separate"
   },
   "staticData": {
     "node:Cron Trigger": {
       "recurrenceRules": []
     }
   },
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
+  "meta": null,
   "pinData": {},
-  "versionId": "9c199e32-e7a8-496a-b003-bd6a4f8f6de5",
-  "activeVersionId": "9c199e32-e7a8-496a-b003-bd6a4f8f6de5",
+  "versionId": "6f820b8a-37ca-421a-8ad6-704eebc794b9",
+  "activeVersionId": "306e5d1a-418a-4f2e-b701-a4530e4b134a",
   "triggerCount": 1,
   "shared": [
     {
-      "updatedAt": "2026-02-05T19:14:27.456Z",
-      "createdAt": "2026-02-05T19:14:27.456Z",
+      "updatedAt": "2026-03-19T15:16:25.676Z",
+      "createdAt": "2026-03-19T15:16:25.676Z",
       "role": "workflow:owner",
       "workflowId": "QfCaX4ChMSJ8fSJfmgmuM",
-      "projectId": "Q3g8Vitc84qYTdgN"
+      "projectId": "PorrnAHK6jPReB5P"
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-02-07T07:30:58.000Z",
-    "createdAt": "2026-02-07T07:30:56.929Z",
-    "versionId": "9c199e32-e7a8-496a-b003-bd6a4f8f6de5",
+    "updatedAt": "2026-03-19T15:23:12.000Z",
+    "createdAt": "2026-03-19T15:16:25.724Z",
+    "versionId": "306e5d1a-418a-4f2e-b701-a4530e4b134a",
     "workflowId": "QfCaX4ChMSJ8fSJfmgmuM",
     "nodes": [
       {
@@ -884,14 +883,14 @@
         ]
       }
     },
-    "authors": "DONUT 4YOU",
-    "name": "Version 9c199e32",
+    "authors": "import",
+    "name": "Version 306e5d1a",
     "description": "",
-    "autosaved": true
+    "autosaved": false
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-03-14T02:00:32.775Z",
+    "backed_up_at": "2026-03-19T15:45:16.812Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
