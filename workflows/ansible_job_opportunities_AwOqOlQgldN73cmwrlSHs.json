@@ -359,26 +359,24 @@
     "availableInMCP": false
   },
   "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
+  "meta": null,
   "pinData": {},
-  "versionId": "e276f067-38ad-4a31-a4e4-2538584a3c40",
+  "versionId": "d0876150-b4a4-48eb-8326-994b83743300",
   "activeVersionId": null,
   "triggerCount": 0,
   "shared": [
     {
-      "updatedAt": "2026-01-28T15:30:58.376Z",
-      "createdAt": "2026-01-28T15:30:58.376Z",
+      "updatedAt": "2026-03-19T15:16:25.654Z",
+      "createdAt": "2026-03-19T15:16:25.654Z",
       "role": "workflow:owner",
       "workflowId": "AwOqOlQgldN73cmwrlSHs",
-      "projectId": "Q3g8Vitc84qYTdgN"
+      "projectId": "PorrnAHK6jPReB5P"
     }
   ],
   "activeVersion": null,
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-02-06T20:32:24.234Z",
+    "backed_up_at": "2026-03-19T15:45:16.812Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "unpublished"
