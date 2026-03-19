@@ -1,0 +1,60 @@
+{
+  "updatedAt": "2026-02-01T17:44:53.000Z",
+  "createdAt": "2026-02-01T16:18:39.293Z",
+  "id": "MpTH1-XE2kn5VlQBpMgD4",
+  "name": "Auto Receipt Recording - E",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "guildIds": "=[\"1467482881210323021\"]",
+        "channelIds": "=[\"1467485311335543675\"]",
+        "pattern": "every",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-discord-trigger-new.discordTrigger",
+      "typeVersion": 1,
+      "position": [
+        304,
+        96
+      ],
+      "id": "b2bbd091-7d4a-4ee5-ac08-ac1714d0022c",
+      "name": "Discord Trigger",
+      "credentials": {
+        "discordBotTriggerApi": {
+          "id": "avT09OYWkTHh8B6Y",
+          "name": "Discord Bot Trigger account - donut4you"
+        }
+      }
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "b6b35707-4b18-42ce-97ff-ccd0b31fe7e3",
+  "activeVersionId": null,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-19T15:16:25.663Z",
+      "createdAt": "2026-03-19T15:16:25.663Z",
+      "role": "workflow:owner",
+      "workflowId": "MpTH1-XE2kn5VlQBpMgD4",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [],
+  "_backup": {
+    "backed_up_at": "2026-03-19T15:45:16.812Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "unpublished"
+  }
+}
