@@ -94,28 +94,28 @@
   "staticData": {
     "node:Daily 4:00pm": {
       "recurrenceRules": [
-        22
+        18
       ]
     }
   },
   "meta": null,
   "pinData": {},
-  "versionId": "a1d46e07-1980-4922-8ac9-4ea0fde52a9c",
-  "activeVersionId": "a1d46e07-1980-4922-8ac9-4ea0fde52a9c",
+  "versionId": "bfcd4635-638f-40a8-bacc-73d527515d47",
+  "activeVersionId": "bfcd4635-638f-40a8-bacc-73d527515d47",
   "triggerCount": 1,
   "shared": [
     {
-      "updatedAt": "2026-02-12T15:28:36.143Z",
-      "createdAt": "2026-02-12T15:28:36.143Z",
+      "updatedAt": "2026-03-19T15:16:25.690Z",
+      "createdAt": "2026-03-19T15:16:25.690Z",
       "role": "workflow:owner",
       "workflowId": "UX9vIDkCTx2Y86jL",
-      "projectId": "Q3g8Vitc84qYTdgN"
+      "projectId": "PorrnAHK6jPReB5P"
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-02-12T17:50:13.000Z",
-    "createdAt": "2026-02-12T17:49:53.153Z",
-    "versionId": "a1d46e07-1980-4922-8ac9-4ea0fde52a9c",
+    "updatedAt": "2026-03-19T15:21:23.000Z",
+    "createdAt": "2026-03-19T15:16:25.739Z",
+    "versionId": "bfcd4635-638f-40a8-bacc-73d527515d47",
     "workflowId": "UX9vIDkCTx2Y86jL",
     "nodes": [
       {
@@ -199,10 +199,10 @@
         ]
       }
     },
-    "authors": "DONUT 4YOU",
-    "name": "Version a1d46e07",
+    "authors": "import",
+    "name": "Version bfcd4635",
     "description": "",
-    "autosaved": true
+    "autosaved": false
   },
   "tags": [
     {
@@ -213,7 +213,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-03-15T02:00:32.115Z",
+    "backed_up_at": "2026-03-19T15:45:16.812Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
