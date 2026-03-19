@@ -98,26 +98,24 @@
       "recurrenceRules": []
     }
   },
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
+  "meta": null,
   "pinData": {},
-  "versionId": "954afe33-a1e9-41eb-aae6-1ffde868f72b",
-  "activeVersionId": "954afe33-a1e9-41eb-aae6-1ffde868f72b",
+  "versionId": "eed3ea9c-4a68-47f5-8ea8-a1d6b4dd9ac1",
+  "activeVersionId": "eed3ea9c-4a68-47f5-8ea8-a1d6b4dd9ac1",
   "triggerCount": 1,
   "shared": [
     {
-      "updatedAt": "2026-02-12T15:28:09.390Z",
-      "createdAt": "2026-02-12T15:28:09.390Z",
+      "updatedAt": "2026-03-19T15:16:25.685Z",
+      "createdAt": "2026-03-19T15:16:25.685Z",
       "role": "workflow:owner",
       "workflowId": "UEXzG58XxNsq3nZp",
-      "projectId": "Q3g8Vitc84qYTdgN"
+      "projectId": "PorrnAHK6jPReB5P"
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-02-12T17:51:10.000Z",
-    "createdAt": "2026-02-12T17:50:35.996Z",
-    "versionId": "954afe33-a1e9-41eb-aae6-1ffde868f72b",
+    "updatedAt": "2026-03-19T15:21:11.000Z",
+    "createdAt": "2026-03-19T15:16:25.734Z",
+    "versionId": "eed3ea9c-4a68-47f5-8ea8-a1d6b4dd9ac1",
     "workflowId": "UEXzG58XxNsq3nZp",
     "nodes": [
       {
@@ -201,10 +199,10 @@
         ]
       }
     },
-    "authors": "DONUT 4YOU",
-    "name": "Version 954afe33",
+    "authors": "import",
+    "name": "Version eed3ea9c",
     "description": "",
-    "autosaved": true
+    "autosaved": false
   },
   "tags": [
     {
@@ -215,7 +213,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-02-13T02:00:30.110Z",
+    "backed_up_at": "2026-03-19T15:45:16.812Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
