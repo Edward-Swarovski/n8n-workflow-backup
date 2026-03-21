@@ -444,7 +444,7 @@
   "meta": null,
   "pinData": {},
   "versionId": "6f820b8a-37ca-421a-8ad6-704eebc794b9",
-  "activeVersionId": "306e5d1a-418a-4f2e-b701-a4530e4b134a",
+  "activeVersionId": "6f820b8a-37ca-421a-8ad6-704eebc794b9",
   "triggerCount": 1,
   "shared": [
     {
@@ -456,9 +456,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-03-19T15:23:12.000Z",
-    "createdAt": "2026-03-19T15:16:25.724Z",
-    "versionId": "306e5d1a-418a-4f2e-b701-a4530e4b134a",
+    "updatedAt": "2026-03-20T10:11:21.000Z",
+    "createdAt": "2026-03-19T15:45:12.170Z",
+    "versionId": "6f820b8a-37ca-421a-8ad6-704eebc794b9",
     "workflowId": "QfCaX4ChMSJ8fSJfmgmuM",
     "nodes": [
       {
@@ -497,8 +497,8 @@
         "name": "Export workflows",
         "credentials": {
           "httpHeaderAuth": {
-            "id": "2e5fzjiVUbMFCDlD",
-            "name": "n8n workflow backup Header Auth"
+            "id": "pwVTDyLpUQzknDKe",
+            "name": "X-N8N-API-KEY"
           },
           "n8nApi": {
             "id": "2jqtmvQ7rFNYXm56",
@@ -883,14 +883,14 @@
         ]
       }
     },
-    "authors": "import",
-    "name": "Version 306e5d1a",
+    "authors": "4you donut",
+    "name": "Version 6f820b8a",
     "description": "",
-    "autosaved": false
+    "autosaved": true
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-03-19T15:45:16.812Z",
+    "backed_up_at": "2026-03-21T02:00:51.118Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
