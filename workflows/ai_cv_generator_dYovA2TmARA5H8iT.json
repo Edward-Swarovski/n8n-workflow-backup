@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-19T19:35:47.989Z",
+  "updatedAt": "2026-03-20T23:19:40.238Z",
   "createdAt": "2026-03-19T19:23:58.870Z",
   "id": "dYovA2TmARA5H8iT",
   "name": "AI_CV_Generator",
@@ -13,13 +13,13 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "b4b94049-f0b9-445d-9305-a6f367f1f6ca",
+      "id": "881cc2ee-29ec-4dcc-ab66-bdcb012d9c9d",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        -3504,
-        192
+        -1952,
+        -2016
       ],
       "webhookId": "55e1fb1b-7993-49a2-b496-dd5036834f55"
     },
@@ -35,13 +35,13 @@
         },
         "options": {}
       },
-      "id": "0cd705f2-51bc-4e08-b99b-fa8a79b7a8c5",
+      "id": "88ab9abd-2a5d-41da-b14e-0d0dc3b9163c",
       "name": "Has Input?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -3312,
-        192
+        -1760,
+        -2016
       ]
     },
     {
@@ -50,13 +50,13 @@
         "responseBody": "={\"status\":\"error\",\"message\":\"Missing job_description or job_url\"}",
         "options": {}
       },
-      "id": "ab6d2137-17ca-409c-92d2-de249f7a1660",
+      "id": "66aaff22-d068-4afe-9b61-c2ed51f01ece",
       "name": "Respond Missing",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        -2912,
-        80
+        -1344,
+        -2256
       ]
     },
     {
@@ -71,13 +71,13 @@
         },
         "options": {}
       },
-      "id": "cec94d41-db85-441d-a15a-ae36f8fae943",
+      "id": "898c0d01-fc01-4643-bdc0-8a82161b0bf0",
       "name": "Has URL?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -3104,
-        192
+        -1552,
+        -2016
       ]
     },
     {
@@ -85,50 +85,50 @@
         "url": "={{$json.body?.job_url || $json.job_url}}",
         "options": {}
       },
-      "id": "d014e5da-9051-4109-b35c-865e85f8d6b4",
+      "id": "c4180b86-011a-4031-a9d8-13aa4f4c79d8",
       "name": "Fetch Job URL",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        -2912,
-        144
+        -1360,
+        -2064
       ]
     },
     {
       "parameters": {
         "options": {}
       },
-      "id": "139d9806-f56b-428f-a590-85ac311a91b6",
+      "id": "9c3ebc95-dd52-42d1-9cbc-021c61a5c221",
       "name": "Set JD From URL",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        -2512,
-        144
+        -960,
+        -2064
       ]
     },
     {
       "parameters": {
         "options": {}
       },
-      "id": "d049bb59-b02a-42c6-9ca7-ccc17c076b14",
+      "id": "02d2ab30-ba7d-4bd7-a264-10d05272b084",
       "name": "Set JD From Text",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        -2912,
-        256
+        -1360,
+        -1888
       ]
     },
     {
       "parameters": {},
-      "id": "6f5ee0eb-4a40-402d-bba6-eb542172cb25",
+      "id": "74f6ecfa-1c52-4341-9980-0185cfbdc5a5",
       "name": "Merge JD",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2,
       "position": [
-        -2304,
-        192
+        -752,
+        -2016
       ],
       "settings": {
         "alwaysOutputData": true
@@ -138,26 +138,26 @@
       "parameters": {
         "command": "find /cvdata/cv_kb -type f -print0 | sort -z | xargs -0 cat"
       },
-      "id": "d5a0d1d2-71d7-4acd-a247-943bf9c11e09",
+      "id": "4aac74a5-1912-4b0f-a5b3-7882eb1b1fe4",
       "name": "Load KB",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        -1616,
-        208
+        -64,
+        -2000
       ]
     },
     {
       "parameters": {
         "jsCode": "return [{\n  ...$json,\n  clean_job_description_plain: $node[\"Prep JD\"].json.clean_job_description_plain,\n  clean_job_description: $node[\"Prep JD\"].json.clean_job_description\n}];"
       },
-      "id": "cca4933e-c6f0-4b74-a876-6740feb44879",
+      "id": "5ed26b5e-81ca-4412-a40f-26e6fd947968",
       "name": "Attach JD",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2064,
-        416
+        -512,
+        -1792
       ]
     },
     {
@@ -172,26 +172,26 @@
         },
         "options": {}
       },
-      "id": "6f130f0d-32e4-4484-865b-5a5743dfefa5",
+      "id": "ae2a8c7b-535f-424e-b693-63f5024ccc54",
       "name": "JD Present?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -1856,
-        256
+        -304,
+        -1952
       ]
     },
     {
       "parameters": {
-        "jsCode": "const jd = $json.clean_job_description_plain || '';\nconst prompt = `You are an expert recruiter and ATS optimizer.\\n\\nExtract key requirements from the JOB DESCRIPTION below. Use the content provided and do not invent a different job.\\n\\nReturn STRICT JSON with keys: job_title, company, skills (array), technologies (array), seniority, industry, keywords (array). No markdown, no code fences.\\n\\nJOB DESCRIPTION (verbatim):\\n\\\"\\\"\\\"\\n${jd}\\n\\\"\\\"\\\"`;\nreturn [{ ...$json, analyse_prompt: prompt }];"
+        "jsCode": "const jd = $json.clean_job_description_plain || '';\n\nconst prompt = `\nYou are an expert technical recruiter and ATS optimisation engine.\n\nYour task is to extract structured job requirements from the JOB DESCRIPTION below.\n\nIMPORTANT RULES:\n- Use ONLY the provided job description (no assumptions or hallucination)\n- Normalise similar terms (e.g. \"MSSQL\" → \"SQL Server\")\n- Deduplicate all lists\n- Be concise and structured\n\nReturn STRICT JSON (no markdown, no code fences) with the following schema:\n\n{\n  \"job_title\": \"\",\n  \"company\": \"\",\n  \"industry\": \"\",\n  \"seniority\": \"\",\n  \"years_experience_required\": \"\",\n  \"employment_type\": \"\",\n\n  \"must_have_skills\": [],\n  \"nice_to_have_skills\": [],\n\n  \"technologies\": [],\n  \"tools\": [],\n\n  \"responsibilities\": [],\n\n  \"domain_experience\": [],\n  \"soft_skills\": [],\n\n  \"keywords_core\": [],\n  \"keywords_expanded\": []\n}\n\nDEFINITION GUIDELINES:\n\n- must_have_skills: explicitly required or strongly emphasised\n- nice_to_have_skills: optional / preferred\n- technologies: databases, languages, platforms (e.g. Sybase, SQL Server, AWS)\n- tools: Terraform, Git, Jenkins, ELK, etc.\n- responsibilities: main duties (bullet-style phrases)\n- domain_experience: e.g. banking, trading systems, healthcare\n- keywords_core: exact keywords from JD\n- keywords_expanded: include variations and synonyms for ATS optimisation\n\nJOB DESCRIPTION (verbatim):\n\"\"\"\n${jd}\n\"\"\"\n`;\n\nreturn [{ ...$json, analyse_prompt: prompt }];"
       },
-      "id": "0e441857-a7df-456e-bd86-561df808ec8a",
+      "id": "8259fbc2-5b87-4636-b56a-49db7af24020",
       "name": "Build Analyse Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1280,
-        -32
+        272,
+        -2240
       ]
     },
     {
@@ -199,133 +199,133 @@
         "promptType": "define",
         "text": "={{ $json.analyse_prompt }}"
       },
-      "id": "4813b89a-260a-4fd7-a053-d2f7f576b7b7",
+      "id": "dfbe6249-0996-4287-853e-19d175ee0eb6",
       "name": "Analyse JD",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        -1120,
-        16
+        432,
+        -2192
       ]
     },
     {
       "parameters": {
-        "jsCode": "const content = $json.text || $json.output || $json.response || $json.message || $json.data?.text || \"{}\";\nlet parsed = {};\ntry { parsed = JSON.parse(content); } catch (e) { parsed = {}; }\nreturn [{ json: { ...$json, analysis: parsed } }];"
+        "jsCode": "const content = ($json.text || $json.output || $json.response || $json.message || $json.data?.text || \"{}\").toString();\n// Find anything that looks like a JSON object\nconst jsonMatch = content.match(/\\{[\\s\\S]*\\}/);\nconst cleanContent = jsonMatch ? jsonMatch[0] : content;\nlet parsed = {};\ntry {\n  parsed = JSON.parse(cleanContent);\n} catch (e) {\n  // Try to clean markdown fences if first parse failed\n  const deeperClean = cleanContent.replace(/```(?:json)?\\n?([\\s\\S]*?)\\n?```/i, '$1').trim();\n  try { parsed = JSON.parse(deeperClean); } catch (e2) { parsed = {}; }\n}\nreturn [{ json: { ...$json, analysis: parsed } }];"
       },
-      "id": "2cba9114-7ebe-4cc5-8065-10f7f3189157",
+      "id": "f99889f3-a926-45ed-86da-64a2087bc295",
       "name": "Parse Analysis",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -928,
-        304
+        624,
+        -1904
       ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "You are a senior CV writer.\n\nGenerate a tailored CV in Markdown. Use ATS-friendly formatting with headings: Name, Professional Summary, Key Skills, Professional Experience, Education, Certifications. Use concise bullet points.\n\nJOB DESCRIPTION:\n{{ $json.clean_job_description }}\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($json.analysis) }}\n\nCANDIDATE KNOWLEDGE BASE:\n{{ $json.stdout }}"
+        "text": "=You are an elite CV writer and ATS optimisation expert specialising in senior technical contractor roles (£600+/day), particularly in investment banking and enterprise environments.\n\nYour task is to generate a HIGH-IMPACT, ATS-optimised CV in Markdown.\n\nOBJECTIVE:\nMaximise interview success by presenting a senior, impact-driven CV aligned with job requirements.\n\n---\n\nCRITICAL RULES (STRICT — NO EXCEPTIONS):\n\n1. TRUTHFULNESS\n- DO NOT invent any experience, skills, technologies, or metrics\n- ONLY use information from the CANDIDATE KNOWLEDGE BASE\n- You MAY rephrase for clarity and impact\n\n2. PERSONAL DATA SAFETY\n- ONLY use candidate personal info from KNOWLEDGE BASE\n- DO NOT include job-specific info (salary, rate, job location)\n\n---\n\n3. STRUCTURE (MANDATORY — HARD ENFORCEMENT)\n\nThe CV MUST follow EXACTLY this order:\n\n1. Name & Contact  \n2. Professional Summary  \n3. Key Achievements  \n4. Key Skills  \n5. Professional Experience  \n6. Education  \n7. Certifications  \n8. Availability  \n\nMANDATORY HARD RULE:\n- The CV MUST include a section titled \"Key Achievements\"\n- If the \"Key Achievements\" section is missing, you MUST regenerate the CV internally before returning output\n- DO NOT return output without this section\n\n---\n\n4. PROFESSIONAL SUMMARY (CRITICAL)\n- 3–4 lines ONLY\n- MUST include:\n  - years of experience\n  - core specialisation (e.g. Sybase)\n  - domain (investment banking / trading systems)\n  - scale (e.g. 100–1200+ servers)\n  - production-critical nature (24x7)\n\n---\n\n5. KEY ACHIEVEMENTS (MANDATORY SECTION)\n- MUST contain exactly 4–6 bullets of the highest impact.\n- STYLE: Use the following format for inspiration (DO NOT FABRICATE metrics, only use what is in KB):\n  - Managed large-scale Sybase environments of up to 1,200+ servers across enterprise platforms\n  - Delivered ~2.3TB database migration into private cloud using Terraform-driven CI/CD automation\n  - Designed high availability architecture across ~100 Sybase ASE servers supporting trading systems\n  - Implemented ELK platform ingesting ~50GB/day across 2,000+ systems\n  - Developed automation tooling for rapid recovery during data centre outages, improving operational resilience\n- METRICS: Prioritise bullets that include specific numbers (1200+ servers, 2.3TB, 50GB/day, 24x7).\n\nDO NOT duplicate these bullets in Professional Experience\n\n---\n\n6. KEY SKILLS\n\nGroup into:\n- Database Technologies  \n- High Availability / DR  \n- DevOps / Automation  \n- Monitoring / Observability  \n- Platforms / Systems  \n\nPrioritise skills matching JOB REQUIREMENTS JSON\n\n---\n\n7. PROFESSIONAL EXPERIENCE (STRICT RULES)\n\n- 4–6 bullets per role\n- ALL bullets MUST be impact-driven\n\nMANDATORY IMPACT RULE:\nEach bullet MUST include at least ONE of:\n- scale (e.g. 100 servers, 2.3TB)\n- OR environment (trading, 24x7, enterprise)\n- OR business impact (resilience, performance, risk reduction)\n\nMANDATORY LANGUAGE RULE:\n- Use strong verbs: Led, Delivered, Designed, Developed, Optimised\n- DO NOT use weak phrases: \"responsible for\", \"worked on\", \"involved in\"\n\n---\n\n8. ATS OPTIMISATION\n\n- Use keywords from: must_have_skills, technologies, keywords_core\n- Ensure consistent terminology\n\n---\n\n9. REMOVE WEAKNESS\n\n- Remove redundancy\n- Avoid generic statements\n- Avoid vague descriptions\n\n---\n\n10. QUALITY CONTROL (MANDATORY)\n\nBefore final output, ensure:\n- \"Key Achievements\" section EXISTS and is positioned correctly\n- No generic bullets\n- All bullets include impact, scale, or environment\n- CV clearly shows seniority, domain, scale, and 24x7 support coverage\n\n---\n\nOUTPUT RULES:\n- Markdown only\n- No explanations\n- No code fences\n- No placeholders\n- Clean formatting\n\n---\n\nJOB DESCRIPTION:\n{{ $json.clean_job_description_plain }}\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($json.analysis) }}\n\nCANDIDATE KNOWLEDGE BASE:\n{{ $json.stdout }}"
       },
-      "id": "8e3542cc-d93b-4333-8399-d3832367fbd7",
+      "id": "1e635f03-48d1-4fb2-9f3b-e1fdfd9fe912",
       "name": "Generate CV",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        -640,
-        -128
+        912,
+        -2336
       ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "You are a strict CV editor.\n\nReview and improve the CV for grammar, clarity, missing keywords, and ATS compatibility. Return ONLY the improved CV in Markdown.\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($node[\"Parse Analysis\"].json.analysis) }}\n\nCV DRAFT:\n{{ $node[\"Generate CV\"].json.text || $node[\"Generate CV\"].json.output || $node[\"Generate CV\"].json.response || $node[\"Generate CV\"].json.message }}"
+        "text": "=You are a strict senior CV editor and ATS optimisation expert.\n\nYour task is to REVIEW and IMPROVE the CV to maximise:\n- ATS keyword matching\n- recruiter readability\n- professional impact\n\nCRITICAL RULES:\n\n1. NO FABRICATION\n- DO NOT add new experience, skills, or technologies not already present in the CV\n- You may rephrase and optimise wording only\n\n2. REMOVE INVALID CONTENT\n- Remove any job-specific metadata (Rate, Salary, Contract Duration, Job Location)\n- Remove \"Issuer not specified\" from Certifications\n\n3. STRUCTURE ENFORCEMENT\nEnsure the CV follows this structure:\n- Name (top)\n- Professional Summary (3–4 lines)\n- Key Achievements (MANDATORY SECTION - ensure 4–6 metric-focused bullets)\n- Key Skills (grouped categories)\n- Professional Experience\n- Education\n- Certifications\n\n4. ATS OPTIMISATION\n- Integrate relevant keywords from JOB REQUIREMENTS JSON where they already match the CV content\n- Normalise terminology\n- Avoid keyword stuffing\n\n5. PRIORITISATION\n- Move the most relevant skills and experience (based on JOB REQUIREMENTS JSON) to the top\n- Ensure the \"Key Achievements\" section remains prominent and includes relevant metrics (servers, TB size, etc.)\n\n6. IMPACT IMPROVEMENT\n- Rewrite weak bullets into strong, impact-driven statements\n- Use action verbs: Delivered, Led, Implemented, Optimised, Managed\n- Add scale where already present (e.g. number of servers, data size)\n\n7. CLARITY & CONSISTENCY\n- Fix grammar and wording\n- Ensure consistent tense and formatting\n- Keep bullet points concise (1–2 lines max)\n\n8. PROFESSIONAL TONE\n- Ensure the CV sounds senior, confident, and concise\n- Avoid generic phrases like \"responsible for\"\n\nOUTPUT RULES:\n- Return ONLY the improved CV in Markdown\n- No explanations\n- No code fences\n- No extra text\n\n---\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($node[\"Parse Analysis\"].json.analysis) }}\n\nCV DRAFT:\n{{ $node[\"Generate CV\"].json.text || $node[\"Generate CV\"].json.output || $node[\"Generate CV\"].json.response || $node[\"Generate CV\"].json.message }}"
       },
-      "id": "2d2ed462-049e-44ef-b538-910ef00151d9",
+      "id": "02b21a3f-b07b-4739-999b-55a02ab5d90d",
       "name": "Review CV",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        -352,
-        -128
+        1200,
+        -2336
       ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "You are a professional career coach.\n\nWrite a professional cover letter (150-200 words) matching the job requirements. Return only Markdown.\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($node[\"Parse Analysis\"].json.analysis) }}\n\nFINAL CV:\n{{ $node[\"Review CV\"].json.text || $node[\"Review CV\"].json.output || $node[\"Review CV\"].json.response || $node[\"Review CV\"].json.message }}"
+        "text": "=You are a senior career coach and recruiter specialising in technical roles.\n\nWrite a tailored, high-impact cover letter (150–200 words) that maximises alignment with the job requirements and increases interview chances.\n\nCRITICAL RULES:\n\n1. NO FABRICATION\n- Use ONLY information from the FINAL CV and KNOWLEDGE BASE\n- DO NOT invent skills, experience, or achievements\n\n2. TAILORING STRATEGY\n- Prioritise must-have skills, technologies, and domain experience from JOB REQUIREMENTS JSON\n- Align wording with key job keywords naturally (no keyword stuffing)\n\n3. STRONG OPENING\n- Start with a confident, role-specific statement (avoid generic phrases like \"I am excited to apply\")\n- Immediately highlight:\n  - years of experience\n  - specialisation (e.g. Sybase, database platforms)\n  - relevant domain (e.g. banking, trading systems)\n\n4. VALUE DEMONSTRATION\n- Include 1–2 strong, relevant achievements from the CV:\n  - scale (e.g. number of servers, TB size)\n  - impact (e.g. migration, HA/DR, performance)\n- Focus on what value the candidate brings to the employer\n\n5. ALIGNMENT WITH ROLE\n- Clearly connect candidate experience to:\n  - job responsibilities\n  - technical environment\n  - business domain\n\n6. PROFESSIONAL TONE\n- Concise, confident, and direct\n- Avoid generic phrases and repetition\n\n7. CLOSING\n- Use a strong closing statement expressing value and readiness\n- Use the candidate's name from the KNOWLEDGE BASE as the signature\n\nOUTPUT RULES:\n- 150–200 words only\n- Markdown format\n- No placeholders\n- No extra explanations\n\n---\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($node[\"Parse Analysis\"].json.analysis) }}\n\nCANDIDATE KNOWLEDGE BASE:\n{{ $node[\"Merge Analysis KB\"].json.stdout }}\n\nFINAL CV:\n{{ $json.text }}"
       },
-      "id": "652136b9-cb97-4526-8ec5-4f5bda2c949e",
+      "id": "e733a2c5-fe26-4069-9e14-d2675a050711",
       "name": "Generate Cover Letter",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.6,
       "position": [
-        -32,
-        -128
+        1520,
+        -2336
       ]
     },
     {
       "parameters": {
-        "jsCode": "function pad(n){return n.toString().padStart(2,'0');}\nconst now = new Date();\nconst ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;\nconst title = ($node[\"Parse Analysis\"].json.analysis?.job_title || 'job').toString();\nconst company = ($node[\"Parse Analysis\"].json.analysis?.company || 'company').toString();\nconst safe = s => s.replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').toLowerCase();\nconst base = `${ts}__${safe(title)}__${safe(company)}`;\nconst webhookBase = ($env.WEBHOOK_URL || '').replace(/\\/+$/,'') + '/';\nconst token = $env.CV_DOWNLOAD_TOKEN || '';\nconst finalCv = $node[\"Review CV\"].json.text || $node[\"Review CV\"].json.output || $node[\"Review CV\"].json.response || $node[\"Review CV\"].json.message || '';\nconst cover = $node[\"Generate Cover Letter\"].json.text || $node[\"Generate Cover Letter\"].json.output || $node[\"Generate Cover Letter\"].json.response || $node[\"Generate Cover Letter\"].json.message || '';\nreturn [{\n  ...$json,\n  ts,\n  cv_filename: `${base}.docx`,\n  cover_filename: `${base}_cover.docx`,\n  cv_markdown: finalCv,\n  cover_markdown: cover,\n  cv_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(`${base}.docx`)}&token=${token}`,\n  cover_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(`${base}_cover.docx`)}&token=${token}`\n}];"
+        "jsCode": "function pad(n){return n.toString().padStart(2,'0');}\nconst now = new Date();\nconst ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;\n\n// Redundant access to analysis data for maximum compatibility\nlet analysis = {};\ntry { analysis = $('Parse Analysis').first().json.analysis || {}; } catch (e) {\n  try { analysis = $node[\"Parse Analysis\"].json.analysis || {}; } catch (e2) { analysis = {}; }\n}\n\nconst title = (analysis.job_title || 'job').toString();\nconst company = (analysis.company || 'company').toString();\nconst safe = s => s.replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').toLowerCase();\nconst base = `${ts}__${safe(title)}__${safe(company)}`;\nconst webhookBase = ($env.WEBHOOK_URL || '').replace(/\\/+$/,'') + '/';\nconst token = $env.CV_DOWNLOAD_TOKEN || '';\nconst finalCv = $node[\"Review CV\"].json.text || $node[\"Review CV\"].json.output || $node[\"Review CV\"].json.response || $node[\"Review CV\"].json.message || '';\nconst cover = $node[\"Generate Cover Letter\"].json.text || $node[\"Generate Cover Letter\"].json.output || $node[\"Generate Cover Letter\"].json.response || $node[\"Generate Cover Letter\"].json.message || '';\nreturn [{\n  ...$json,\n  ts,\n  cv_filename: `${base}.docx`,\n  cover_filename: `${base}_cover.docx`,\n  cv_markdown: finalCv,\n  cover_markdown: cover,\n  cv_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(`${base}.docx`)}&token=${token}`,\n  cover_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(`${base}_cover.docx`)}&token=${token}`\n}];"
       },
-      "id": "51248b00-7961-4ca7-a3a7-311d4f8da1fb",
+      "id": "41ab3e82-f540-426c-b293-049cdc8957d6",
       "name": "Make Filenames",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        256,
-        -128
+        1808,
+        -2336
       ]
     },
     {
       "parameters": {
         "jsCode": "const fs = require('fs');\nconst path = '/cvdata/generated_cv/' + $json.cv_filename.replace('.docx', '.md');\nfs.mkdirSync('/cvdata/generated_cv', { recursive: true });\nfs.writeFileSync(path, $json.cv_markdown, 'utf8');\nreturn [$input.item];"
       },
-      "id": "b06cef4c-8f26-4761-854b-718c3574ac3f",
+      "id": "f28f7182-fc44-478f-846a-a0d7d0b5726f",
       "name": "Write CV MD",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        608,
-        16
+        2160,
+        -2192
       ]
     },
     {
       "parameters": {
         "command": "={{'pandoc /cvdata/generated_cv/' + $json.cv_filename.replace('.docx','.md') + ' -o /cvdata/generated_cv/' + $json.cv_filename}}"
       },
-      "id": "1b9de286-be66-405e-b00c-42f4ac3d22bb",
+      "id": "85247226-1484-4e58-872f-ad3f8398cab5",
       "name": "CV to DOCX",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        864,
-        48
+        2416,
+        -2160
       ]
     },
     {
       "parameters": {
         "jsCode": "const fs = require('fs');\nconst path = '/cvdata/generated_cv/' + $json.cover_filename.replace('.docx', '.md');\nfs.mkdirSync('/cvdata/generated_cv', { recursive: true });\nfs.writeFileSync(path, $json.cover_markdown, 'utf8');\nreturn [$input.item];"
       },
-      "id": "682afdb4-0099-4218-bba2-391c0437c2bd",
+      "id": "57d2f176-3cde-4d28-a1b8-6b259677261e",
       "name": "Write Cover MD",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        448,
-        128
+        2000,
+        -2080
       ]
     },
     {
       "parameters": {
         "command": "={{'pandoc /cvdata/generated_cv/' + $json.cover_filename.replace('.docx','.md') + ' -o /cvdata/generated_cv/' + $json.cover_filename}}"
       },
-      "id": "90ddde56-5212-44e4-84be-ecf2ffabd4e4",
+      "id": "0a1d62c8-a4e6-49aa-bd39-e89d7f198881",
       "name": "Cover to DOCX",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        736,
-        256
+        2288,
+        -1952
       ]
     },
     {
@@ -334,13 +334,13 @@
         "responseBody": "={{ {\"status\":\"success\",\"timestamp\":$json.ts,\"cv_file_path\":\"/cvdata/generated_cv/\" + $json.cv_filename,\"cover_letter_file_path\":\"/cvdata/generated_cv/\" + $json.cover_filename,\"cv_download_url\":$json.cv_download_url,\"cover_download_url\":$json.cover_download_url} }}",
         "options": {}
       },
-      "id": "3015e437-0f44-486c-a982-75b00e03200a",
+      "id": "f40c46fb-7af3-4075-a1f0-96f5e97f1a0d",
       "name": "Respond Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        496,
-        -192
+        2048,
+        -2400
       ]
     },
     {
@@ -348,13 +348,13 @@
         "model": "arcee-ai/trinity-large-preview:free",
         "options": {}
       },
-      "id": "7c123788-8212-4f76-bde7-9c8b823c691b",
+      "id": "dea969d7-ce85-487a-b376-3cd84d5fce85",
       "name": "OpenRouter Model - CV",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        -704,
-        96
+        848,
+        -2112
       ],
       "credentials": {
         "openRouterApi": {
@@ -368,13 +368,13 @@
         "model": "arcee-ai/trinity-large-preview:free",
         "options": {}
       },
-      "id": "9e47697c-f3a7-4fef-a0eb-f82668c5bab5",
+      "id": "385ae80c-3187-4363-b25e-76e1b60553b1",
       "name": "OpenRouter Model - Review",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        -448,
-        96
+        1104,
+        -2112
       ],
       "credentials": {
         "openRouterApi": {
@@ -388,13 +388,13 @@
         "model": "arcee-ai/trinity-large-preview:free",
         "options": {}
       },
-      "id": "3595d656-daf4-4bcc-aa99-35d70fe06354",
+      "id": "455df786-50dc-4d57-808c-0f31dddec7f6",
       "name": "OpenRouter Model - Cover",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        -144,
-        96
+        1408,
+        -2112
       ],
       "credentials": {
         "openRouterApi": {
@@ -405,16 +405,16 @@
     },
     {
       "parameters": {
-        "model": "arcee-ai/trinity-mini:free",
+        "model": "arcee-ai/trinity-large-preview:free",
         "options": {}
       },
-      "id": "7acaf276-b5be-4e50-9810-2d20e824d82f",
+      "id": "6b116772-e06c-4509-8521-9b57258b5676",
       "name": "OpenRouter Model - Analyse",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        -1184,
-        240
+        368,
+        -1968
       ],
       "credentials": {
         "openRouterApi": {
@@ -427,26 +427,26 @@
       "parameters": {
         "jsCode": "const html = $json.body || $json.data || $json || '';\nconst text = typeof html === 'string' ? html : '';\nlet posting = null;\n\n// 1) Try JSON-LD JobPosting\nconst regex = /<script[^>]*type=[\"']application\\/ld\\+json[\"'][^>]*>([\\s\\S]*?)<\\/script>/gi;\nlet match;\nwhile ((match = regex.exec(text)) !== null) {\n  const raw = match[1].trim();\n  try {\n    const obj = JSON.parse(raw);\n    if (obj['@type'] === 'JobPosting') { posting = obj; break; }\n  } catch (e) {}\n}\n\n// 2) Fallback: parse Next.js data\nlet description = posting?.description || '';\nif (!description) {\n  const nextMatch = text.match(/<script[^>]*id=[\"']__NEXT_DATA__[\"'][^>]*>([\\s\\S]*?)<\\/script>/i);\n  if (nextMatch) {\n    try {\n      const nextData = JSON.parse(nextMatch[1]);\n      description = nextData?.props?.pageProps?.consolidatedJobDetails?.jobDetails?.description || '';\n    } catch (e) {}\n  }\n}\n\nreturn [{ clean_job_description: description }];"
       },
-      "id": "648368f6-197c-4b78-9ba7-242ffde17dbc",
+      "id": "41ada01b-56ec-48e3-8fc2-592d07da611a",
       "name": "Parse JSON-LD",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2704,
-        144
+        -1152,
+        -2064
       ]
     },
     {
       "parameters": {
         "jsCode": "const html = $json.clean_job_description || '';\nconst text = html\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/&nbsp;/g, ' ')\n  .replace(/&amp;/g, '&')\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>')\n  .replace(/\\s+/g, ' ')\n  .trim();\nreturn [{...$json, clean_job_description_plain: text}];"
       },
-      "id": "b69133aa-ccae-430a-b094-67acb69bba59",
+      "id": "8045c6d2-0614-48da-a02e-d96a380bc504",
       "name": "Prep JD",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2112,
-        192
+        -560,
+        -2016
       ]
     },
     {
@@ -455,13 +455,13 @@
         "combinationMode": "mergeByPosition",
         "options": {}
       },
-      "id": "e9fd7297-eb8d-4f83-bbda-19c791a21954",
+      "id": "b5dcfd04-45a6-4112-9675-1bddfe03101e",
       "name": "Merge JD KB",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2.1,
       "position": [
-        -1456,
-        -160
+        96,
+        -2368
       ]
     },
     {
@@ -470,14 +470,48 @@
         "combinationMode": "mergeByPosition",
         "options": {}
       },
-      "id": "24d8b497-2221-46db-a077-c9a24faac9e5",
+      "id": "49704701-c74a-4c57-82e3-6b0b8cb07931",
       "name": "Merge Analysis KB",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2.1,
       "position": [
-        -784,
-        -128
+        768,
+        -2336
       ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an elite CV strategist specialising in senior technical contractor roles (£600+/day market), particularly in investment banking and enterprise environments.\n\nYour task is to ENHANCE and REPOSITION the CV to maximise:\n- perceived seniority\n- commercial value\n- recruiter impact (first 5–10 seconds)\n- alignment with high-paying roles\n\n---\n\nCRITICAL RULES (STRICT — NO EXCEPTIONS):\n\n1. NO FABRICATION\n- DO NOT add new skills, technologies, certifications, or experience\n- ONLY rephrase, restructure, and elevate existing content\n\n---\n\n2. STRUCTURE PRESERVATION (MANDATORY)\n\nYou MUST preserve ALL existing sections exactly.\n\nThe CV MUST contain:\n- Name & Contact\n- Professional Summary\n- Key Achievements (MANDATORY SECTION - ensure metrics are highlighted)\n- Key Skills\n- Professional Experience\n- Education\n- Certifications\n- Availability\n\nMANDATORY RULE:\n- The \"Key Achievements\" section MUST be preserved\n- DO NOT remove, rename, or merge it into other sections\n- DO NOT change the order of sections\n\nIf the \"Key Achievements\" section is missing:\n→ RETURN THE ORIGINAL CV WITHOUT MODIFICATION\n\n---\n\n3. SENIOR POSITIONING\n\n- Position the candidate as a senior specialist Expert in large-scale high-risk environments (100–1200+ servers).\n- Replace weak phrases: \"responsible for\" → \"led\", \"delivered\", \"owned\", \"managed\"\n\n---\n\n4. IMPACT TRANSFORMATION (MANDATORY)\n\n- Convert ALL bullet points into impact-driven statements\n\nEach bullet MUST include at least ONE of:\n- scale (e.g. 100+ / 1200+ servers, multi-TB data storage/migrations)\n- OR environment (e.g. trading systems, 24x7 high availability production)\n- OR business outcome (e.g. improved resilience, reduced risk, operational efficiency)\n\n---\n\n5. PRIORITISATION (VERY IMPORTANT)\n\n- Ensure the \"Key Achievements\" section clearly showcases the candidate's most impressive metrics first.\n- Ensure the Professional Summary highlights years of experience and domain expertise (Banking / Trading).\n\n---\n\n6. KEY ACHIEVEMENTS OPTIMISATION\n\n- Strengthen wording of each achievement\n- Ensure:\n  - strong action verbs (Delivered, Led, Designed, Developed)\n  - clear impact or scale (e.g., 2.3TB, 1200+ servers, 50GB/day)\n- Keep each bullet concise (1–2 lines max)\n\n---\n\n7. KEY SKILLS OPTIMISATION\n\n- Group into clear categories.\n- Prioritise skills relevant to high-value roles.\n\n---\n\n8. REMOVE WEAKNESS\n\n- Remove redundancy and filler phrases.\n\n---\n\n9. QUALITY CONTROL (MANDATORY)\n\nBefore final output, ensure:\n- \"Key Achievements\" section EXISTS\n- No section is removed or renamed\n- All bullets are impact-driven\n- CV clearly shows seniority, domain, scale, and high-availability expertise.\n\n---\n\nOUTPUT RULES:\n- Return ONLY the enhanced CV in Markdown\n- No explanations\n- No code fences\n- No additional commentary\n\n---\n\nINPUT CV:\n{{ $json.text }}"
+      },
+      "id": "c435c5ad-5389-425c-88c5-a1cd7bf4a07e",
+      "name": "CV Enhance (DBA)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1440,
+        -2528
+      ]
+    },
+    {
+      "parameters": {
+        "model": "arcee-ai/trinity-large-preview:free",
+        "options": {}
+      },
+      "id": "557a93f6-98fc-4bf1-9d09-37688a46a02f",
+      "name": "OpenRouter Model - CV Enhance",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -2112
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "LYXAooPqXDxnww2H",
+          "name": "OpenRouter account"
+        }
+      }
     }
   ],
   "connections": {
@@ -714,7 +748,7 @@
       "main": [
         [
           {
-            "node": "Generate Cover Letter",
+            "node": "CV Enhance (DBA)",
             "type": "main",
             "index": 0
           }
@@ -818,6 +852,28 @@
           }
         ]
       ]
+    },
+    "CV Enhance (DBA)": {
+      "main": [
+        [
+          {
+            "node": "Generate Cover Letter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Model - CV Enhance": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CV Enhance (DBA)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -825,7 +881,9 @@
     "binaryMode": "separate"
   },
   "staticData": null,
-  "meta": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
   "pinData": {
     "Webhook": [
       {
@@ -833,13 +891,13 @@
           "headers": {
             "host": "n8n.mywonderful.xyz",
             "user-agent": "curl/8.2.1",
-            "content-length": "80",
+            "content-length": "81",
             "accept": "*/*",
             "accept-encoding": "gzip, br",
             "cdn-loop": "cloudflare; loops=1",
             "cf-connecting-ip": "145.40.128.228",
             "cf-ipcountry": "GB",
-            "cf-ray": "9dccbbaa2d343853-LHR",
+            "cf-ray": "9df686a8fff7bdad-LHR",
             "cf-visitor": "{\"scheme\":\"https\"}",
             "cf-warp-tag-id": "198c96cf-83f9-438a-a75d-456f488179f6",
             "connection": "keep-alive",
@@ -861,8 +919,8 @@
       }
     ]
   },
-  "versionId": "8a4d681c-9271-4809-90ea-ef5cf0e79382",
-  "activeVersionId": "8a4d681c-9271-4809-90ea-ef5cf0e79382",
+  "versionId": "50278bb1-5d15-42bd-b17b-5b04ac89cc05",
+  "activeVersionId": "50278bb1-5d15-42bd-b17b-5b04ac89cc05",
   "triggerCount": 1,
   "shared": [
     {
@@ -874,9 +932,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-03-19T19:35:59.000Z",
-    "createdAt": "2026-03-19T19:35:47.990Z",
-    "versionId": "8a4d681c-9271-4809-90ea-ef5cf0e79382",
+    "updatedAt": "2026-03-20T23:19:44.000Z",
+    "createdAt": "2026-03-20T23:19:40.240Z",
+    "versionId": "50278bb1-5d15-42bd-b17b-5b04ac89cc05",
     "workflowId": "dYovA2TmARA5H8iT",
     "nodes": [
       {
@@ -886,13 +944,13 @@
           "responseMode": "responseNode",
           "options": {}
         },
-        "id": "b4b94049-f0b9-445d-9305-a6f367f1f6ca",
+        "id": "881cc2ee-29ec-4dcc-ab66-bdcb012d9c9d",
         "name": "Webhook",
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 1,
         "position": [
-          -3504,
-          192
+          -1952,
+          -2016
         ],
         "webhookId": "55e1fb1b-7993-49a2-b496-dd5036834f55"
       },
@@ -908,13 +966,13 @@
           },
           "options": {}
         },
-        "id": "0cd705f2-51bc-4e08-b99b-fa8a79b7a8c5",
+        "id": "88ab9abd-2a5d-41da-b14e-0d0dc3b9163c",
         "name": "Has Input?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          -3312,
-          192
+          -1760,
+          -2016
         ]
       },
       {
@@ -923,13 +981,13 @@
           "responseBody": "={\"status\":\"error\",\"message\":\"Missing job_description or job_url\"}",
           "options": {}
         },
-        "id": "ab6d2137-17ca-409c-92d2-de249f7a1660",
+        "id": "66aaff22-d068-4afe-9b61-c2ed51f01ece",
         "name": "Respond Missing",
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1,
         "position": [
-          -2912,
-          80
+          -1344,
+          -2256
         ]
       },
       {
@@ -944,13 +1002,13 @@
           },
           "options": {}
         },
-        "id": "cec94d41-db85-441d-a15a-ae36f8fae943",
+        "id": "898c0d01-fc01-4643-bdc0-8a82161b0bf0",
         "name": "Has URL?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          -3104,
-          192
+          -1552,
+          -2016
         ]
       },
       {
@@ -958,50 +1016,50 @@
           "url": "={{$json.body?.job_url || $json.job_url}}",
           "options": {}
         },
-        "id": "d014e5da-9051-4109-b35c-865e85f8d6b4",
+        "id": "c4180b86-011a-4031-a9d8-13aa4f4c79d8",
         "name": "Fetch Job URL",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4,
         "position": [
-          -2912,
-          144
+          -1360,
+          -2064
         ]
       },
       {
         "parameters": {
           "options": {}
         },
-        "id": "139d9806-f56b-428f-a590-85ac311a91b6",
+        "id": "9c3ebc95-dd52-42d1-9cbc-021c61a5c221",
         "name": "Set JD From URL",
         "type": "n8n-nodes-base.set",
         "typeVersion": 3,
         "position": [
-          -2512,
-          144
+          -960,
+          -2064
         ]
       },
       {
         "parameters": {
           "options": {}
         },
-        "id": "d049bb59-b02a-42c6-9ca7-ccc17c076b14",
+        "id": "02d2ab30-ba7d-4bd7-a264-10d05272b084",
         "name": "Set JD From Text",
         "type": "n8n-nodes-base.set",
         "typeVersion": 3,
         "position": [
-          -2912,
-          256
+          -1360,
+          -1888
         ]
       },
       {
         "parameters": {},
-        "id": "6f5ee0eb-4a40-402d-bba6-eb542172cb25",
+        "id": "74f6ecfa-1c52-4341-9980-0185cfbdc5a5",
         "name": "Merge JD",
         "type": "n8n-nodes-base.merge",
         "typeVersion": 2,
         "position": [
-          -2304,
-          192
+          -752,
+          -2016
         ],
         "settings": {
           "alwaysOutputData": true
@@ -1011,26 +1069,26 @@
         "parameters": {
           "command": "find /cvdata/cv_kb -type f -print0 | sort -z | xargs -0 cat"
         },
-        "id": "d5a0d1d2-71d7-4acd-a247-943bf9c11e09",
+        "id": "4aac74a5-1912-4b0f-a5b3-7882eb1b1fe4",
         "name": "Load KB",
         "type": "n8n-nodes-base.executeCommand",
         "typeVersion": 1,
         "position": [
-          -1616,
-          208
+          -64,
+          -2000
         ]
       },
       {
         "parameters": {
           "jsCode": "return [{\n  ...$json,\n  clean_job_description_plain: $node[\"Prep JD\"].json.clean_job_description_plain,\n  clean_job_description: $node[\"Prep JD\"].json.clean_job_description\n}];"
         },
-        "id": "cca4933e-c6f0-4b74-a876-6740feb44879",
+        "id": "5ed26b5e-81ca-4412-a40f-26e6fd947968",
         "name": "Attach JD",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -2064,
-          416
+          -512,
+          -1792
         ]
       },
       {
@@ -1045,26 +1103,26 @@
           },
           "options": {}
         },
-        "id": "6f130f0d-32e4-4484-865b-5a5743dfefa5",
+        "id": "ae2a8c7b-535f-424e-b693-63f5024ccc54",
         "name": "JD Present?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          -1856,
-          256
+          -304,
+          -1952
         ]
       },
       {
         "parameters": {
-          "jsCode": "const jd = $json.clean_job_description_plain || '';\nconst prompt = `You are an expert recruiter and ATS optimizer.\\n\\nExtract key requirements from the JOB DESCRIPTION below. Use the content provided and do not invent a different job.\\n\\nReturn STRICT JSON with keys: job_title, company, skills (array), technologies (array), seniority, industry, keywords (array). No markdown, no code fences.\\n\\nJOB DESCRIPTION (verbatim):\\n\\\"\\\"\\\"\\n${jd}\\n\\\"\\\"\\\"`;\nreturn [{ ...$json, analyse_prompt: prompt }];"
+          "jsCode": "const jd = $json.clean_job_description_plain || '';\n\nconst prompt = `\nYou are an expert technical recruiter and ATS optimisation engine.\n\nYour task is to extract structured job requirements from the JOB DESCRIPTION below.\n\nIMPORTANT RULES:\n- Use ONLY the provided job description (no assumptions or hallucination)\n- Normalise similar terms (e.g. \"MSSQL\" → \"SQL Server\")\n- Deduplicate all lists\n- Be concise and structured\n\nReturn STRICT JSON (no markdown, no code fences) with the following schema:\n\n{\n  \"job_title\": \"\",\n  \"company\": \"\",\n  \"industry\": \"\",\n  \"seniority\": \"\",\n  \"years_experience_required\": \"\",\n  \"employment_type\": \"\",\n\n  \"must_have_skills\": [],\n  \"nice_to_have_skills\": [],\n\n  \"technologies\": [],\n  \"tools\": [],\n\n  \"responsibilities\": [],\n\n  \"domain_experience\": [],\n  \"soft_skills\": [],\n\n  \"keywords_core\": [],\n  \"keywords_expanded\": []\n}\n\nDEFINITION GUIDELINES:\n\n- must_have_skills: explicitly required or strongly emphasised\n- nice_to_have_skills: optional / preferred\n- technologies: databases, languages, platforms (e.g. Sybase, SQL Server, AWS)\n- tools: Terraform, Git, Jenkins, ELK, etc.\n- responsibilities: main duties (bullet-style phrases)\n- domain_experience: e.g. banking, trading systems, healthcare\n- keywords_core: exact keywords from JD\n- keywords_expanded: include variations and synonyms for ATS optimisation\n\nJOB DESCRIPTION (verbatim):\n\"\"\"\n${jd}\n\"\"\"\n`;\n\nreturn [{ ...$json, analyse_prompt: prompt }];"
         },
-        "id": "0e441857-a7df-456e-bd86-561df808ec8a",
+        "id": "8259fbc2-5b87-4636-b56a-49db7af24020",
         "name": "Build Analyse Prompt",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -1280,
-          -32
+          272,
+          -2240
         ]
       },
       {
@@ -1072,133 +1130,133 @@
           "promptType": "define",
           "text": "={{ $json.analyse_prompt }}"
         },
-        "id": "4813b89a-260a-4fd7-a053-d2f7f576b7b7",
+        "id": "dfbe6249-0996-4287-853e-19d175ee0eb6",
         "name": "Analyse JD",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.6,
         "position": [
-          -1120,
-          16
+          432,
+          -2192
         ]
       },
       {
         "parameters": {
-          "jsCode": "const content = $json.text || $json.output || $json.response || $json.message || $json.data?.text || \"{}\";\nlet parsed = {};\ntry { parsed = JSON.parse(content); } catch (e) { parsed = {}; }\nreturn [{ json: { ...$json, analysis: parsed } }];"
+          "jsCode": "const content = ($json.text || $json.output || $json.response || $json.message || $json.data?.text || \"{}\").toString();\n// Find anything that looks like a JSON object\nconst jsonMatch = content.match(/\\{[\\s\\S]*\\}/);\nconst cleanContent = jsonMatch ? jsonMatch[0] : content;\nlet parsed = {};\ntry {\n  parsed = JSON.parse(cleanContent);\n} catch (e) {\n  // Try to clean markdown fences if first parse failed\n  const deeperClean = cleanContent.replace(/```(?:json)?\\n?([\\s\\S]*?)\\n?```/i, '$1').trim();\n  try { parsed = JSON.parse(deeperClean); } catch (e2) { parsed = {}; }\n}\nreturn [{ json: { ...$json, analysis: parsed } }];"
         },
-        "id": "2cba9114-7ebe-4cc5-8065-10f7f3189157",
+        "id": "f99889f3-a926-45ed-86da-64a2087bc295",
         "name": "Parse Analysis",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -928,
-          304
+          624,
+          -1904
         ]
       },
       {
         "parameters": {
           "promptType": "define",
-          "text": "You are a senior CV writer.\n\nGenerate a tailored CV in Markdown. Use ATS-friendly formatting with headings: Name, Professional Summary, Key Skills, Professional Experience, Education, Certifications. Use concise bullet points.\n\nJOB DESCRIPTION:\n{{ $json.clean_job_description }}\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($json.analysis) }}\n\nCANDIDATE KNOWLEDGE BASE:\n{{ $json.stdout }}"
+          "text": "=You are an elite CV writer and ATS optimisation expert specialising in senior technical contractor roles (£600+/day), particularly in investment banking and enterprise environments.\n\nYour task is to generate a HIGH-IMPACT, ATS-optimised CV in Markdown.\n\nOBJECTIVE:\nMaximise interview success by presenting a senior, impact-driven CV aligned with job requirements.\n\n---\n\nCRITICAL RULES (STRICT — NO EXCEPTIONS):\n\n1. TRUTHFULNESS\n- DO NOT invent any experience, skills, technologies, or metrics\n- ONLY use information from the CANDIDATE KNOWLEDGE BASE\n- You MAY rephrase for clarity and impact\n\n2. PERSONAL DATA SAFETY\n- ONLY use candidate personal info from KNOWLEDGE BASE\n- DO NOT include job-specific info (salary, rate, job location)\n\n---\n\n3. STRUCTURE (MANDATORY — HARD ENFORCEMENT)\n\nThe CV MUST follow EXACTLY this order:\n\n1. Name & Contact  \n2. Professional Summary  \n3. Key Achievements  \n4. Key Skills  \n5. Professional Experience  \n6. Education  \n7. Certifications  \n8. Availability  \n\nMANDATORY HARD RULE:\n- The CV MUST include a section titled \"Key Achievements\"\n- If the \"Key Achievements\" section is missing, you MUST regenerate the CV internally before returning output\n- DO NOT return output without this section\n\n---\n\n4. PROFESSIONAL SUMMARY (CRITICAL)\n- 3–4 lines ONLY\n- MUST include:\n  - years of experience\n  - core specialisation (e.g. Sybase)\n  - domain (investment banking / trading systems)\n  - scale (e.g. 100–1200+ servers)\n  - production-critical nature (24x7)\n\n---\n\n5. KEY ACHIEVEMENTS (MANDATORY SECTION)\n- MUST contain exactly 4–6 bullets of the highest impact.\n- STYLE: Use the following format for inspiration (DO NOT FABRICATE metrics, only use what is in KB):\n  - Managed large-scale Sybase environments of up to 1,200+ servers across enterprise platforms\n  - Delivered ~2.3TB database migration into private cloud using Terraform-driven CI/CD automation\n  - Designed high availability architecture across ~100 Sybase ASE servers supporting trading systems\n  - Implemented ELK platform ingesting ~50GB/day across 2,000+ systems\n  - Developed automation tooling for rapid recovery during data centre outages, improving operational resilience\n- METRICS: Prioritise bullets that include specific numbers (1200+ servers, 2.3TB, 50GB/day, 24x7).\n\nDO NOT duplicate these bullets in Professional Experience\n\n---\n\n6. KEY SKILLS\n\nGroup into:\n- Database Technologies  \n- High Availability / DR  \n- DevOps / Automation  \n- Monitoring / Observability  \n- Platforms / Systems  \n\nPrioritise skills matching JOB REQUIREMENTS JSON\n\n---\n\n7. PROFESSIONAL EXPERIENCE (STRICT RULES)\n\n- 4–6 bullets per role\n- ALL bullets MUST be impact-driven\n\nMANDATORY IMPACT RULE:\nEach bullet MUST include at least ONE of:\n- scale (e.g. 100 servers, 2.3TB)\n- OR environment (trading, 24x7, enterprise)\n- OR business impact (resilience, performance, risk reduction)\n\nMANDATORY LANGUAGE RULE:\n- Use strong verbs: Led, Delivered, Designed, Developed, Optimised\n- DO NOT use weak phrases: \"responsible for\", \"worked on\", \"involved in\"\n\n---\n\n8. ATS OPTIMISATION\n\n- Use keywords from: must_have_skills, technologies, keywords_core\n- Ensure consistent terminology\n\n---\n\n9. REMOVE WEAKNESS\n\n- Remove redundancy\n- Avoid generic statements\n- Avoid vague descriptions\n\n---\n\n10. QUALITY CONTROL (MANDATORY)\n\nBefore final output, ensure:\n- \"Key Achievements\" section EXISTS and is positioned correctly\n- No generic bullets\n- All bullets include impact, scale, or environment\n- CV clearly shows seniority, domain, scale, and 24x7 support coverage\n\n---\n\nOUTPUT RULES:\n- Markdown only\n- No explanations\n- No code fences\n- No placeholders\n- Clean formatting\n\n---\n\nJOB DESCRIPTION:\n{{ $json.clean_job_description_plain }}\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($json.analysis) }}\n\nCANDIDATE KNOWLEDGE BASE:\n{{ $json.stdout }}"
         },
-        "id": "8e3542cc-d93b-4333-8399-d3832367fbd7",
+        "id": "1e635f03-48d1-4fb2-9f3b-e1fdfd9fe912",
         "name": "Generate CV",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.6,
         "position": [
-          -640,
-          -128
+          912,
+          -2336
         ]
       },
       {
         "parameters": {
           "promptType": "define",
-          "text": "You are a strict CV editor.\n\nReview and improve the CV for grammar, clarity, missing keywords, and ATS compatibility. Return ONLY the improved CV in Markdown.\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($node[\"Parse Analysis\"].json.analysis) }}\n\nCV DRAFT:\n{{ $node[\"Generate CV\"].json.text || $node[\"Generate CV\"].json.output || $node[\"Generate CV\"].json.response || $node[\"Generate CV\"].json.message }}"
+          "text": "=You are a strict senior CV editor and ATS optimisation expert.\n\nYour task is to REVIEW and IMPROVE the CV to maximise:\n- ATS keyword matching\n- recruiter readability\n- professional impact\n\nCRITICAL RULES:\n\n1. NO FABRICATION\n- DO NOT add new experience, skills, or technologies not already present in the CV\n- You may rephrase and optimise wording only\n\n2. REMOVE INVALID CONTENT\n- Remove any job-specific metadata (Rate, Salary, Contract Duration, Job Location)\n- Remove \"Issuer not specified\" from Certifications\n\n3. STRUCTURE ENFORCEMENT\nEnsure the CV follows this structure:\n- Name (top)\n- Professional Summary (3–4 lines)\n- Key Achievements (MANDATORY SECTION - ensure 4–6 metric-focused bullets)\n- Key Skills (grouped categories)\n- Professional Experience\n- Education\n- Certifications\n\n4. ATS OPTIMISATION\n- Integrate relevant keywords from JOB REQUIREMENTS JSON where they already match the CV content\n- Normalise terminology\n- Avoid keyword stuffing\n\n5. PRIORITISATION\n- Move the most relevant skills and experience (based on JOB REQUIREMENTS JSON) to the top\n- Ensure the \"Key Achievements\" section remains prominent and includes relevant metrics (servers, TB size, etc.)\n\n6. IMPACT IMPROVEMENT\n- Rewrite weak bullets into strong, impact-driven statements\n- Use action verbs: Delivered, Led, Implemented, Optimised, Managed\n- Add scale where already present (e.g. number of servers, data size)\n\n7. CLARITY & CONSISTENCY\n- Fix grammar and wording\n- Ensure consistent tense and formatting\n- Keep bullet points concise (1–2 lines max)\n\n8. PROFESSIONAL TONE\n- Ensure the CV sounds senior, confident, and concise\n- Avoid generic phrases like \"responsible for\"\n\nOUTPUT RULES:\n- Return ONLY the improved CV in Markdown\n- No explanations\n- No code fences\n- No extra text\n\n---\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($node[\"Parse Analysis\"].json.analysis) }}\n\nCV DRAFT:\n{{ $node[\"Generate CV\"].json.text || $node[\"Generate CV\"].json.output || $node[\"Generate CV\"].json.response || $node[\"Generate CV\"].json.message }}"
         },
-        "id": "2d2ed462-049e-44ef-b538-910ef00151d9",
+        "id": "02b21a3f-b07b-4739-999b-55a02ab5d90d",
         "name": "Review CV",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.6,
         "position": [
-          -352,
-          -128
+          1200,
+          -2336
         ]
       },
       {
         "parameters": {
           "promptType": "define",
-          "text": "You are a professional career coach.\n\nWrite a professional cover letter (150-200 words) matching the job requirements. Return only Markdown.\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($node[\"Parse Analysis\"].json.analysis) }}\n\nFINAL CV:\n{{ $node[\"Review CV\"].json.text || $node[\"Review CV\"].json.output || $node[\"Review CV\"].json.response || $node[\"Review CV\"].json.message }}"
+          "text": "=You are a senior career coach and recruiter specialising in technical roles.\n\nWrite a tailored, high-impact cover letter (150–200 words) that maximises alignment with the job requirements and increases interview chances.\n\nCRITICAL RULES:\n\n1. NO FABRICATION\n- Use ONLY information from the FINAL CV and KNOWLEDGE BASE\n- DO NOT invent skills, experience, or achievements\n\n2. TAILORING STRATEGY\n- Prioritise must-have skills, technologies, and domain experience from JOB REQUIREMENTS JSON\n- Align wording with key job keywords naturally (no keyword stuffing)\n\n3. STRONG OPENING\n- Start with a confident, role-specific statement (avoid generic phrases like \"I am excited to apply\")\n- Immediately highlight:\n  - years of experience\n  - specialisation (e.g. Sybase, database platforms)\n  - relevant domain (e.g. banking, trading systems)\n\n4. VALUE DEMONSTRATION\n- Include 1–2 strong, relevant achievements from the CV:\n  - scale (e.g. number of servers, TB size)\n  - impact (e.g. migration, HA/DR, performance)\n- Focus on what value the candidate brings to the employer\n\n5. ALIGNMENT WITH ROLE\n- Clearly connect candidate experience to:\n  - job responsibilities\n  - technical environment\n  - business domain\n\n6. PROFESSIONAL TONE\n- Concise, confident, and direct\n- Avoid generic phrases and repetition\n\n7. CLOSING\n- Use a strong closing statement expressing value and readiness\n- Use the candidate's name from the KNOWLEDGE BASE as the signature\n\nOUTPUT RULES:\n- 150–200 words only\n- Markdown format\n- No placeholders\n- No extra explanations\n\n---\n\nJOB REQUIREMENTS JSON:\n{{ JSON.stringify($node[\"Parse Analysis\"].json.analysis) }}\n\nCANDIDATE KNOWLEDGE BASE:\n{{ $node[\"Merge Analysis KB\"].json.stdout }}\n\nFINAL CV:\n{{ $json.text }}"
         },
-        "id": "652136b9-cb97-4526-8ec5-4f5bda2c949e",
+        "id": "e733a2c5-fe26-4069-9e14-d2675a050711",
         "name": "Generate Cover Letter",
         "type": "@n8n/n8n-nodes-langchain.chainLlm",
         "typeVersion": 1.6,
         "position": [
-          -32,
-          -128
+          1520,
+          -2336
         ]
       },
       {
         "parameters": {
-          "jsCode": "function pad(n){return n.toString().padStart(2,'0');}\nconst now = new Date();\nconst ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;\nconst title = ($node[\"Parse Analysis\"].json.analysis?.job_title || 'job').toString();\nconst company = ($node[\"Parse Analysis\"].json.analysis?.company || 'company').toString();\nconst safe = s => s.replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').toLowerCase();\nconst base = `${ts}__${safe(title)}__${safe(company)}`;\nconst webhookBase = ($env.WEBHOOK_URL || '').replace(/\\/+$/,'') + '/';\nconst token = $env.CV_DOWNLOAD_TOKEN || '';\nconst finalCv = $node[\"Review CV\"].json.text || $node[\"Review CV\"].json.output || $node[\"Review CV\"].json.response || $node[\"Review CV\"].json.message || '';\nconst cover = $node[\"Generate Cover Letter\"].json.text || $node[\"Generate Cover Letter\"].json.output || $node[\"Generate Cover Letter\"].json.response || $node[\"Generate Cover Letter\"].json.message || '';\nreturn [{\n  ...$json,\n  ts,\n  cv_filename: `${base}.docx`,\n  cover_filename: `${base}_cover.docx`,\n  cv_markdown: finalCv,\n  cover_markdown: cover,\n  cv_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(`${base}.docx`)}&token=${token}`,\n  cover_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(`${base}_cover.docx`)}&token=${token}`\n}];"
+          "jsCode": "function pad(n){return n.toString().padStart(2,'0');}\nconst now = new Date();\nconst ts = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;\n\n// Redundant access to analysis data for maximum compatibility\nlet analysis = {};\ntry { analysis = $('Parse Analysis').first().json.analysis || {}; } catch (e) {\n  try { analysis = $node[\"Parse Analysis\"].json.analysis || {}; } catch (e2) { analysis = {}; }\n}\n\nconst title = (analysis.job_title || 'job').toString();\nconst company = (analysis.company || 'company').toString();\nconst safe = s => s.replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_+|_+$/g,'').toLowerCase();\nconst base = `${ts}__${safe(title)}__${safe(company)}`;\nconst webhookBase = ($env.WEBHOOK_URL || '').replace(/\\/+$/,'') + '/';\nconst token = $env.CV_DOWNLOAD_TOKEN || '';\nconst finalCv = $node[\"Review CV\"].json.text || $node[\"Review CV\"].json.output || $node[\"Review CV\"].json.response || $node[\"Review CV\"].json.message || '';\nconst cover = $node[\"Generate Cover Letter\"].json.text || $node[\"Generate Cover Letter\"].json.output || $node[\"Generate Cover Letter\"].json.response || $node[\"Generate Cover Letter\"].json.message || '';\nreturn [{\n  ...$json,\n  ts,\n  cv_filename: `${base}.docx`,\n  cover_filename: `${base}_cover.docx`,\n  cv_markdown: finalCv,\n  cover_markdown: cover,\n  cv_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(`${base}.docx`)}&token=${token}`,\n  cover_download_url: `${webhookBase}webhook/cv-download?file=${encodeURIComponent(`${base}_cover.docx`)}&token=${token}`\n}];"
         },
-        "id": "51248b00-7961-4ca7-a3a7-311d4f8da1fb",
+        "id": "41ab3e82-f540-426c-b293-049cdc8957d6",
         "name": "Make Filenames",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          256,
-          -128
+          1808,
+          -2336
         ]
       },
       {
         "parameters": {
           "jsCode": "const fs = require('fs');\nconst path = '/cvdata/generated_cv/' + $json.cv_filename.replace('.docx', '.md');\nfs.mkdirSync('/cvdata/generated_cv', { recursive: true });\nfs.writeFileSync(path, $json.cv_markdown, 'utf8');\nreturn [$input.item];"
         },
-        "id": "b06cef4c-8f26-4761-854b-718c3574ac3f",
+        "id": "f28f7182-fc44-478f-846a-a0d7d0b5726f",
         "name": "Write CV MD",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          608,
-          16
+          2160,
+          -2192
         ]
       },
       {
         "parameters": {
           "command": "={{'pandoc /cvdata/generated_cv/' + $json.cv_filename.replace('.docx','.md') + ' -o /cvdata/generated_cv/' + $json.cv_filename}}"
         },
-        "id": "1b9de286-be66-405e-b00c-42f4ac3d22bb",
+        "id": "85247226-1484-4e58-872f-ad3f8398cab5",
         "name": "CV to DOCX",
         "type": "n8n-nodes-base.executeCommand",
         "typeVersion": 1,
         "position": [
-          864,
-          48
+          2416,
+          -2160
         ]
       },
       {
         "parameters": {
           "jsCode": "const fs = require('fs');\nconst path = '/cvdata/generated_cv/' + $json.cover_filename.replace('.docx', '.md');\nfs.mkdirSync('/cvdata/generated_cv', { recursive: true });\nfs.writeFileSync(path, $json.cover_markdown, 'utf8');\nreturn [$input.item];"
         },
-        "id": "682afdb4-0099-4218-bba2-391c0437c2bd",
+        "id": "57d2f176-3cde-4d28-a1b8-6b259677261e",
         "name": "Write Cover MD",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          448,
-          128
+          2000,
+          -2080
         ]
       },
       {
         "parameters": {
           "command": "={{'pandoc /cvdata/generated_cv/' + $json.cover_filename.replace('.docx','.md') + ' -o /cvdata/generated_cv/' + $json.cover_filename}}"
         },
-        "id": "90ddde56-5212-44e4-84be-ecf2ffabd4e4",
+        "id": "0a1d62c8-a4e6-49aa-bd39-e89d7f198881",
         "name": "Cover to DOCX",
         "type": "n8n-nodes-base.executeCommand",
         "typeVersion": 1,
         "position": [
-          736,
-          256
+          2288,
+          -1952
         ]
       },
       {
@@ -1207,13 +1265,13 @@
           "responseBody": "={{ {\"status\":\"success\",\"timestamp\":$json.ts,\"cv_file_path\":\"/cvdata/generated_cv/\" + $json.cv_filename,\"cover_letter_file_path\":\"/cvdata/generated_cv/\" + $json.cover_filename,\"cv_download_url\":$json.cv_download_url,\"cover_download_url\":$json.cover_download_url} }}",
           "options": {}
         },
-        "id": "3015e437-0f44-486c-a982-75b00e03200a",
+        "id": "f40c46fb-7af3-4075-a1f0-96f5e97f1a0d",
         "name": "Respond Success",
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1,
         "position": [
-          496,
-          -192
+          2048,
+          -2400
         ]
       },
       {
@@ -1221,13 +1279,13 @@
           "model": "arcee-ai/trinity-large-preview:free",
           "options": {}
         },
-        "id": "7c123788-8212-4f76-bde7-9c8b823c691b",
+        "id": "dea969d7-ce85-487a-b376-3cd84d5fce85",
         "name": "OpenRouter Model - CV",
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
         "typeVersion": 1,
         "position": [
-          -704,
-          96
+          848,
+          -2112
         ],
         "credentials": {
           "openRouterApi": {
@@ -1241,13 +1299,13 @@
           "model": "arcee-ai/trinity-large-preview:free",
           "options": {}
         },
-        "id": "9e47697c-f3a7-4fef-a0eb-f82668c5bab5",
+        "id": "385ae80c-3187-4363-b25e-76e1b60553b1",
         "name": "OpenRouter Model - Review",
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
         "typeVersion": 1,
         "position": [
-          -448,
-          96
+          1104,
+          -2112
         ],
         "credentials": {
           "openRouterApi": {
@@ -1261,13 +1319,13 @@
           "model": "arcee-ai/trinity-large-preview:free",
           "options": {}
         },
-        "id": "3595d656-daf4-4bcc-aa99-35d70fe06354",
+        "id": "455df786-50dc-4d57-808c-0f31dddec7f6",
         "name": "OpenRouter Model - Cover",
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
         "typeVersion": 1,
         "position": [
-          -144,
-          96
+          1408,
+          -2112
         ],
         "credentials": {
           "openRouterApi": {
@@ -1278,16 +1336,16 @@
       },
       {
         "parameters": {
-          "model": "arcee-ai/trinity-mini:free",
+          "model": "arcee-ai/trinity-large-preview:free",
           "options": {}
         },
-        "id": "7acaf276-b5be-4e50-9810-2d20e824d82f",
+        "id": "6b116772-e06c-4509-8521-9b57258b5676",
         "name": "OpenRouter Model - Analyse",
         "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
         "typeVersion": 1,
         "position": [
-          -1184,
-          240
+          368,
+          -1968
         ],
         "credentials": {
           "openRouterApi": {
@@ -1300,26 +1358,26 @@
         "parameters": {
           "jsCode": "const html = $json.body || $json.data || $json || '';\nconst text = typeof html === 'string' ? html : '';\nlet posting = null;\n\n// 1) Try JSON-LD JobPosting\nconst regex = /<script[^>]*type=[\"']application\\/ld\\+json[\"'][^>]*>([\\s\\S]*?)<\\/script>/gi;\nlet match;\nwhile ((match = regex.exec(text)) !== null) {\n  const raw = match[1].trim();\n  try {\n    const obj = JSON.parse(raw);\n    if (obj['@type'] === 'JobPosting') { posting = obj; break; }\n  } catch (e) {}\n}\n\n// 2) Fallback: parse Next.js data\nlet description = posting?.description || '';\nif (!description) {\n  const nextMatch = text.match(/<script[^>]*id=[\"']__NEXT_DATA__[\"'][^>]*>([\\s\\S]*?)<\\/script>/i);\n  if (nextMatch) {\n    try {\n      const nextData = JSON.parse(nextMatch[1]);\n      description = nextData?.props?.pageProps?.consolidatedJobDetails?.jobDetails?.description || '';\n    } catch (e) {}\n  }\n}\n\nreturn [{ clean_job_description: description }];"
         },
-        "id": "648368f6-197c-4b78-9ba7-242ffde17dbc",
+        "id": "41ada01b-56ec-48e3-8fc2-592d07da611a",
         "name": "Parse JSON-LD",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -2704,
-          144
+          -1152,
+          -2064
         ]
       },
       {
         "parameters": {
           "jsCode": "const html = $json.clean_job_description || '';\nconst text = html\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/&nbsp;/g, ' ')\n  .replace(/&amp;/g, '&')\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>')\n  .replace(/\\s+/g, ' ')\n  .trim();\nreturn [{...$json, clean_job_description_plain: text}];"
         },
-        "id": "b69133aa-ccae-430a-b094-67acb69bba59",
+        "id": "8045c6d2-0614-48da-a02e-d96a380bc504",
         "name": "Prep JD",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -2112,
-          192
+          -560,
+          -2016
         ]
       },
       {
@@ -1328,13 +1386,13 @@
           "combinationMode": "mergeByPosition",
           "options": {}
         },
-        "id": "e9fd7297-eb8d-4f83-bbda-19c791a21954",
+        "id": "b5dcfd04-45a6-4112-9675-1bddfe03101e",
         "name": "Merge JD KB",
         "type": "n8n-nodes-base.merge",
         "typeVersion": 2.1,
         "position": [
-          -1456,
-          -160
+          96,
+          -2368
         ]
       },
       {
@@ -1343,14 +1401,48 @@
           "combinationMode": "mergeByPosition",
           "options": {}
         },
-        "id": "24d8b497-2221-46db-a077-c9a24faac9e5",
+        "id": "49704701-c74a-4c57-82e3-6b0b8cb07931",
         "name": "Merge Analysis KB",
         "type": "n8n-nodes-base.merge",
         "typeVersion": 2.1,
         "position": [
-          -784,
-          -128
+          768,
+          -2336
         ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=You are an elite CV strategist specialising in senior technical contractor roles (£600+/day market), particularly in investment banking and enterprise environments.\n\nYour task is to ENHANCE and REPOSITION the CV to maximise:\n- perceived seniority\n- commercial value\n- recruiter impact (first 5–10 seconds)\n- alignment with high-paying roles\n\n---\n\nCRITICAL RULES (STRICT — NO EXCEPTIONS):\n\n1. NO FABRICATION\n- DO NOT add new skills, technologies, certifications, or experience\n- ONLY rephrase, restructure, and elevate existing content\n\n---\n\n2. STRUCTURE PRESERVATION (MANDATORY)\n\nYou MUST preserve ALL existing sections exactly.\n\nThe CV MUST contain:\n- Name & Contact\n- Professional Summary\n- Key Achievements (MANDATORY SECTION - ensure metrics are highlighted)\n- Key Skills\n- Professional Experience\n- Education\n- Certifications\n- Availability\n\nMANDATORY RULE:\n- The \"Key Achievements\" section MUST be preserved\n- DO NOT remove, rename, or merge it into other sections\n- DO NOT change the order of sections\n\nIf the \"Key Achievements\" section is missing:\n→ RETURN THE ORIGINAL CV WITHOUT MODIFICATION\n\n---\n\n3. SENIOR POSITIONING\n\n- Position the candidate as a senior specialist Expert in large-scale high-risk environments (100–1200+ servers).\n- Replace weak phrases: \"responsible for\" → \"led\", \"delivered\", \"owned\", \"managed\"\n\n---\n\n4. IMPACT TRANSFORMATION (MANDATORY)\n\n- Convert ALL bullet points into impact-driven statements\n\nEach bullet MUST include at least ONE of:\n- scale (e.g. 100+ / 1200+ servers, multi-TB data storage/migrations)\n- OR environment (e.g. trading systems, 24x7 high availability production)\n- OR business outcome (e.g. improved resilience, reduced risk, operational efficiency)\n\n---\n\n5. PRIORITISATION (VERY IMPORTANT)\n\n- Ensure the \"Key Achievements\" section clearly showcases the candidate's most impressive metrics first.\n- Ensure the Professional Summary highlights years of experience and domain expertise (Banking / Trading).\n\n---\n\n6. KEY ACHIEVEMENTS OPTIMISATION\n\n- Strengthen wording of each achievement\n- Ensure:\n  - strong action verbs (Delivered, Led, Designed, Developed)\n  - clear impact or scale (e.g., 2.3TB, 1200+ servers, 50GB/day)\n- Keep each bullet concise (1–2 lines max)\n\n---\n\n7. KEY SKILLS OPTIMISATION\n\n- Group into clear categories.\n- Prioritise skills relevant to high-value roles.\n\n---\n\n8. REMOVE WEAKNESS\n\n- Remove redundancy and filler phrases.\n\n---\n\n9. QUALITY CONTROL (MANDATORY)\n\nBefore final output, ensure:\n- \"Key Achievements\" section EXISTS\n- No section is removed or renamed\n- All bullets are impact-driven\n- CV clearly shows seniority, domain, scale, and high-availability expertise.\n\n---\n\nOUTPUT RULES:\n- Return ONLY the enhanced CV in Markdown\n- No explanations\n- No code fences\n- No additional commentary\n\n---\n\nINPUT CV:\n{{ $json.text }}"
+        },
+        "id": "c435c5ad-5389-425c-88c5-a1cd7bf4a07e",
+        "name": "CV Enhance (DBA)",
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.6,
+        "position": [
+          1440,
+          -2528
+        ]
+      },
+      {
+        "parameters": {
+          "model": "arcee-ai/trinity-large-preview:free",
+          "options": {}
+        },
+        "id": "557a93f6-98fc-4bf1-9d09-37688a46a02f",
+        "name": "OpenRouter Model - CV Enhance",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1264,
+          -2112
+        ],
+        "credentials": {
+          "openRouterApi": {
+            "id": "LYXAooPqXDxnww2H",
+            "name": "OpenRouter account"
+          }
+        }
       }
     ],
     "connections": {
@@ -1587,7 +1679,7 @@
         "main": [
           [
             {
-              "node": "Generate Cover Letter",
+              "node": "CV Enhance (DBA)",
               "type": "main",
               "index": 0
             }
@@ -1691,16 +1783,38 @@
             }
           ]
         ]
+      },
+      "CV Enhance (DBA)": {
+        "main": [
+          [
+            {
+              "node": "Generate Cover Letter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Model - CV Enhance": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "CV Enhance (DBA)",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "4you donut",
-    "name": "Version 8a4d681c",
+    "name": "Version 50278bb1",
     "description": "",
     "autosaved": true
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-03-20T10:11:09.811Z",
+    "backed_up_at": "2026-03-21T02:00:51.118Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
