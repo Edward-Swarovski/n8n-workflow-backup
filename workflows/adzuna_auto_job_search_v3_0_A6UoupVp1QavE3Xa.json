@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-29T14:32:03.985Z",
+  "updatedAt": "2026-03-30T13:53:24.699Z",
   "createdAt": "2026-03-28T12:42:48.748Z",
   "id": "A6UoupVp1QavE3Xa",
   "name": "Adzuna_auto_job_search v3.0",
@@ -32,7 +32,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return {\n  min_salary_perm: 65000,\n  min_salary_contract: 70000,\n  results_per_page: 50\n};"
+        "jsCode": "return {\n  min_salary_perm: 60000,\n  min_salary_contract: 70000,\n  results_per_page: 50\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -92,7 +92,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=You are evaluating a job posting for a specific candidate. Your job is to reason about how well this role fits this person — not to do keyword matching.\n\nCANDIDATE PROFILE:\n- Senior Database Administrator, 25+ years hands-on experience.\n- Sectors: Finance and Healthcare (mission-critical, regulated environments).\n- Core expertise: Microsoft SQL Server (AlwaysOn, FCI, HA/DR, performance tuning, migrations), Sybase ASE / Adaptive Server Enterprise (replication, administration), MySQL (production replication & administration).\n- Preference: Hands-on production DBA work — provisioning, HA/DR, incident response, upgrades, on-call ownership. Not interested in application development, BI, reporting, or pure data engineering roles.\n- Seniority: Senior/Lead/Principal level. Junior, trainee, or associate-level roles are a poor fit.\n\nTECHNOLOGY NOTES (to aid your reasoning, not as hard rules):\n- \"Sybase\" in a job may refer to Sybase ASE (a strong match) OR Sybase IQ/SAP IQ (a columnar analytics DB — very different product the candidate is not experienced in). Read the JD carefully to determine which product is actually required.\n- A role focused on a single platform from the core stack (SQL Server only, Sybase ASE only, or MySQL only) is a STRONG match — the candidate is an expert in each platform individually. Do NOT penalise for lack of breadth. The role only needs to use one of these platforms to be a strong fit.\n- Do NOT treat the candidate's multi-platform background as a mismatch for a single-platform role. A pure Sybase ASE DBA role is ideal for someone with expert-level Sybase ASE experience, regardless of what else they know.\n- Transferable skills matter: a candidate with deep SQL Server HA/DR experience can adapt to similar operational patterns on related platforms.\n\nYOUR EVALUATION TASK:\nRead the full job description and reason about:\n1. What does this role actually require day-to-day?\n2. How much of that overlaps with the candidate's expertise and preferences?\n3. Are there gaps? How significant are they — dealbreakers, or learnable?\n4. Does the seniority level and work style match?\n5. Would this candidate be competitive and genuinely interested?\n\nIMPORTANT: A role requiring only ONE of the candidate's core platforms (e.g. pure Sybase ASE, pure SQL Server, pure MySQL) is a high-scoring match — not a partial match. Only score lower if the role requires technologies outside the candidate's stack, or if the work type (e.g. development, BI) does not match their preference.\n\nBased on your reasoning, produce:\n- score: 0–100 representing overall fit (technical match + seniority + work style). Ignore compensation entirely.\n- recommendation: APPLY (strong fit, worth pursuing), MAYBE (partial fit, worth considering), or SKIP (poor fit or clear mismatch).\n- role_type: one of DBA_ADMIN, DBA_ENGINEER, DATA_ENGINEER, DEVOPS, MANAGEMENT, NOT_DBA.\n- reason: 1–2 sentences explaining the key factors behind your score and recommendation.\n\nOUTPUT FORMAT (strict — return only valid JSON, no markdown, no extra text):\n{\n  \"score\": 85,\n  \"role_type\": \"DBA_ADMIN\",\n  \"recommendation\": \"APPLY\",\n  \"reason\": \"Hands-on SQL Server HA/DR and production ownership aligns closely with candidate's background; seniority level matches.\"\n}\n\nJOB DATA:\n{{ $json.llm_input }}\n",
+        "text": "=You are evaluating a job posting for a specific candidate. Your job is to reason about how well this role fits this person — not to do keyword matching.\n\nCANDIDATE PROFILE:\n- Senior Database Platform Engineer, 25+ years hands-on experience.\n- Sectors: Investment banking (Nomura, 2023–2025) and Healthcare (Hospital Authority HK, 2002–2022) — mission-critical, regulated, 24x7 production environments.\n- Core database expertise:\n  - Microsoft SQL Server (Always On AG, patching, performance tuning, migrations — up to 1TB workloads, ~150 servers)\n  - Sybase ASE / Adaptive Server Enterprise (HA architecture, Replication Server, multi-site availability — ~100 servers at Nomura)\n  - MySQL (GTID-based replication, critical patching, production administration)\n  - MongoDB (sharded clusters, replica sets, Ops Manager, Community→Enterprise upgrades, ~3TB EHR platform; MongoDB Certified DBA Associate)\n- Secondary/supporting skills: Elasticsearch/ELK Stack (9-node cluster, ~50GB/day log ingestion), Oracle Database\n- DevOps & automation: Terraform (IaC), Git-driven CI/CD pipelines, Ansible/Ansible Tower, Bash scripting, PowerShell, Broadcom Autosys\n- Scale: delivered across environments of 100–1200+ database servers; multi-terabyte migrations\n- Preference: Hands-on production DBA work — provisioning, HA/DR, incident response, upgrades, performance tuning, on-call ownership. Not interested in application development, BI, reporting, or pure data engineering roles.\n- Seniority: Senior/Lead/Principal level. Junior, trainee, or associate-level roles are a poor fit.\n\nTECHNOLOGY NOTES (to aid your reasoning, not as hard rules):\n- \"SQL Server\", \"MSSQL\", \"MS SQL\", \"Microsoft SQL Server\", and \"SQL Server 20xx\" (e.g. SQL Server 2019) all refer to the same product — treat them as identical when assessing fit.\n- \"Sybase ASE\", \"SAP ASE\", \"SAP Adaptive Server Enterprise\", \"Adaptive Server Enterprise\", \"ASE 15.x\", and \"ASE 16.x\" all refer to the same product — treat them as identical when assessing fit.\n- \"Sybase\" alone in a job may refer to Sybase ASE (a strong match) OR Sybase IQ/SAP IQ (a columnar analytics DB — very different product the candidate is not experienced in). Read the JD carefully to determine which product is actually required.\n- A role focused on a single platform from the core stack (SQL Server, Sybase ASE, MySQL, or MongoDB) is a STRONG match — the candidate is an expert in each platform individually. Do NOT penalise for lack of breadth. The role only needs to use one of these platforms to be a strong fit.\n- Do NOT treat the candidate's multi-platform background as a mismatch for a single-platform role. A pure MongoDB DBA role, a pure Sybase ASE role, or a pure SQL Server role are all individually strong fits.\n- MongoDB roles: the candidate holds a MongoDB Certified DBA Associate credential and has delivered a 3TB production sharded cluster. Score MongoDB DBA/admin roles highly.\n- DevOps-adjacent DBA roles (e.g. Database Reliability Engineer, Database Platform Engineer) that combine production DBA ownership with IaC/automation are a strong fit given the candidate's Terraform and CI/CD experience. Do not score these lower simply because they mention DevOps tooling.\n- Transferable skills matter: a candidate with deep SQL Server HA/DR experience can adapt to similar operational patterns on related platforms.\n\nYOUR EVALUATION TASK:\nRead the full job description and reason about:\n1. What does this role actually require day-to-day?\n2. How much of that overlaps with the candidate's expertise and preferences?\n3. Are there gaps? How significant are they — dealbreakers, or learnable?\n4. Does the seniority level and work style match?\n5. Would this candidate be competitive and genuinely interested?\n\nIMPORTANT SCORING GUIDANCE:\n- A role requiring only ONE of the candidate's core platforms (SQL Server, Sybase ASE, MySQL, or MongoDB) is a high-scoring match — not a partial match. Only score lower if the role requires technologies outside the candidate's stack, or if the work type (e.g. development, BI) does not match their preference.\n- Database Platform Engineer / Database Reliability Engineer titles: score as DBA_ENGINEER. These are strong fits if they involve production ownership, HA/DR, and automation — which aligns with the candidate's most recent role title and experience.\n- Roles requiring primarily Oracle, PostgreSQL, Cassandra, or cloud-native managed DB services (RDS, Azure SQL, etc.) are outside the core stack. Score as MAYBE only if SQL Server or another core platform is also required; otherwise SKIP.\n- Elasticsearch/ELK roles: candidate has operational experience managing a large-scale ELK cluster, but this is not a primary interest. Score as MAYBE at best unless it is combined with DBA work.\n\nBased on your reasoning, produce:\n- score: 0–100 representing overall fit (technical match + seniority + work style). Ignore compensation entirely.\n- recommendation: APPLY (strong fit, worth pursuing), MAYBE (partial fit, worth considering), or SKIP (poor fit or clear mismatch).\n- role_type: one of DBA_ADMIN, DBA_ENGINEER, DATA_ENGINEER, DEVOPS, MANAGEMENT, NOT_DBA.\n- reason: 1–2 sentences explaining the key factors behind your score and recommendation.\n\nOUTPUT FORMAT (strict — return only valid JSON, no markdown, no extra text):\n{\n  \"score\": 85,\n  \"role_type\": \"DBA_ADMIN\",\n  \"recommendation\": \"APPLY\",\n  \"reason\": \"Hands-on SQL Server HA/DR and production ownership aligns closely with candidate's background; seniority level matches.\"\n}\n\nJOB DATA:\n{{ $json.llm_input }}\n",
         "messages": {
           "messageValues": [
             {
@@ -962,8 +962,8 @@
       }
     ]
   },
-  "versionId": "9756f328-bdac-4102-ac4e-b72e32946fa5",
-  "activeVersionId": "4a4366d8-44c5-4365-9fe5-754abd846d93",
+  "versionId": "bdcc15eb-96a5-4880-a952-fea238dcd556",
+  "activeVersionId": "bdcc15eb-96a5-4880-a952-fea238dcd556",
   "triggerCount": 1,
   "shared": [
     {
@@ -975,9 +975,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-03-28T17:04:50.000Z",
-    "createdAt": "2026-03-28T17:04:32.753Z",
-    "versionId": "4a4366d8-44c5-4365-9fe5-754abd846d93",
+    "updatedAt": "2026-03-30T13:53:38.000Z",
+    "createdAt": "2026-03-30T13:53:24.700Z",
+    "versionId": "bdcc15eb-96a5-4880-a952-fea238dcd556",
     "workflowId": "A6UoupVp1QavE3Xa",
     "nodes": [
       {
@@ -1006,7 +1006,7 @@
       },
       {
         "parameters": {
-          "jsCode": "return {\n  min_salary_perm: 65000,\n  min_salary_contract: 70000,\n  results_per_page: 50\n};"
+          "jsCode": "return {\n  min_salary_perm: 60000,\n  min_salary_contract: 70000,\n  results_per_page: 50\n};"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -1066,7 +1066,7 @@
       {
         "parameters": {
           "promptType": "define",
-          "text": "=You are evaluating a job posting for a specific candidate. Your job is to reason about how well this role fits this person — not to do keyword matching.\n\nCANDIDATE PROFILE:\n- Senior Database Administrator, 25+ years hands-on experience.\n- Sectors: Finance and Healthcare (mission-critical, regulated environments).\n- Core expertise: Microsoft SQL Server (AlwaysOn, FCI, HA/DR, performance tuning, migrations), Sybase ASE / Adaptive Server Enterprise (replication, administration), MySQL (production replication & administration).\n- Preference: Hands-on production DBA work — provisioning, HA/DR, incident response, upgrades, on-call ownership. Not interested in application development, BI, reporting, or pure data engineering roles.\n- Seniority: Senior/Lead/Principal level. Junior, trainee, or associate-level roles are a poor fit.\n\nTECHNOLOGY NOTES (to aid your reasoning, not as hard rules):\n- \"Sybase\" in a job may refer to Sybase ASE (a strong match) OR Sybase IQ/SAP IQ (a columnar analytics DB — very different product the candidate is not experienced in). Read the JD carefully to determine which product is actually required.\n- A role focused on a single platform from the core stack (SQL Server only, Sybase ASE only, or MySQL only) is a STRONG match — the candidate is an expert in each platform individually. Do NOT penalise for lack of breadth. The role only needs to use one of these platforms to be a strong fit.\n- Do NOT treat the candidate's multi-platform background as a mismatch for a single-platform role. A pure Sybase ASE DBA role is ideal for someone with expert-level Sybase ASE experience, regardless of what else they know.\n- Transferable skills matter: a candidate with deep SQL Server HA/DR experience can adapt to similar operational patterns on related platforms.\n\nYOUR EVALUATION TASK:\nRead the full job description and reason about:\n1. What does this role actually require day-to-day?\n2. How much of that overlaps with the candidate's expertise and preferences?\n3. Are there gaps? How significant are they — dealbreakers, or learnable?\n4. Does the seniority level and work style match?\n5. Would this candidate be competitive and genuinely interested?\n\nIMPORTANT: A role requiring only ONE of the candidate's core platforms (e.g. pure Sybase ASE, pure SQL Server, pure MySQL) is a high-scoring match — not a partial match. Only score lower if the role requires technologies outside the candidate's stack, or if the work type (e.g. development, BI) does not match their preference.\n\nBased on your reasoning, produce:\n- score: 0–100 representing overall fit (technical match + seniority + work style). Ignore compensation entirely.\n- recommendation: APPLY (strong fit, worth pursuing), MAYBE (partial fit, worth considering), or SKIP (poor fit or clear mismatch).\n- role_type: one of DBA_ADMIN, DBA_ENGINEER, DATA_ENGINEER, DEVOPS, MANAGEMENT, NOT_DBA.\n- reason: 1–2 sentences explaining the key factors behind your score and recommendation.\n\nOUTPUT FORMAT (strict — return only valid JSON, no markdown, no extra text):\n{\n  \"score\": 85,\n  \"role_type\": \"DBA_ADMIN\",\n  \"recommendation\": \"APPLY\",\n  \"reason\": \"Hands-on SQL Server HA/DR and production ownership aligns closely with candidate's background; seniority level matches.\"\n}\n\nJOB DATA:\n{{ $json.llm_input }}\n",
+          "text": "=You are evaluating a job posting for a specific candidate. Your job is to reason about how well this role fits this person — not to do keyword matching.\n\nCANDIDATE PROFILE:\n- Senior Database Platform Engineer, 25+ years hands-on experience.\n- Sectors: Investment banking (Nomura, 2023–2025) and Healthcare (Hospital Authority HK, 2002–2022) — mission-critical, regulated, 24x7 production environments.\n- Core database expertise:\n  - Microsoft SQL Server (Always On AG, patching, performance tuning, migrations — up to 1TB workloads, ~150 servers)\n  - Sybase ASE / Adaptive Server Enterprise (HA architecture, Replication Server, multi-site availability — ~100 servers at Nomura)\n  - MySQL (GTID-based replication, critical patching, production administration)\n  - MongoDB (sharded clusters, replica sets, Ops Manager, Community→Enterprise upgrades, ~3TB EHR platform; MongoDB Certified DBA Associate)\n- Secondary/supporting skills: Elasticsearch/ELK Stack (9-node cluster, ~50GB/day log ingestion), Oracle Database\n- DevOps & automation: Terraform (IaC), Git-driven CI/CD pipelines, Ansible/Ansible Tower, Bash scripting, PowerShell, Broadcom Autosys\n- Scale: delivered across environments of 100–1200+ database servers; multi-terabyte migrations\n- Preference: Hands-on production DBA work — provisioning, HA/DR, incident response, upgrades, performance tuning, on-call ownership. Not interested in application development, BI, reporting, or pure data engineering roles.\n- Seniority: Senior/Lead/Principal level. Junior, trainee, or associate-level roles are a poor fit.\n\nTECHNOLOGY NOTES (to aid your reasoning, not as hard rules):\n- \"SQL Server\", \"MSSQL\", \"MS SQL\", \"Microsoft SQL Server\", and \"SQL Server 20xx\" (e.g. SQL Server 2019) all refer to the same product — treat them as identical when assessing fit.\n- \"Sybase ASE\", \"SAP ASE\", \"SAP Adaptive Server Enterprise\", \"Adaptive Server Enterprise\", \"ASE 15.x\", and \"ASE 16.x\" all refer to the same product — treat them as identical when assessing fit.\n- \"Sybase\" alone in a job may refer to Sybase ASE (a strong match) OR Sybase IQ/SAP IQ (a columnar analytics DB — very different product the candidate is not experienced in). Read the JD carefully to determine which product is actually required.\n- A role focused on a single platform from the core stack (SQL Server, Sybase ASE, MySQL, or MongoDB) is a STRONG match — the candidate is an expert in each platform individually. Do NOT penalise for lack of breadth. The role only needs to use one of these platforms to be a strong fit.\n- Do NOT treat the candidate's multi-platform background as a mismatch for a single-platform role. A pure MongoDB DBA role, a pure Sybase ASE role, or a pure SQL Server role are all individually strong fits.\n- MongoDB roles: the candidate holds a MongoDB Certified DBA Associate credential and has delivered a 3TB production sharded cluster. Score MongoDB DBA/admin roles highly.\n- DevOps-adjacent DBA roles (e.g. Database Reliability Engineer, Database Platform Engineer) that combine production DBA ownership with IaC/automation are a strong fit given the candidate's Terraform and CI/CD experience. Do not score these lower simply because they mention DevOps tooling.\n- Transferable skills matter: a candidate with deep SQL Server HA/DR experience can adapt to similar operational patterns on related platforms.\n\nYOUR EVALUATION TASK:\nRead the full job description and reason about:\n1. What does this role actually require day-to-day?\n2. How much of that overlaps with the candidate's expertise and preferences?\n3. Are there gaps? How significant are they — dealbreakers, or learnable?\n4. Does the seniority level and work style match?\n5. Would this candidate be competitive and genuinely interested?\n\nIMPORTANT SCORING GUIDANCE:\n- A role requiring only ONE of the candidate's core platforms (SQL Server, Sybase ASE, MySQL, or MongoDB) is a high-scoring match — not a partial match. Only score lower if the role requires technologies outside the candidate's stack, or if the work type (e.g. development, BI) does not match their preference.\n- Database Platform Engineer / Database Reliability Engineer titles: score as DBA_ENGINEER. These are strong fits if they involve production ownership, HA/DR, and automation — which aligns with the candidate's most recent role title and experience.\n- Roles requiring primarily Oracle, PostgreSQL, Cassandra, or cloud-native managed DB services (RDS, Azure SQL, etc.) are outside the core stack. Score as MAYBE only if SQL Server or another core platform is also required; otherwise SKIP.\n- Elasticsearch/ELK roles: candidate has operational experience managing a large-scale ELK cluster, but this is not a primary interest. Score as MAYBE at best unless it is combined with DBA work.\n\nBased on your reasoning, produce:\n- score: 0–100 representing overall fit (technical match + seniority + work style). Ignore compensation entirely.\n- recommendation: APPLY (strong fit, worth pursuing), MAYBE (partial fit, worth considering), or SKIP (poor fit or clear mismatch).\n- role_type: one of DBA_ADMIN, DBA_ENGINEER, DATA_ENGINEER, DEVOPS, MANAGEMENT, NOT_DBA.\n- reason: 1–2 sentences explaining the key factors behind your score and recommendation.\n\nOUTPUT FORMAT (strict — return only valid JSON, no markdown, no extra text):\n{\n  \"score\": 85,\n  \"role_type\": \"DBA_ADMIN\",\n  \"recommendation\": \"APPLY\",\n  \"reason\": \"Hands-on SQL Server HA/DR and production ownership aligns closely with candidate's background; seniority level matches.\"\n}\n\nJOB DATA:\n{{ $json.llm_input }}\n",
           "messages": {
             "messageValues": [
               {
@@ -1094,8 +1094,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          18080,
-          2528
+          17904,
+          2208
         ],
         "id": "fdba19d9-5f82-43fd-90d6-c3213de2173c",
         "name": "Parse LLM Result"
@@ -1157,8 +1157,8 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.2,
         "position": [
-          19088,
-          2512
+          18864,
+          2640
         ],
         "id": "ca751bfc-b8ea-49c5-89b8-8ca86d224566",
         "name": "Send Job to GMAIL",
@@ -1178,8 +1178,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          18944,
-          2512
+          18688,
+          2624
         ],
         "id": "f30074b7-60d5-4682-b1d7-efec8aa974ec",
         "name": "Prepare Gmail HTTP Format"
@@ -1392,8 +1392,8 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          18480,
-          2528
+          18240,
+          2496
         ],
         "id": "dc5308cb-8db7-4557-bc14-3ed2b0c63a8a",
         "name": "Job Descripton Filter"
@@ -1426,8 +1426,8 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          18720,
-          2528
+          18464,
+          2560
         ],
         "id": "9daff5c7-d747-4149-ba92-91a99872aa45",
         "name": "Meet Salary Filter?"
@@ -1571,8 +1571,8 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          18272,
-          2528
+          18080,
+          2336
         ],
         "id": "8f9f4a14-9285-4fa0-9bc5-991d62d10658",
         "name": "Record Seen Jobs",
@@ -1905,13 +1905,13 @@
       }
     },
     "authors": "4you donut",
-    "name": "Version 4a4366d8",
+    "name": "Version bdcc15eb",
     "description": "",
     "autosaved": true
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-03-30T01:00:51.186Z",
+    "backed_up_at": "2026-03-31T01:00:51.109Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
