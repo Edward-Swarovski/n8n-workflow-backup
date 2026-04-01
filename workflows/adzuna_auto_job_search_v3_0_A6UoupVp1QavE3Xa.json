@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-30T13:53:24.699Z",
+  "updatedAt": "2026-03-31T15:19:34.902Z",
   "createdAt": "2026-03-28T12:42:48.748Z",
   "id": "A6UoupVp1QavE3Xa",
   "name": "Adzuna_auto_job_search v3.0",
@@ -32,7 +32,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return {\n  min_salary_perm: 60000,\n  min_salary_contract: 70000,\n  results_per_page: 50\n};"
+        "jsCode": "return {\n  min_salary_perm: 50000,\n  min_salary_contract: 60000,\n  results_per_page: 50\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -932,7 +932,11 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
   "staticData": {
     "node:Schedule Trigger": {
@@ -962,7 +966,7 @@
       }
     ]
   },
-  "versionId": "bdcc15eb-96a5-4880-a952-fea238dcd556",
+  "versionId": "742367ea-b899-47ec-9ac3-b02fe8aef446",
   "activeVersionId": "bdcc15eb-96a5-4880-a952-fea238dcd556",
   "triggerCount": 1,
   "shared": [
@@ -1911,7 +1915,7 @@
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-03-31T01:00:51.109Z",
+    "backed_up_at": "2026-04-01T01:00:51.155Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
