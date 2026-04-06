@@ -3,7 +3,7 @@
   "createdAt": "2026-02-12T15:28:53.056Z",
   "id": "Io7mDtzv00cIryr0",
   "name": "Capture Energy Standing Charge Rate v2",
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -98,7 +98,7 @@
   "meta": null,
   "pinData": {},
   "versionId": "c2b2dd66-9de9-4ce5-bf0f-b9ad70e398c5",
-  "activeVersionId": "c2b2dd66-9de9-4ce5-bf0f-b9ad70e398c5",
+  "activeVersionId": null,
   "triggerCount": 1,
   "shared": [
     {
@@ -109,97 +109,7 @@
       "projectId": "PorrnAHK6jPReB5P"
     }
   ],
-  "activeVersion": {
-    "updatedAt": "2026-03-19T15:20:05.000Z",
-    "createdAt": "2026-03-19T15:16:25.742Z",
-    "versionId": "c2b2dd66-9de9-4ce5-bf0f-b9ad70e398c5",
-    "workflowId": "Io7mDtzv00cIryr0",
-    "nodes": [
-      {
-        "parameters": {
-          "rule": {
-            "interval": [
-              {
-                "triggerAtHour": 16
-              }
-            ]
-          }
-        },
-        "type": "n8n-nodes-base.scheduleTrigger",
-        "typeVersion": 1.2,
-        "position": [
-          -448,
-          -128
-        ],
-        "id": "dc4eb457-7eee-499e-863d-818b01346f6c",
-        "name": "Daily 4:00pm"
-      },
-      {
-        "parameters": {
-          "authentication": "privateKey",
-          "command": "source .venv/bin/activate && python collectors/electricity_standing_charge_save_to_mongo.py",
-          "cwd": "/home/uroot/python_project/octopus_energy_linux"
-        },
-        "type": "n8n-nodes-base.ssh",
-        "typeVersion": 1,
-        "position": [
-          16,
-          -112
-        ],
-        "id": "4d2a09b8-4ed9-48cf-b52c-da1979b15811",
-        "name": "Save Electricity Standing Charge to Mongo",
-        "credentials": {
-          "sshPrivateKey": {
-            "id": "CPlKuA0owWNSPR1X",
-            "name": "ubunto07 SSH Private Key"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "authentication": "privateKey",
-          "command": "source .venv/bin/activate && python collectors/gas_standing_charge_save_to_mongo.py",
-          "cwd": "/home/uroot/python_project/octopus_energy_linux"
-        },
-        "type": "n8n-nodes-base.ssh",
-        "typeVersion": 1,
-        "position": [
-          32,
-          112
-        ],
-        "id": "e4bfb6cb-6227-41e5-8c7d-0b8528fc6a1c",
-        "name": "Save Gas Standing Charge to Mongo",
-        "credentials": {
-          "sshPrivateKey": {
-            "id": "CPlKuA0owWNSPR1X",
-            "name": "ubunto07 SSH Private Key"
-          }
-        }
-      }
-    ],
-    "connections": {
-      "Daily 4:00pm": {
-        "main": [
-          [
-            {
-              "node": "Save Electricity Standing Charge to Mongo",
-              "type": "main",
-              "index": 0
-            },
-            {
-              "node": "Save Gas Standing Charge to Mongo",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      }
-    },
-    "authors": "import",
-    "name": "Version c2b2dd66",
-    "description": "",
-    "autosaved": false
-  },
+  "activeVersion": null,
   "tags": [
     {
       "updatedAt": "2025-08-03T16:03:15.985Z",
@@ -209,9 +119,9 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-03-19T15:45:16.812Z",
+    "backed_up_at": "2026-04-06T01:00:23.139Z",
     "source": "n8n",
     "backup_type": "workflow",
-    "status": "published"
+    "status": "unpublished"
   }
 }
