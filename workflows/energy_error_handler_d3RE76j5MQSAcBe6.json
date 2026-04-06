@@ -1,0 +1,151 @@
+{
+  "updatedAt": "2026-04-05T15:28:31.130Z",
+  "createdAt": "2026-04-05T15:13:59.829Z",
+  "id": "d3RE76j5MQSAcBe6",
+  "name": "Energy Error Handler",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b2bdfed2-b08d-4fa6-9870-13d29694fd38",
+      "name": "On Workflow Error"
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "=[ALERT] n8n Workflow Error: {{ $json.workflow.name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        288,
+        0
+      ],
+      "id": "7a221c4f-ceec-4fd7-ba62-abc830ffea1b",
+      "name": "Send Error Alert Email",
+      "webhookId": "79551417-efda-4c6e-b2d3-db54cff80878",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On Workflow Error": {
+      "main": [
+        [
+          {
+            "node": "Send Error Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "fcc6e790-3cfc-41be-b7f9-af0e9fc5ad84",
+  "activeVersionId": "fcc6e790-3cfc-41be-b7f9-af0e9fc5ad84",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-05T15:13:59.836Z",
+      "createdAt": "2026-04-05T15:13:59.836Z",
+      "role": "workflow:owner",
+      "workflowId": "d3RE76j5MQSAcBe6",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-05T15:29:45.000Z",
+    "createdAt": "2026-04-05T15:28:31.131Z",
+    "versionId": "fcc6e790-3cfc-41be-b7f9-af0e9fc5ad84",
+    "workflowId": "d3RE76j5MQSAcBe6",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "b2bdfed2-b08d-4fa6-9870-13d29694fd38",
+        "name": "On Workflow Error"
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "=[ALERT] n8n Workflow Error: {{ $json.workflow.name }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          288,
+          0
+        ],
+        "id": "7a221c4f-ceec-4fd7-ba62-abc830ffea1b",
+        "name": "Send Error Alert Email",
+        "webhookId": "79551417-efda-4c6e-b2d3-db54cff80878",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "SMTP account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "On Workflow Error": {
+        "main": [
+          [
+            {
+              "node": "Send Error Alert Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version fcc6e790",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-06T01:00:23.139Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
