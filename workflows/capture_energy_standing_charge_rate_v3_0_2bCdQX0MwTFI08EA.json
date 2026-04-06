@@ -1,0 +1,627 @@
+{
+  "updatedAt": "2026-04-05T15:35:08.452Z",
+  "createdAt": "2026-04-05T15:34:45.459Z",
+  "id": "2bCdQX0MwTFI08EA",
+  "name": "Capture Energy Standing Charge Rate v3.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 16
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        112
+      ],
+      "id": "cda781fb-ff09-4130-9d86-bc93787a0e08",
+      "name": "Daily 4:00pm"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/electricity_standing_charge_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2ddce415-4556-4ea8-856b-e61993cdd913",
+      "name": "Save Electricity Standing Charge to Mongo",
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/gas_standing_charge_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ],
+      "id": "bc933df1-64d7-49f4-9e7a-84d5a078127a",
+      "name": "Save Gas Standing Charge to Mongo",
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'standing_charge' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "187a9b92-99d1-47a6-841c-1b454f49fa72",
+      "name": "Check Elec Standing Output"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'standing_charge' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        240
+      ],
+      "id": "71c313a6-ffec-44ef-88c7-fcfb87312513",
+      "name": "Check Gas Standing Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        528,
+        0
+      ],
+      "id": "10693bd7-11fe-4f9d-9c76-af61e058589e",
+      "name": "Elec Standing Error?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        528,
+        240
+      ],
+      "id": "712e4b02-777f-477a-9cec-4af1c5e30655",
+      "name": "Gas Standing Error?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "[ALERT] Electricity Standing Charge Collector Failed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        784,
+        64
+      ],
+      "id": "10e1c24e-79bc-4892-8253-d3b00ccb816c",
+      "name": "Alert: Elec Standing Charge Failed",
+      "webhookId": "965bc9c4-216b-4004-8d21-a085223f47f0",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "[ALERT] Gas Standing Charge Collector Failed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        784,
+        304
+      ],
+      "id": "f31009db-f73e-4fad-816d-474c37f38ec6",
+      "name": "Alert: Gas Standing Charge Failed",
+      "webhookId": "70d3707e-f36c-45a2-a660-5b49a775b352",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 4:00pm": {
+      "main": [
+        [
+          {
+            "node": "Save Electricity Standing Charge to Mongo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Gas Standing Charge to Mongo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Electricity Standing Charge to Mongo": {
+      "main": [
+        [
+          {
+            "node": "Check Elec Standing Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Gas Standing Charge to Mongo": {
+      "main": [
+        [
+          {
+            "node": "Check Gas Standing Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Elec Standing Output": {
+      "main": [
+        [
+          {
+            "node": "Elec Standing Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Gas Standing Output": {
+      "main": [
+        [
+          {
+            "node": "Gas Standing Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Elec Standing Error?": {
+      "main": [
+        [
+          {
+            "node": "Alert: Elec Standing Charge Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gas Standing Error?": {
+      "main": [
+        [
+          {
+            "node": "Alert: Gas Standing Charge Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "d3RE76j5MQSAcBe6",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Daily 4:00pm": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7c092f39-d83a-4c8f-b4d2-b5eafb843d96",
+  "activeVersionId": "7c092f39-d83a-4c8f-b4d2-b5eafb843d96",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-05T15:34:45.463Z",
+      "createdAt": "2026-04-05T15:34:45.463Z",
+      "role": "workflow:owner",
+      "workflowId": "2bCdQX0MwTFI08EA",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-05T15:36:30.000Z",
+    "createdAt": "2026-04-05T15:35:08.453Z",
+    "versionId": "7c092f39-d83a-4c8f-b4d2-b5eafb843d96",
+    "workflowId": "2bCdQX0MwTFI08EA",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 16
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -304,
+          112
+        ],
+        "id": "cda781fb-ff09-4130-9d86-bc93787a0e08",
+        "name": "Daily 4:00pm"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/electricity_standing_charge_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "2ddce415-4556-4ea8-856b-e61993cdd913",
+        "name": "Save Electricity Standing Charge to Mongo",
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/gas_standing_charge_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          0,
+          240
+        ],
+        "id": "bc933df1-64d7-49f4-9e7a-84d5a078127a",
+        "name": "Save Gas Standing Charge to Mongo",
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'standing_charge' } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          272,
+          0
+        ],
+        "id": "187a9b92-99d1-47a6-841c-1b454f49fa72",
+        "name": "Check Elec Standing Output"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'standing_charge' } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          272,
+          240
+        ],
+        "id": "71c313a6-ffec-44ef-88c7-fcfb87312513",
+        "name": "Check Gas Standing Output"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.hasError }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          528,
+          0
+        ],
+        "id": "10693bd7-11fe-4f9d-9c76-af61e058589e",
+        "name": "Elec Standing Error?"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.hasError }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          528,
+          240
+        ],
+        "id": "712e4b02-777f-477a-9cec-4af1c5e30655",
+        "name": "Gas Standing Error?"
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "[ALERT] Electricity Standing Charge Collector Failed",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          784,
+          64
+        ],
+        "id": "10e1c24e-79bc-4892-8253-d3b00ccb816c",
+        "name": "Alert: Elec Standing Charge Failed",
+        "webhookId": "965bc9c4-216b-4004-8d21-a085223f47f0",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "[ALERT] Gas Standing Charge Collector Failed",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          784,
+          304
+        ],
+        "id": "f31009db-f73e-4fad-816d-474c37f38ec6",
+        "name": "Alert: Gas Standing Charge Failed",
+        "webhookId": "70d3707e-f36c-45a2-a660-5b49a775b352",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Daily 4:00pm": {
+        "main": [
+          [
+            {
+              "node": "Save Electricity Standing Charge to Mongo",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Save Gas Standing Charge to Mongo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Electricity Standing Charge to Mongo": {
+        "main": [
+          [
+            {
+              "node": "Check Elec Standing Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Gas Standing Charge to Mongo": {
+        "main": [
+          [
+            {
+              "node": "Check Gas Standing Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Elec Standing Output": {
+        "main": [
+          [
+            {
+              "node": "Elec Standing Error?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Gas Standing Output": {
+        "main": [
+          [
+            {
+              "node": "Gas Standing Error?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Elec Standing Error?": {
+        "main": [
+          [
+            {
+              "node": "Alert: Elec Standing Charge Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gas Standing Error?": {
+        "main": [
+          [
+            {
+              "node": "Alert: Gas Standing Charge Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 7c092f39",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-06T01:00:23.139Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
