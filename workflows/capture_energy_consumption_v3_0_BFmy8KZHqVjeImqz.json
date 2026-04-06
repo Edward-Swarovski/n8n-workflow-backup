@@ -1,0 +1,630 @@
+{
+  "updatedAt": "2026-04-05T15:33:43.080Z",
+  "createdAt": "2025-08-02T21:57:54.212Z",
+  "id": "BFmy8KZHqVjeImqz",
+  "name": "Capture Energy Consumption v3.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1616,
+        -48
+      ],
+      "id": "51e345b4-871c-40e0-86de-1bf956adf26c",
+      "name": "Every 30min"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/electricity_consumption_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        -160
+      ],
+      "id": "7be9f056-1c1d-4afa-b899-26be6aa277b4",
+      "name": "Save Electricity Consumption to Mongo",
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/gas_consumption_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        80
+      ],
+      "id": "0fd3fc93-cff0-4f09-8512-71506f99183e",
+      "name": "Save Gas Consumption to Mongo",
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'electricity_consumption' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        -160
+      ],
+      "id": "05e0f89c-9cb5-436b-9d2d-16aae4e33afc",
+      "name": "Check Elec Output"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'gas_consumption' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        80
+      ],
+      "id": "782098f8-0e92-4021-82d6-b8f7539130b3",
+      "name": "Check Gas Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        -160
+      ],
+      "id": "a90c2ea8-3319-43f9-9dd5-2c0f9dc274ea",
+      "name": "Elec Error?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        80
+      ],
+      "id": "2e3d34ca-c010-4463-88ec-9091dac13140",
+      "name": "Gas Error?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "[ALERT] Electricity Consumption Collector Failed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        -96
+      ],
+      "id": "193765b5-d4f5-4a39-afe4-73fde026f212",
+      "name": "Alert: Elec Consumption Failed",
+      "webhookId": "636cdeae-445e-49b7-88fb-21c314669b3e",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "[ALERT] Gas Consumption Collector Failed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        144
+      ],
+      "id": "13d56dc6-c2bf-40bc-b636-3b432eefd3b3",
+      "name": "Alert: Gas Consumption Failed",
+      "webhookId": "b31b481a-2d58-40b8-af99-0c7b70c9015b",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 30min": {
+      "main": [
+        [
+          {
+            "node": "Save Electricity Consumption to Mongo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Gas Consumption to Mongo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Electricity Consumption to Mongo": {
+      "main": [
+        [
+          {
+            "node": "Check Elec Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Gas Consumption to Mongo": {
+      "main": [
+        [
+          {
+            "node": "Check Gas Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Elec Output": {
+      "main": [
+        [
+          {
+            "node": "Elec Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Gas Output": {
+      "main": [
+        [
+          {
+            "node": "Gas Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Elec Error?": {
+      "main": [
+        [
+          {
+            "node": "Alert: Elec Consumption Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gas Error?": {
+      "main": [
+        [
+          {
+            "node": "Alert: Gas Consumption Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "d3RE76j5MQSAcBe6",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Every 30min": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ea03632f-e170-40d9-bdb6-ae5dcabbde23",
+  "activeVersionId": "ea03632f-e170-40d9-bdb6-ae5dcabbde23",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-19T15:16:25.622Z",
+      "createdAt": "2026-03-19T15:16:25.622Z",
+      "role": "workflow:owner",
+      "workflowId": "BFmy8KZHqVjeImqz",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-05T15:33:59.000Z",
+    "createdAt": "2026-04-05T15:33:43.081Z",
+    "versionId": "ea03632f-e170-40d9-bdb6-ae5dcabbde23",
+    "workflowId": "BFmy8KZHqVjeImqz",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 30
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          1616,
+          -48
+        ],
+        "id": "51e345b4-871c-40e0-86de-1bf956adf26c",
+        "name": "Every 30min"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/electricity_consumption_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          1904,
+          -160
+        ],
+        "id": "7be9f056-1c1d-4afa-b899-26be6aa277b4",
+        "name": "Save Electricity Consumption to Mongo",
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/gas_consumption_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          1904,
+          80
+        ],
+        "id": "0fd3fc93-cff0-4f09-8512-71506f99183e",
+        "name": "Save Gas Consumption to Mongo",
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'electricity_consumption' } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2176,
+          -160
+        ],
+        "id": "05e0f89c-9cb5-436b-9d2d-16aae4e33afc",
+        "name": "Check Elec Output"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'gas_consumption' } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2176,
+          80
+        ],
+        "id": "782098f8-0e92-4021-82d6-b8f7539130b3",
+        "name": "Check Gas Output"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.hasError }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2432,
+          -160
+        ],
+        "id": "a90c2ea8-3319-43f9-9dd5-2c0f9dc274ea",
+        "name": "Elec Error?"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.hasError }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2432,
+          80
+        ],
+        "id": "2e3d34ca-c010-4463-88ec-9091dac13140",
+        "name": "Gas Error?"
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "[ALERT] Electricity Consumption Collector Failed",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          2688,
+          -96
+        ],
+        "id": "193765b5-d4f5-4a39-afe4-73fde026f212",
+        "name": "Alert: Elec Consumption Failed",
+        "webhookId": "636cdeae-445e-49b7-88fb-21c314669b3e",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "[ALERT] Gas Consumption Collector Failed",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          2688,
+          144
+        ],
+        "id": "13d56dc6-c2bf-40bc-b636-3b432eefd3b3",
+        "name": "Alert: Gas Consumption Failed",
+        "webhookId": "b31b481a-2d58-40b8-af99-0c7b70c9015b",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every 30min": {
+        "main": [
+          [
+            {
+              "node": "Save Electricity Consumption to Mongo",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Save Gas Consumption to Mongo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Electricity Consumption to Mongo": {
+        "main": [
+          [
+            {
+              "node": "Check Elec Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Gas Consumption to Mongo": {
+        "main": [
+          [
+            {
+              "node": "Check Gas Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Elec Output": {
+        "main": [
+          [
+            {
+              "node": "Elec Error?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Gas Output": {
+        "main": [
+          [
+            {
+              "node": "Gas Error?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Elec Error?": {
+        "main": [
+          [
+            {
+              "node": "Alert: Elec Consumption Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gas Error?": {
+        "main": [
+          [
+            {
+              "node": "Alert: Gas Consumption Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version ea03632f",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-06T01:00:23.139Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
