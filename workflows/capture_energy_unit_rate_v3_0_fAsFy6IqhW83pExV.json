@@ -1,0 +1,629 @@
+{
+  "updatedAt": "2026-04-05T15:36:06.822Z",
+  "createdAt": "2026-04-05T15:35:40.771Z",
+  "id": "fAsFy6IqhW83pExV",
+  "name": "Capture Energy Unit Rate v3.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        112
+      ],
+      "id": "a6a28f8a-51d8-4239-98f8-b001d14faa3f",
+      "name": "Every 2 Hours"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/electricity_unit_rate_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "79d217df-bba6-498a-a189-e084e84e319b",
+      "name": "Save Electricity Unit Rate to Mongo",
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/gas_unit_rate_save_to_mongo.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ],
+      "id": "09a3a9fd-11f3-4e53-a7e6-3bd74a6cbdc3",
+      "name": "Save Gas Unit Rate to Mongo",
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'unit_rate' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "769d7e91-5334-4f22-a0e6-ea6b0bda6a4d",
+      "name": "Check Elec Rate Output"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'unit_rate' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        240
+      ],
+      "id": "22d2f85d-1aac-4c92-b643-ae1a2c72587b",
+      "name": "Check Gas Rate Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        528,
+        0
+      ],
+      "id": "324ecdaa-0199-486a-9c91-14b37a255daa",
+      "name": "Elec Rate Error?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        528,
+        240
+      ],
+      "id": "4d119d71-9e45-4b1b-96c6-07db11b53ec4",
+      "name": "Gas Rate Error?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "[ALERT] Electricity Unit Rate Collector Failed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        784,
+        64
+      ],
+      "id": "79c312af-064f-4039-a0cd-d2dd3c9f60f2",
+      "name": "Alert: Elec Unit Rate Failed",
+      "webhookId": "11373877-ba6a-42bb-a1cb-c911dd6031d7",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "[ALERT] Gas Unit Rate Collector Failed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        784,
+        304
+      ],
+      "id": "02394094-507e-4078-8546-0241a33e5205",
+      "name": "Alert: Gas Unit Rate Failed",
+      "webhookId": "82fdebb7-750c-46dc-b416-aad071adbc08",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 2 Hours": {
+      "main": [
+        [
+          {
+            "node": "Save Electricity Unit Rate to Mongo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Gas Unit Rate to Mongo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Electricity Unit Rate to Mongo": {
+      "main": [
+        [
+          {
+            "node": "Check Elec Rate Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Gas Unit Rate to Mongo": {
+      "main": [
+        [
+          {
+            "node": "Check Gas Rate Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Elec Rate Output": {
+      "main": [
+        [
+          {
+            "node": "Elec Rate Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Gas Rate Output": {
+      "main": [
+        [
+          {
+            "node": "Gas Rate Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Elec Rate Error?": {
+      "main": [
+        [
+          {
+            "node": "Alert: Elec Unit Rate Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gas Rate Error?": {
+      "main": [
+        [
+          {
+            "node": "Alert: Gas Unit Rate Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "d3RE76j5MQSAcBe6",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Every 2 Hours": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "0fbc2619-d437-463c-89b0-90595ddd1ae4",
+  "activeVersionId": "0fbc2619-d437-463c-89b0-90595ddd1ae4",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-05T15:35:40.775Z",
+      "createdAt": "2026-04-05T15:35:40.775Z",
+      "role": "workflow:owner",
+      "workflowId": "fAsFy6IqhW83pExV",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-05T15:36:19.000Z",
+    "createdAt": "2026-04-05T15:36:00.058Z",
+    "versionId": "0fbc2619-d437-463c-89b0-90595ddd1ae4",
+    "workflowId": "fAsFy6IqhW83pExV",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 2
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -304,
+          112
+        ],
+        "id": "a6a28f8a-51d8-4239-98f8-b001d14faa3f",
+        "name": "Every 2 Hours"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/electricity_unit_rate_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "79d217df-bba6-498a-a189-e084e84e319b",
+        "name": "Save Electricity Unit Rate to Mongo",
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/gas_unit_rate_save_to_mongo.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          0,
+          240
+        ],
+        "id": "09a3a9fd-11f3-4e53-a7e6-3bd74a6cbdc3",
+        "name": "Save Gas Unit Rate to Mongo",
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'unit_rate' } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          272,
+          0
+        ],
+        "id": "769d7e91-5334-4f22-a0e6-ea6b0bda6a4d",
+        "name": "Check Elec Rate Output"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('[ERROR]') || stderr.includes('Error') || stderr.includes('Traceback');\nreturn [{ json: { hasError, stdout, stderr, source: 'unit_rate' } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          272,
+          240
+        ],
+        "id": "22d2f85d-1aac-4c92-b643-ae1a2c72587b",
+        "name": "Check Gas Rate Output"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.hasError }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          528,
+          0
+        ],
+        "id": "324ecdaa-0199-486a-9c91-14b37a255daa",
+        "name": "Elec Rate Error?"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.hasError }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          528,
+          240
+        ],
+        "id": "4d119d71-9e45-4b1b-96c6-07db11b53ec4",
+        "name": "Gas Rate Error?"
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "[ALERT] Electricity Unit Rate Collector Failed",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          784,
+          64
+        ],
+        "id": "79c312af-064f-4039-a0cd-d2dd3c9f60f2",
+        "name": "Alert: Elec Unit Rate Failed",
+        "webhookId": "11373877-ba6a-42bb-a1cb-c911dd6031d7",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "[ALERT] Gas Unit Rate Collector Failed",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          784,
+          304
+        ],
+        "id": "02394094-507e-4078-8546-0241a33e5205",
+        "name": "Alert: Gas Unit Rate Failed",
+        "webhookId": "82fdebb7-750c-46dc-b416-aad071adbc08",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Every 2 Hours": {
+        "main": [
+          [
+            {
+              "node": "Save Electricity Unit Rate to Mongo",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Save Gas Unit Rate to Mongo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Electricity Unit Rate to Mongo": {
+        "main": [
+          [
+            {
+              "node": "Check Elec Rate Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Gas Unit Rate to Mongo": {
+        "main": [
+          [
+            {
+              "node": "Check Gas Rate Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Elec Rate Output": {
+        "main": [
+          [
+            {
+              "node": "Elec Rate Error?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Gas Rate Output": {
+        "main": [
+          [
+            {
+              "node": "Gas Rate Error?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Elec Rate Error?": {
+        "main": [
+          [
+            {
+              "node": "Alert: Elec Unit Rate Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gas Rate Error?": {
+        "main": [
+          [
+            {
+              "node": "Alert: Gas Unit Rate Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 0fbc2619",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-06T01:00:23.139Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
