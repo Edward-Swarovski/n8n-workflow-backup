@@ -1,0 +1,373 @@
+{
+  "updatedAt": "2026-04-07T18:15:53.536Z",
+  "createdAt": "2026-04-07T16:17:30.472Z",
+  "id": "VMMLoDoNTvQVWt5x",
+  "name": "Electricity Negative Rate Alert v3.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 16 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1376,
+        -128
+      ],
+      "id": "ca62d373-62d6-40d0-a220-f38e41cab172",
+      "name": "Daily 16:30 UK"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/electricity_negative_rate_check.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        -128
+      ],
+      "id": "7cee45e9-4ff6-4662-b2a0-7e7da85eac75",
+      "name": "Run Negative Rate Check",
+      "maxTries": 2,
+      "waitBetweenTries": 30000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stdout.includes('[ERROR]') || stderr.includes('[ERROR]') || stderr.includes('Traceback')) {\n  throw new Error(`Script error:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nconst match = stdout.match(/\\[NEGATIVE_RATE\\] (\\[.*\\])/);\nif (!match) {\n  return [{ json: { hasNegativeRate: false, slots: [], stdout } }];\n}\nconst slots = JSON.parse(match[1]);\nconst lines = slots.map(s =>\n  `  ${s.from.replace('T', ' ').slice(0, 16)} → ${s.to.replace('T', ' ').slice(0, 16)}  |  ${s.p_per_kwh.toFixed(4)} p/kWh`\n).join('\\n');\nreturn [{ json: { hasNegativeRate: true, slots, formattedLines: lines, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        -128
+      ],
+      "id": "4edcbaac-d630-4de5-b38d-de9f710094f9",
+      "name": "Parse Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasNegativeRate }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -128
+      ],
+      "id": "ed1d3ba4-16d3-4379-89cb-e88ceedccff8",
+      "name": "Negative Rate Found?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "=[ALERT] Negative Electricity Rates Tomorrow ({{ $json.slots.length }} slot{{ $json.slots.length > 1 ? 's' : '' }})",
+        "text": "=Negative or zero electricity rate(s) detected for tomorrow.\n\nSlots (inc. VAT):\n{{ $json.formattedLines }}\n\nConsider scheduling high-consumption appliances (washing machine, dishwasher, EV charging) during these periods.\n\nTime of check: {{ $now }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -208
+      ],
+      "id": "59cf089a-3cfa-44f5-b73a-a085e36e7049",
+      "name": "Send Negative Rate Alert",
+      "webhookId": "039c04e7-847c-4c01-bb0d-7d459ea4e19c",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 16:30 UK": {
+      "main": [
+        [
+          {
+            "node": "Run Negative Rate Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Negative Rate Check": {
+      "main": [
+        [
+          {
+            "node": "Parse Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Output": {
+      "main": [
+        [
+          {
+            "node": "Negative Rate Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negative Rate Found?": {
+      "main": [
+        [
+          {
+            "node": "Send Negative Rate Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Daily 16:30 UK": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "920f61d3-4575-4e39-b35d-ef7d1f2754f8",
+  "activeVersionId": "920f61d3-4575-4e39-b35d-ef7d1f2754f8",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-07T16:17:30.476Z",
+      "createdAt": "2026-04-07T16:17:30.476Z",
+      "role": "workflow:owner",
+      "workflowId": "VMMLoDoNTvQVWt5x",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-07T18:15:57.000Z",
+    "createdAt": "2026-04-07T18:15:35.397Z",
+    "versionId": "920f61d3-4575-4e39-b35d-ef7d1f2754f8",
+    "workflowId": "VMMLoDoNTvQVWt5x",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "30 16 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -1376,
+          -128
+        ],
+        "id": "ca62d373-62d6-40d0-a220-f38e41cab172",
+        "name": "Daily 16:30 UK"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/electricity_negative_rate_check.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          -1088,
+          -128
+        ],
+        "id": "7cee45e9-4ff6-4662-b2a0-7e7da85eac75",
+        "name": "Run Negative Rate Check",
+        "maxTries": 2,
+        "waitBetweenTries": 30000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stdout.includes('[ERROR]') || stderr.includes('[ERROR]') || stderr.includes('Traceback')) {\n  throw new Error(`Script error:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nconst match = stdout.match(/\\[NEGATIVE_RATE\\] (\\[.*\\])/);\nif (!match) {\n  return [{ json: { hasNegativeRate: false, slots: [], stdout } }];\n}\nconst slots = JSON.parse(match[1]);\nconst lines = slots.map(s =>\n  `  ${s.from.replace('T', ' ').slice(0, 16)} → ${s.to.replace('T', ' ').slice(0, 16)}  |  ${s.p_per_kwh.toFixed(4)} p/kWh`\n).join('\\n');\nreturn [{ json: { hasNegativeRate: true, slots, formattedLines: lines, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -816,
+          -128
+        ],
+        "id": "4edcbaac-d630-4de5-b38d-de9f710094f9",
+        "name": "Parse Output"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.hasNegativeRate }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -544,
+          -128
+        ],
+        "id": "ed1d3ba4-16d3-4379-89cb-e88ceedccff8",
+        "name": "Negative Rate Found?"
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "=[ALERT] Negative Electricity Rates Tomorrow ({{ $json.slots.length }} slot{{ $json.slots.length > 1 ? 's' : '' }})",
+          "text": "=Negative or zero electricity rate(s) detected for tomorrow.\n\nSlots (inc. VAT):\n{{ $json.formattedLines }}\n\nConsider scheduling high-consumption appliances (washing machine, dishwasher, EV charging) during these periods.\n\nTime of check: {{ $now }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          -288,
+          -208
+        ],
+        "id": "59cf089a-3cfa-44f5-b73a-a085e36e7049",
+        "name": "Send Negative Rate Alert",
+        "webhookId": "039c04e7-847c-4c01-bb0d-7d459ea4e19c",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Daily 16:30 UK": {
+        "main": [
+          [
+            {
+              "node": "Run Negative Rate Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Run Negative Rate Check": {
+        "main": [
+          [
+            {
+              "node": "Parse Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Output": {
+        "main": [
+          [
+            {
+              "node": "Negative Rate Found?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Negative Rate Found?": {
+        "main": [
+          [
+            {
+              "node": "Send Negative Rate Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 920f61d3",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-08T01:00:23.116Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
