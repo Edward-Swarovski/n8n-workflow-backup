@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-07T11:20:41.008Z",
+  "updatedAt": "2026-04-08T18:15:52.954Z",
   "createdAt": "2026-04-03T12:14:50.314Z",
   "id": "CZvxm1AAu3P420el",
   "name": "Adzuna_auto_job_search v4.3",
@@ -1283,7 +1283,11 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/London",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
   "staticData": {
     "node:Schedule Trigger": {
@@ -2613,7 +2617,7 @@
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-04-08T01:00:23.116Z",
+    "backed_up_at": "2026-04-09T01:00:26.758Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
