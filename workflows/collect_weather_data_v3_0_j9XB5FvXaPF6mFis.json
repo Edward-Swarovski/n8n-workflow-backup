@@ -1,0 +1,221 @@
+{
+  "updatedAt": "2026-04-08T13:44:37.855Z",
+  "createdAt": "2026-04-08T13:44:37.855Z",
+  "id": "j9XB5FvXaPF6mFis",
+  "name": "Collect Weather Data v3.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        -96
+      ],
+      "id": "67573a57-dc07-43b4-95ee-543f7ec2f378",
+      "name": "Daily 06:00 UK"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/weather_collect.py",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -96
+      ],
+      "id": "cc237236-cc02-4067-aff1-ea3733264280",
+      "name": "Collect Yesterday Weather",
+      "maxTries": 2,
+      "waitBetweenTries": 30000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stdout.includes('[ERROR]') || stderr.includes('[ERROR]') || stderr.includes('Traceback')) {\n  throw new Error(`Weather collector error:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -96
+      ],
+      "id": "18a22161-a717-4caf-a0ca-2a87a768f943",
+      "name": "Check Output"
+    }
+  ],
+  "connections": {
+    "Daily 06:00 UK": {
+      "main": [
+        [
+          {
+            "node": "Collect Yesterday Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Yesterday Weather": {
+      "main": [
+        [
+          {
+            "node": "Check Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Daily 06:00 UK": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "9c612580-9aa1-4c2e-8475-86d120b96234",
+  "activeVersionId": "9c612580-9aa1-4c2e-8475-86d120b96234",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-08T13:44:37.858Z",
+      "createdAt": "2026-04-08T13:44:37.858Z",
+      "role": "workflow:owner",
+      "workflowId": "j9XB5FvXaPF6mFis",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-08T13:57:01.000Z",
+    "createdAt": "2026-04-08T13:44:37.859Z",
+    "versionId": "9c612580-9aa1-4c2e-8475-86d120b96234",
+    "workflowId": "j9XB5FvXaPF6mFis",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 6 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          240,
+          -96
+        ],
+        "id": "67573a57-dc07-43b4-95ee-543f7ec2f378",
+        "name": "Daily 06:00 UK"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/weather_collect.py",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          528,
+          -96
+        ],
+        "id": "cc237236-cc02-4067-aff1-ea3733264280",
+        "name": "Collect Yesterday Weather",
+        "maxTries": 2,
+        "waitBetweenTries": 30000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stdout.includes('[ERROR]') || stderr.includes('[ERROR]') || stderr.includes('Traceback')) {\n  throw new Error(`Weather collector error:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          816,
+          -96
+        ],
+        "id": "18a22161-a717-4caf-a0ca-2a87a768f943",
+        "name": "Check Output"
+      }
+    ],
+    "connections": {
+      "Daily 06:00 UK": {
+        "main": [
+          [
+            {
+              "node": "Collect Yesterday Weather",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Yesterday Weather": {
+        "main": [
+          [
+            {
+              "node": "Check Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 9c612580",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-09T01:00:26.758Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
