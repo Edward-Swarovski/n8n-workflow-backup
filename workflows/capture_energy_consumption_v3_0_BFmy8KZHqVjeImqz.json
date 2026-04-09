@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-07T18:10:14.661Z",
+  "updatedAt": "2026-04-08T17:05:11.770Z",
   "createdAt": "2025-08-02T21:57:54.212Z",
   "id": "BFmy8KZHqVjeImqz",
   "name": "Capture Energy Consumption v3.0",
@@ -137,7 +137,10 @@
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": false
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -146,7 +149,8 @@
               "operator": {
                 "type": "boolean",
                 "operation": "true"
-              }
+              },
+              "id": "106aac5d-e5aa-45d8-bfac-ef6ebf36d039"
             }
           ],
           "combinator": "and"
@@ -311,8 +315,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "f333036a-9b7b-4b73-8f5a-550a1fd438ce",
-  "activeVersionId": "ea03632f-e170-40d9-bdb6-ae5dcabbde23",
+  "versionId": "774096e6-117e-4a94-b02a-6d5a361eb973",
+  "activeVersionId": "774096e6-117e-4a94-b02a-6d5a361eb973",
   "triggerCount": 1,
   "shared": [
     {
@@ -324,9 +328,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-04-05T15:33:59.000Z",
-    "createdAt": "2026-04-05T15:33:43.081Z",
-    "versionId": "ea03632f-e170-40d9-bdb6-ae5dcabbde23",
+    "updatedAt": "2026-04-08T17:10:01.000Z",
+    "createdAt": "2026-04-08T17:05:11.771Z",
+    "versionId": "774096e6-117e-4a94-b02a-6d5a361eb973",
     "workflowId": "BFmy8KZHqVjeImqz",
     "nodes": [
       {
@@ -427,7 +431,10 @@
         "parameters": {
           "conditions": {
             "options": {
-              "caseSensitive": false
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
             },
             "conditions": [
               {
@@ -436,7 +443,8 @@
                 "operator": {
                   "type": "boolean",
                   "operation": "true"
-                }
+                },
+                "id": "b4319207-2b44-4315-93a1-2165924ce20d"
               }
             ],
             "combinator": "and"
@@ -456,7 +464,10 @@
         "parameters": {
           "conditions": {
             "options": {
-              "caseSensitive": false
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
             },
             "conditions": [
               {
@@ -465,7 +476,8 @@
                 "operator": {
                   "type": "boolean",
                   "operation": "true"
-                }
+                },
+                "id": "106aac5d-e5aa-45d8-bfac-ef6ebf36d039"
               }
             ],
             "combinator": "and"
@@ -613,7 +625,7 @@
       }
     },
     "authors": "4you donut",
-    "name": "Version ea03632f",
+    "name": "Version 774096e6",
     "description": "",
     "autosaved": true
   },
@@ -626,7 +638,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-04-08T01:00:23.116Z",
+    "backed_up_at": "2026-04-09T01:00:26.758Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
