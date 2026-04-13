@@ -1,0 +1,605 @@
+{
+  "updatedAt": "2026-04-12T23:06:51.474Z",
+  "createdAt": "2026-04-12T22:10:38.840Z",
+  "id": "F60z5MCmfN5mp0mj",
+  "name": "bin_collection_alert v1.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 21 * * *"
+            }
+          ]
+        }
+      },
+      "id": "0e41cdc4-93e7-49b8-af01-4585d2e118d3",
+      "name": "Daily 9pm Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1760,
+        -192
+      ],
+      "notes": "Runs every day at 21:00. Set your n8n instance timezone to Europe/London so this fires at 9pm UK time (handles BST/GMT automatically)."
+    },
+    {
+      "parameters": {
+        "url": "=https://api.reading.gov.uk/rbc/getaddresses/{{ $env.POSTCODE }}",
+        "options": {}
+      },
+      "id": "7eb87f7d-4d05-404e-890d-81e7df475d20",
+      "name": "Get Addresses by Postcode",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1536,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "house-number",
+              "name": "houseNumber",
+              "value": "={{ $env.HOUSE_NUMBER }}",
+              "type": "string"
+            },
+            {
+              "id": "addresses",
+              "name": "addresses",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "32c67ccc-71ba-4ea3-988f-aacf30a66e49",
+      "name": "Set House Number",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Find your address using HOUSE_NUMBER env var (passed in via Set node)\nconst YOUR_HOUSE_NUMBER = $input.first().json.houseNumber;\nconst addresses = $input.first().json.addresses;\n\n// The API returns an array directly\nconst list = Array.isArray(addresses) ? addresses : addresses.Addresses || [];\n\n// Find the address that starts with your house number\nconst match = list.find(a => {\n  const short = (a.SiteShortAddress || '').trim();\n  return short.startsWith(YOUR_HOUSE_NUMBER + ' ') || short.startsWith(YOUR_HOUSE_NUMBER + ',');\n});\n\nif (!match) {\n  throw new Error(`Address not found for house number: ${YOUR_HOUSE_NUMBER}. Available: ${list.map(a => a.SiteShortAddress).join(', ')}`);\n}\n\nreturn [{ json: { uprn: match.AccountSiteUprn, address: match.SiteShortAddress } }];\n"
+      },
+      "id": "5df6b04a-f078-4512-b76d-19026b471108",
+      "name": "Find Your Address",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.reading.gov.uk/rbc/mycollections/{{ $json.uprn }}",
+        "options": {}
+      },
+      "id": "7e7f2aac-9466-4395-aa13-db6f6784c4c1",
+      "name": "Get Collection Schedule",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -864,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if any Grey (Domestic Waste) or Red (Recycling) bin is collected TOMORROW.\n\nconst data = $input.first().json;\nconst collections = data.Collections || data || [];\n\n// Calculate tomorrow's date in DD/MM/YYYY format (UK locale)\nlet tomorrow = new Date();\ntomorrow.setDate(tomorrow.getDate() + 1);\nconst day = String(tomorrow.getDate()).padStart(2, '0');\nconst month = String(tomorrow.getMonth() + 1).padStart(2, '0');\nconst year = tomorrow.getFullYear();\nconst tomorrowStr = `${day}/${month}/${year}`; // e.g. \"15/04/2026\"\n\n// The API returns dates like \"15/04/2026 00:00:00\"\nconst SERVICE_MAP = {\n  'Domestic Waste Collection Service': { en: 'Grey bin (Rubbish)', zh: '灰色垃圾桶' },\n  'Recycling Collection Service':      { en: 'Red bin (Recycling)', zh: '紅色回收桶' }\n};\n\nconst tomorrowCollections = collections.filter(c => {\n  const dateStr = (c.Date || '').substring(0, 10); // \"15/04/2026\"\n  return dateStr === tomorrowStr && SERVICE_MAP[c.Service];\n});\n\nif (tomorrowCollections.length === 0) {\n  return [{ json: { hasCollection: false, binTypes: [], message: '', message_cantonese: '' } }];\n}\n\nconst binTypes = tomorrowCollections.map(c => SERVICE_MAP[c.Service].en);\nconst binListZh = tomorrowCollections.map(c => SERVICE_MAP[c.Service].zh).join('同');\nconst message = `Reminder: Put out your ${binTypes.join(' and ')} tonight.`;\nconst message_cantonese = `提示！聽日收${binListZh}，請記得今晚放桶！`;\n\nreturn [{ json: { hasCollection: true, binTypes, message, message_cantonese, tomorrowStr } }];\n"
+      },
+      "id": "8657c4a3-e7b6-42ae-9f4f-c0c8eef10221",
+      "name": "Check Tomorrow's Collections",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-collection",
+              "leftValue": "={{ $json.hasCollection }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5a388690-42c8-475e-9f90-7aee2778c9b5",
+      "name": "Has Grey or Red Bin Tomorrow?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ha.mywonderful.xyz/api/webhook/bin_collection_alert",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            },
+            {
+              "name": "message_cantonese",
+              "value": "={{ $json.message_cantonese }}"
+            },
+            {
+              "name": "bin_types",
+              "value": "={{ $json.binTypes.join(', ') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8c8bc468-c259-40f6-8dbe-121e2b56e092",
+      "name": "Call Home Assistant Webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        -288
+      ],
+      "notes": "Replace YOUR_HA_EXTERNAL_URL with your HA external URL, e.g. https://your-ha.duckdns.org"
+    },
+    {
+      "parameters": {},
+      "id": "69dce174-0d3c-4850-b2f1-7b9393f85d9b",
+      "name": "No Bin Tomorrow (stop)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -96
+      ]
+    }
+  ],
+  "connections": {
+    "Daily 9pm Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Addresses by Postcode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Addresses by Postcode": {
+      "main": [
+        [
+          {
+            "node": "Set House Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set House Number": {
+      "main": [
+        [
+          {
+            "node": "Find Your Address",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Your Address": {
+      "main": [
+        [
+          {
+            "node": "Get Collection Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Collection Schedule": {
+      "main": [
+        [
+          {
+            "node": "Check Tomorrow's Collections",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Tomorrow's Collections": {
+      "main": [
+        [
+          {
+            "node": "Has Grey or Red Bin Tomorrow?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Grey or Red Bin Tomorrow?": {
+      "main": [
+        [
+          {
+            "node": "Call Home Assistant Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Bin Tomorrow (stop)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Daily 9pm Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "aecda146-897b-48d7-80b0-963e9abf5657",
+  "activeVersionId": "aecda146-897b-48d7-80b0-963e9abf5657",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-12T22:10:38.846Z",
+      "createdAt": "2026-04-12T22:10:38.846Z",
+      "role": "workflow:owner",
+      "workflowId": "F60z5MCmfN5mp0mj",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-12T23:07:29.000Z",
+    "createdAt": "2026-04-12T23:06:51.475Z",
+    "versionId": "aecda146-897b-48d7-80b0-963e9abf5657",
+    "workflowId": "F60z5MCmfN5mp0mj",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 21 * * *"
+              }
+            ]
+          }
+        },
+        "id": "0e41cdc4-93e7-49b8-af01-4585d2e118d3",
+        "name": "Daily 9pm Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -1760,
+          -192
+        ],
+        "notes": "Runs every day at 21:00. Set your n8n instance timezone to Europe/London so this fires at 9pm UK time (handles BST/GMT automatically)."
+      },
+      {
+        "parameters": {
+          "url": "=https://api.reading.gov.uk/rbc/getaddresses/{{ $env.POSTCODE }}",
+          "options": {}
+        },
+        "id": "7eb87f7d-4d05-404e-890d-81e7df475d20",
+        "name": "Get Addresses by Postcode",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -1536,
+          -192
+        ]
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "house-number",
+                "name": "houseNumber",
+                "value": "={{ $env.HOUSE_NUMBER }}",
+                "type": "string"
+              },
+              {
+                "id": "addresses",
+                "name": "addresses",
+                "value": "={{ $json }}",
+                "type": "object"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "32c67ccc-71ba-4ea3-988f-aacf30a66e49",
+        "name": "Set House Number",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1312,
+          -192
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Find your address using HOUSE_NUMBER env var (passed in via Set node)\nconst YOUR_HOUSE_NUMBER = $input.first().json.houseNumber;\nconst addresses = $input.first().json.addresses;\n\n// The API returns an array directly\nconst list = Array.isArray(addresses) ? addresses : addresses.Addresses || [];\n\n// Find the address that starts with your house number\nconst match = list.find(a => {\n  const short = (a.SiteShortAddress || '').trim();\n  return short.startsWith(YOUR_HOUSE_NUMBER + ' ') || short.startsWith(YOUR_HOUSE_NUMBER + ',');\n});\n\nif (!match) {\n  throw new Error(`Address not found for house number: ${YOUR_HOUSE_NUMBER}. Available: ${list.map(a => a.SiteShortAddress).join(', ')}`);\n}\n\nreturn [{ json: { uprn: match.AccountSiteUprn, address: match.SiteShortAddress } }];\n"
+        },
+        "id": "5df6b04a-f078-4512-b76d-19026b471108",
+        "name": "Find Your Address",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1088,
+          -192
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=https://api.reading.gov.uk/rbc/mycollections/{{ $json.uprn }}",
+          "options": {}
+        },
+        "id": "7e7f2aac-9466-4395-aa13-db6f6784c4c1",
+        "name": "Get Collection Schedule",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -864,
+          -192
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Check if any Grey (Domestic Waste) or Red (Recycling) bin is collected TOMORROW.\n\nconst data = $input.first().json;\nconst collections = data.Collections || data || [];\n\n// Calculate tomorrow's date in DD/MM/YYYY format (UK locale)\nlet tomorrow = new Date();\ntomorrow.setDate(tomorrow.getDate() + 1);\nconst day = String(tomorrow.getDate()).padStart(2, '0');\nconst month = String(tomorrow.getMonth() + 1).padStart(2, '0');\nconst year = tomorrow.getFullYear();\nconst tomorrowStr = `${day}/${month}/${year}`; // e.g. \"15/04/2026\"\n\n// The API returns dates like \"15/04/2026 00:00:00\"\nconst SERVICE_MAP = {\n  'Domestic Waste Collection Service': { en: 'Grey bin (Rubbish)', zh: '灰色垃圾桶' },\n  'Recycling Collection Service':      { en: 'Red bin (Recycling)', zh: '紅色回收桶' }\n};\n\nconst tomorrowCollections = collections.filter(c => {\n  const dateStr = (c.Date || '').substring(0, 10); // \"15/04/2026\"\n  return dateStr === tomorrowStr && SERVICE_MAP[c.Service];\n});\n\nif (tomorrowCollections.length === 0) {\n  return [{ json: { hasCollection: false, binTypes: [], message: '', message_cantonese: '' } }];\n}\n\nconst binTypes = tomorrowCollections.map(c => SERVICE_MAP[c.Service].en);\nconst binListZh = tomorrowCollections.map(c => SERVICE_MAP[c.Service].zh).join('同');\nconst message = `Reminder: Put out your ${binTypes.join(' and ')} tonight.`;\nconst message_cantonese = `提示！聽日收${binListZh}，請記得今晚放桶！`;\n\nreturn [{ json: { hasCollection: true, binTypes, message, message_cantonese, tomorrowStr } }];\n"
+        },
+        "id": "8657c4a3-e7b6-42ae-9f4f-c0c8eef10221",
+        "name": "Check Tomorrow's Collections",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -640,
+          -192
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "has-collection",
+                "leftValue": "={{ $json.hasCollection }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "5a388690-42c8-475e-9f90-7aee2778c9b5",
+        "name": "Has Grey or Red Bin Tomorrow?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -416,
+          -192
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://ha.mywonderful.xyz/api/webhook/bin_collection_alert",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $json.message }}"
+              },
+              {
+                "name": "message_cantonese",
+                "value": "={{ $json.message_cantonese }}"
+              },
+              {
+                "name": "bin_types",
+                "value": "={{ $json.binTypes.join(', ') }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "8c8bc468-c259-40f6-8dbe-121e2b56e092",
+        "name": "Call Home Assistant Webhook",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -192,
+          -288
+        ],
+        "notes": "Replace YOUR_HA_EXTERNAL_URL with your HA external URL, e.g. https://your-ha.duckdns.org"
+      },
+      {
+        "parameters": {},
+        "id": "69dce174-0d3c-4850-b2f1-7b9393f85d9b",
+        "name": "No Bin Tomorrow (stop)",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -192,
+          -96
+        ]
+      }
+    ],
+    "connections": {
+      "Daily 9pm Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get Addresses by Postcode",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Addresses by Postcode": {
+        "main": [
+          [
+            {
+              "node": "Set House Number",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set House Number": {
+        "main": [
+          [
+            {
+              "node": "Find Your Address",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Your Address": {
+        "main": [
+          [
+            {
+              "node": "Get Collection Schedule",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Collection Schedule": {
+        "main": [
+          [
+            {
+              "node": "Check Tomorrow's Collections",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Tomorrow's Collections": {
+        "main": [
+          [
+            {
+              "node": "Has Grey or Red Bin Tomorrow?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Grey or Red Bin Tomorrow?": {
+        "main": [
+          [
+            {
+              "node": "Call Home Assistant Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Bin Tomorrow (stop)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version aecda146",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [],
+  "_backup": {
+    "backed_up_at": "2026-04-13T01:00:44.796Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
