@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-05T15:35:08.452Z",
+  "updatedAt": "2026-04-13T09:36:30.678Z",
   "createdAt": "2026-04-05T15:34:45.459Z",
   "id": "2bCdQX0MwTFI08EA",
   "name": "Capture Energy Standing Charge Rate v3.0",
@@ -612,6 +612,12 @@
   },
   "tags": [
     {
+      "updatedAt": "2026-04-13T09:34:14.508Z",
+      "createdAt": "2026-04-13T09:34:14.508Z",
+      "id": "0M3STsbdnPw1AeB5",
+      "name": "Grafana"
+    },
+    {
       "updatedAt": "2025-08-03T16:03:15.985Z",
       "createdAt": "2025-08-03T16:03:15.985Z",
       "id": "3XQOHErGRd40vm76",
@@ -619,7 +625,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-04-06T01:00:23.139Z",
+    "backed_up_at": "2026-04-14T01:00:44.187Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
