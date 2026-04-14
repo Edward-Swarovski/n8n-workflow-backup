@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-12T23:06:51.474Z",
+  "updatedAt": "2026-04-13T09:34:59.201Z",
   "createdAt": "2026-04-12T22:10:38.840Z",
   "id": "F60z5MCmfN5mp0mj",
   "name": "bin_collection_alert v1.0",
@@ -595,9 +595,22 @@
     "description": "",
     "autosaved": true
   },
-  "tags": [],
+  "tags": [
+    {
+      "updatedAt": "2026-04-13T09:33:09.447Z",
+      "createdAt": "2026-04-13T09:33:09.447Z",
+      "id": "DiCBtV4LHeG4slC4",
+      "name": "Home Assistant"
+    },
+    {
+      "updatedAt": "2026-04-13T09:31:18.988Z",
+      "createdAt": "2026-04-13T09:31:18.988Z",
+      "id": "O7Uqg5G4JEVGX7xu",
+      "name": "Home Automation"
+    }
+  ],
   "_backup": {
-    "backed_up_at": "2026-04-13T01:00:44.796Z",
+    "backed_up_at": "2026-04-14T01:00:44.187Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
