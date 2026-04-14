@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-08T17:05:11.770Z",
+  "updatedAt": "2026-04-13T09:35:44.544Z",
   "createdAt": "2025-08-02T21:57:54.212Z",
   "id": "BFmy8KZHqVjeImqz",
   "name": "Capture Energy Consumption v3.0",
@@ -631,6 +631,12 @@
   },
   "tags": [
     {
+      "updatedAt": "2026-04-13T09:34:14.508Z",
+      "createdAt": "2026-04-13T09:34:14.508Z",
+      "id": "0M3STsbdnPw1AeB5",
+      "name": "Grafana"
+    },
+    {
       "updatedAt": "2025-08-03T16:03:15.985Z",
       "createdAt": "2025-08-03T16:03:15.985Z",
       "id": "3XQOHErGRd40vm76",
@@ -638,7 +644,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-04-09T01:00:26.758Z",
+    "backed_up_at": "2026-04-14T01:00:44.187Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
