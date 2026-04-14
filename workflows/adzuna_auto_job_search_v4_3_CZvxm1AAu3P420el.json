@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-08T18:15:52.954Z",
+  "updatedAt": "2026-04-13T09:30:53.350Z",
   "createdAt": "2026-04-03T12:14:50.314Z",
   "id": "CZvxm1AAu3P420el",
   "name": "Adzuna_auto_job_search v4.3",
@@ -2615,9 +2615,16 @@
     "description": "",
     "autosaved": true
   },
-  "tags": [],
+  "tags": [
+    {
+      "updatedAt": "2026-04-13T09:30:17.398Z",
+      "createdAt": "2026-04-13T09:30:17.398Z",
+      "id": "5aWBq8J7eGqw60av",
+      "name": "Job Search"
+    }
+  ],
   "_backup": {
-    "backed_up_at": "2026-04-09T01:00:26.758Z",
+    "backed_up_at": "2026-04-14T01:00:44.187Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
