@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-09T21:26:32.282Z",
+  "updatedAt": "2026-04-13T09:34:46.922Z",
   "createdAt": "2026-04-09T21:20:59.176Z",
   "id": "KPdVEmSE32SROo7o",
   "name": "Pi-hole 04 Gravity Daily Update",
@@ -326,9 +326,22 @@
     "description": "",
     "autosaved": true
   },
-  "tags": [],
+  "tags": [
+    {
+      "updatedAt": "2026-04-13T09:33:09.447Z",
+      "createdAt": "2026-04-13T09:33:09.447Z",
+      "id": "DiCBtV4LHeG4slC4",
+      "name": "Home Assistant"
+    },
+    {
+      "updatedAt": "2026-04-13T09:31:18.988Z",
+      "createdAt": "2026-04-13T09:31:18.988Z",
+      "id": "O7Uqg5G4JEVGX7xu",
+      "name": "Home Automation"
+    }
+  ],
   "_backup": {
-    "backed_up_at": "2026-04-10T01:00:26.158Z",
+    "backed_up_at": "2026-04-14T01:00:44.187Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
