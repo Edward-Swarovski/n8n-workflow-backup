@@ -300,7 +300,7 @@
   "staticData": {
     "node:Every 2 Hours": {
       "recurrenceRules": [
-        0
+        2
       ]
     }
   },
@@ -629,7 +629,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-04-14T01:00:44.187Z",
+    "backed_up_at": "2026-04-23T01:00:30.733Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
