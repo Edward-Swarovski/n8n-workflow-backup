@@ -1,0 +1,151 @@
+{
+  "updatedAt": "2026-04-24T12:58:51.486Z",
+  "createdAt": "2026-04-24T12:56:38.106Z",
+  "id": "RiTtdn9DySIWuzEg",
+  "name": "DE Error Handler",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b01ce1f4-1fd2-4d6a-947e-68032c3645b1",
+      "name": "On DE Workflow Error"
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "=[ALERT] DE Pipeline Error: {{ $json.workflow.name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        288,
+        0
+      ],
+      "id": "ae79f3bb-18d2-4cc6-a65c-e0457cf4c144",
+      "name": "Send DE Error Alert",
+      "webhookId": "a501b23d-6e1e-478e-bcc9-e000c6dc3fd6",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On DE Workflow Error": {
+      "main": [
+        [
+          {
+            "node": "Send DE Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "1499e001-7c64-48f6-bf67-1fe7618a8249",
+  "activeVersionId": "1499e001-7c64-48f6-bf67-1fe7618a8249",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-24T12:56:38.110Z",
+      "createdAt": "2026-04-24T12:56:38.110Z",
+      "role": "workflow:owner",
+      "workflowId": "RiTtdn9DySIWuzEg",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-24T12:58:55.000Z",
+    "createdAt": "2026-04-24T12:58:51.487Z",
+    "versionId": "1499e001-7c64-48f6-bf67-1fe7618a8249",
+    "workflowId": "RiTtdn9DySIWuzEg",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "b01ce1f4-1fd2-4d6a-947e-68032c3645b1",
+        "name": "On DE Workflow Error"
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "=[ALERT] DE Pipeline Error: {{ $json.workflow.name }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          288,
+          0
+        ],
+        "id": "ae79f3bb-18d2-4cc6-a65c-e0457cf4c144",
+        "name": "Send DE Error Alert",
+        "webhookId": "a501b23d-6e1e-478e-bcc9-e000c6dc3fd6",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "On DE Workflow Error": {
+        "main": [
+          [
+            {
+              "node": "Send DE Error Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 1499e001",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-04-24T12:56:36.517Z",
+      "createdAt": "2026-04-24T12:56:36.517Z",
+      "id": "HosoTRrdWJ3aYiz9",
+      "name": "Octopus Energy DE"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-25T01:00:19.170Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
