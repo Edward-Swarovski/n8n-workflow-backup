@@ -1,0 +1,634 @@
+{
+  "updatedAt": "2026-04-24T13:25:06.204Z",
+  "createdAt": "2026-04-24T12:57:55.531Z",
+  "id": "EfIAtJNoC9DfjtDD",
+  "name": "DE Run Transforms",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "15 * * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        2112,
+        -272
+      ],
+      "id": "d0f0ff18-03fb-45d5-b290-92f0b279e088",
+      "name": "Every Hour at :15"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python transforms/build_staging.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2336,
+        -272
+      ],
+      "id": "eb60c22e-c80f-4e87-8a5b-00468719f996",
+      "name": "Build Staging",
+      "maxTries": 2,
+      "waitBetweenTries": 30000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`build_staging.py failed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\n// Freshness guard: abort if staging has no new data and stdout says 0 rows\n// (This is OK for normal incremental runs â€” only fail on errors)\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        -272
+      ],
+      "id": "232ac642-b7c4-4fec-a0a4-a81fa7a49126",
+      "name": "Check Staging Output"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python transforms/build_fact_energy.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2784,
+        -272
+      ],
+      "id": "cffe12ec-af93-4419-9685-beb096879e4b",
+      "name": "Build Fact Energy",
+      "maxTries": 2,
+      "waitBetweenTries": 30000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`build_fact_energy.py failed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3008,
+        -272
+      ],
+      "id": "498c351e-74f9-4b26-a591-0e4e270dd261",
+      "name": "Check Fact Energy Output"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python transforms/build_daily_summary.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        3232,
+        -272
+      ],
+      "id": "3102b43e-941a-4e38-8782-d5c491e4209f",
+      "name": "Build Daily Summary",
+      "maxTries": 2,
+      "waitBetweenTries": 30000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`build_daily_summary.py failed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3456,
+        -272
+      ],
+      "id": "7fe0e0ce-6aac-4648-a1bc-1b62c8973d65",
+      "name": "Check Daily Summary Output"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python transforms/dq_checks.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        3680,
+        -272
+      ],
+      "id": "02dcf1f8-c18c-4f22-9b26-da93891b570c",
+      "name": "Run DQ Checks",
+      "maxTries": 1,
+      "waitBetweenTries": 0,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\n// DQ checks use SUCCESS_WITH_FAILURES â€” only hard fail on script crash\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`dq_checks.py crashed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\n// Extract pass/fail counts for the log\nconst match = stdout.match(/Done\\. (\\d+) passed, (\\d+) failed/);\nconst passed = match ? parseInt(match[1]) : 0;\nconst failed = match ? parseInt(match[2]) : 0;\n\nreturn [{ json: { success: true, dq_passed: passed, dq_failed: failed, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3904,
+        -272
+      ],
+      "id": "70f67dde-b4a4-45ea-a552-3474329a5311",
+      "name": "Check DQ Output"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python transforms/export_to_duckdb.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        4128,
+        -272
+      ],
+      "id": "2a43e061-d96b-43e8-87c3-03690e7a7b29",
+      "name": "Export to DuckDB",
+      "maxTries": 1,
+      "waitBetweenTries": 0,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error('export_to_duckdb.py failed: ' + stdout.slice(-500));\n}\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4352,
+        -272
+      ],
+      "id": "bd59ae91-676e-4d4b-a37c-1018880d3ac0",
+      "name": "Check DuckDB Output"
+    }
+  ],
+  "connections": {
+    "Every Hour at :15": {
+      "main": [
+        [
+          {
+            "node": "Build Staging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Staging": {
+      "main": [
+        [
+          {
+            "node": "Check Staging Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Staging Output": {
+      "main": [
+        [
+          {
+            "node": "Build Fact Energy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Fact Energy": {
+      "main": [
+        [
+          {
+            "node": "Check Fact Energy Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Fact Energy Output": {
+      "main": [
+        [
+          {
+            "node": "Build Daily Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Daily Summary": {
+      "main": [
+        [
+          {
+            "node": "Check Daily Summary Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Daily Summary Output": {
+      "main": [
+        [
+          {
+            "node": "Run DQ Checks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run DQ Checks": {
+      "main": [
+        [
+          {
+            "node": "Check DQ Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check DQ Output": {
+      "main": [
+        [
+          {
+            "node": "Export to DuckDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Export to DuckDB": {
+      "main": [
+        [
+          {
+            "node": "Check DuckDB Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Every Hour at :15": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "1efbf8e7-daea-46fb-a976-a487652376c0",
+  "activeVersionId": "ec81261d-fdee-4181-8392-fd39c5710980",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-24T12:57:55.533Z",
+      "createdAt": "2026-04-24T12:57:55.533Z",
+      "role": "workflow:owner",
+      "workflowId": "EfIAtJNoC9DfjtDD",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-24T13:05:49.000Z",
+    "createdAt": "2026-04-24T12:57:55.535Z",
+    "versionId": "ec81261d-fdee-4181-8392-fd39c5710980",
+    "workflowId": "EfIAtJNoC9DfjtDD",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "15 * * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "8d403174-536f-4561-8115-a66fb75e12e0",
+        "name": "Every Hour at :15"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python transforms/build_staging.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          288,
+          0
+        ],
+        "id": "31c86dbb-5d7d-4c03-a8e0-817ebdb17a9e",
+        "name": "Build Staging",
+        "maxTries": 2,
+        "waitBetweenTries": 30000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`build_staging.py failed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\n// Freshness guard: abort if staging has no new data and stdout says 0 rows\n// (This is OK for normal incremental runs — only fail on errors)\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          0
+        ],
+        "id": "7546f6a4-ec8d-4538-83a9-8c9ab1c85a6c",
+        "name": "Check Staging Output"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python transforms/build_fact_energy.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          848,
+          0
+        ],
+        "id": "6b6f14d6-a421-49b3-a004-39026d0f86c3",
+        "name": "Build Fact Energy",
+        "maxTries": 2,
+        "waitBetweenTries": 30000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`build_fact_energy.py failed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          0
+        ],
+        "id": "88455fbe-0400-4345-a881-e4a0f5be8a2a",
+        "name": "Check Fact Energy Output"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python transforms/build_daily_summary.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          1408,
+          0
+        ],
+        "id": "8b6d014f-cd6c-4259-bc40-f7adc34eb67b",
+        "name": "Build Daily Summary",
+        "maxTries": 2,
+        "waitBetweenTries": 30000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`build_daily_summary.py failed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1680,
+          0
+        ],
+        "id": "a69b2c91-afbb-40af-b629-1e83ecca24aa",
+        "name": "Check Daily Summary Output"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python transforms/dq_checks.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          1968,
+          0
+        ],
+        "id": "fd12b788-e361-44cf-926c-93bcbf87db25",
+        "name": "Run DQ Checks",
+        "maxTries": 1,
+        "waitBetweenTries": 0,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\n// DQ checks use SUCCESS_WITH_FAILURES — only hard fail on script crash\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`dq_checks.py crashed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\n// Extract pass/fail counts for the log\nconst match = stdout.match(/Done\\. (\\d+) passed, (\\d+) failed/);\nconst passed = match ? parseInt(match[1]) : 0;\nconst failed = match ? parseInt(match[2]) : 0;\n\nreturn [{ json: { success: true, dq_passed: passed, dq_failed: failed, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2240,
+          0
+        ],
+        "id": "f73d4254-14ad-46df-af7f-dd2d225ae1ad",
+        "name": "Check DQ Output"
+      }
+    ],
+    "connections": {
+      "Every Hour at :15": {
+        "main": [
+          [
+            {
+              "node": "Build Staging",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Staging": {
+        "main": [
+          [
+            {
+              "node": "Check Staging Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Staging Output": {
+        "main": [
+          [
+            {
+              "node": "Build Fact Energy",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Fact Energy": {
+        "main": [
+          [
+            {
+              "node": "Check Fact Energy Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Fact Energy Output": {
+        "main": [
+          [
+            {
+              "node": "Build Daily Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Daily Summary": {
+        "main": [
+          [
+            {
+              "node": "Check Daily Summary Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Daily Summary Output": {
+        "main": [
+          [
+            {
+              "node": "Run DQ Checks",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Run DQ Checks": {
+        "main": [
+          [
+            {
+              "node": "Check DQ Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version ec81261d",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-04-24T12:56:36.517Z",
+      "createdAt": "2026-04-24T12:56:36.517Z",
+      "id": "HosoTRrdWJ3aYiz9",
+      "name": "Octopus Energy DE"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-25T01:00:19.170Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
