@@ -1,0 +1,347 @@
+{
+  "updatedAt": "2026-04-24T13:06:19.017Z",
+  "createdAt": "2026-04-24T12:58:19.837Z",
+  "id": "Si35bDklqwA4SDqQ",
+  "name": "DE Rate Outlook Alert",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "15 6 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1120,
+        80
+      ],
+      "id": "a5d46019-f50a-4ebf-adaf-3f8d41aa20bf",
+      "name": "Daily 06:15 UK"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python - << 'PYEOF'\nimport sys, json\nsys.path.insert(0, '.')\nfrom utils.mongo import get_de_db\nfrom datetime import datetime, timezone\n\ndb = get_de_db()\ntoday = datetime.now(timezone.utc).strftime('%Y-%m-%d')\n\ndocs = list(db.fact_rate_outlook.find(\n    {'date': {'$gte': today}},\n    {'_id': 0, 'date': 1, 'sunshine_hours': 1, 'rate_outlook': 1, 'outlook_reason': 1}\n).sort('date', 1).limit(3))\n\nif not docs:\n    print('[NO_OUTLOOK]')\nelse:\n    print('[OUTLOOK]')\n    print(json.dumps(docs))\nPYEOF\n",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        80
+      ],
+      "id": "2ab7f7d9-11b4-4203-a02d-971e4502f865",
+      "name": "Fetch Rate Outlook",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\n\nif (stdout.includes('[NO_OUTLOOK]')) {\n  return [{ json: { send_email: false, reason: 'No outlook data available' } }];\n}\n\nif (!stdout.includes('[OUTLOOK]')) {\n  throw new Error(`Unexpected output from rate outlook fetch:\\n${stdout}`);\n}\n\n// Parse the JSON line after [OUTLOOK]\nconst lines = stdout.trim().split('\\n');\nconst jsonLine = lines.find(l => l.startsWith('[{'));\nconst outlooks = JSON.parse(jsonLine);\n\n// Build email body\nconst EMOJI = { cheap: '🟢', average: '🟡', expensive: '🔴' };\nconst lines_out = outlooks.map(o => {\n  const emoji = EMOJI[o.rate_outlook] || '⚪';\n  const hours = o.sunshine_hours ? `${o.sunshine_hours}h sunshine` : 'no sunshine data';\n  return `${emoji} ${o.date}  ${o.rate_outlook.toUpperCase()}  (${hours})\\n   ${o.outlook_reason}`;\n});\n\nconst body = [\n  'Agile Rate Outlook — next 3 days',\n  '================================',\n  ...lines_out,\n  '',\n  'Note: This is a qualitative forecast based on predicted sunshine.',\n  'Confirmed Agile rates are published daily at ~16:00.',\n].join('\\n');\n\nreturn [{ json: { send_email: true, subject: `Agile Rate Outlook: ${outlooks[0].rate_outlook}`, body, outlooks } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        80
+      ],
+      "id": "21c148c9-9b2b-43c9-b2aa-318fd2b24d71",
+      "name": "Parse Outlook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.send_email }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        80
+      ],
+      "id": "70c6833f-9dbc-4498-b270-3ff0afd3fb49",
+      "name": "Should Send?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "790e490c-882f-42b5-a4a1-09ddab57299c",
+      "name": "Send Outlook Email",
+      "webhookId": "6b10bb24-90d3-4fae-a2f8-2f5a5a5d1eaa",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 06:15 UK": {
+      "main": [
+        [
+          {
+            "node": "Fetch Rate Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Rate Outlook": {
+      "main": [
+        [
+          {
+            "node": "Parse Outlook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Outlook": {
+      "main": [
+        [
+          {
+            "node": "Should Send?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Send?": {
+      "main": [
+        [
+          {
+            "node": "Send Outlook Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Daily 06:15 UK": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "81a28770-8bbd-4b50-b2d1-16f151d64862",
+  "activeVersionId": "81a28770-8bbd-4b50-b2d1-16f151d64862",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-24T12:58:19.839Z",
+      "createdAt": "2026-04-24T12:58:19.839Z",
+      "role": "workflow:owner",
+      "workflowId": "Si35bDklqwA4SDqQ",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-24T13:06:22.000Z",
+    "createdAt": "2026-04-24T13:06:19.018Z",
+    "versionId": "81a28770-8bbd-4b50-b2d1-16f151d64862",
+    "workflowId": "Si35bDklqwA4SDqQ",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "15 6 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -1120,
+          80
+        ],
+        "id": "a5d46019-f50a-4ebf-adaf-3f8d41aa20bf",
+        "name": "Daily 06:15 UK"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python - << 'PYEOF'\nimport sys, json\nsys.path.insert(0, '.')\nfrom utils.mongo import get_de_db\nfrom datetime import datetime, timezone\n\ndb = get_de_db()\ntoday = datetime.now(timezone.utc).strftime('%Y-%m-%d')\n\ndocs = list(db.fact_rate_outlook.find(\n    {'date': {'$gte': today}},\n    {'_id': 0, 'date': 1, 'sunshine_hours': 1, 'rate_outlook': 1, 'outlook_reason': 1}\n).sort('date', 1).limit(3))\n\nif not docs:\n    print('[NO_OUTLOOK]')\nelse:\n    print('[OUTLOOK]')\n    print(json.dumps(docs))\nPYEOF\n",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          -848,
+          80
+        ],
+        "id": "2ab7f7d9-11b4-4203-a02d-971e4502f865",
+        "name": "Fetch Rate Outlook",
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\n\nif (stdout.includes('[NO_OUTLOOK]')) {\n  return [{ json: { send_email: false, reason: 'No outlook data available' } }];\n}\n\nif (!stdout.includes('[OUTLOOK]')) {\n  throw new Error(`Unexpected output from rate outlook fetch:\\n${stdout}`);\n}\n\n// Parse the JSON line after [OUTLOOK]\nconst lines = stdout.trim().split('\\n');\nconst jsonLine = lines.find(l => l.startsWith('[{'));\nconst outlooks = JSON.parse(jsonLine);\n\n// Build email body\nconst EMOJI = { cheap: '🟢', average: '🟡', expensive: '🔴' };\nconst lines_out = outlooks.map(o => {\n  const emoji = EMOJI[o.rate_outlook] || '⚪';\n  const hours = o.sunshine_hours ? `${o.sunshine_hours}h sunshine` : 'no sunshine data';\n  return `${emoji} ${o.date}  ${o.rate_outlook.toUpperCase()}  (${hours})\\n   ${o.outlook_reason}`;\n});\n\nconst body = [\n  'Agile Rate Outlook — next 3 days',\n  '================================',\n  ...lines_out,\n  '',\n  'Note: This is a qualitative forecast based on predicted sunshine.',\n  'Confirmed Agile rates are published daily at ~16:00.',\n].join('\\n');\n\nreturn [{ json: { send_email: true, subject: `Agile Rate Outlook: ${outlooks[0].rate_outlook}`, body, outlooks } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -560,
+          80
+        ],
+        "id": "21c148c9-9b2b-43c9-b2aa-318fd2b24d71",
+        "name": "Parse Outlook"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "boolean": [
+              {
+                "value1": "={{ $json.send_email }}",
+                "value2": true
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          -288,
+          80
+        ],
+        "id": "70c6833f-9dbc-4498-b270-3ff0afd3fb49",
+        "name": "Should Send?"
+      },
+      {
+        "parameters": {
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "={{ $json.subject }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "790e490c-882f-42b5-a4a1-09ddab57299c",
+        "name": "Send Outlook Email",
+        "webhookId": "6b10bb24-90d3-4fae-a2f8-2f5a5a5d1eaa",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Daily 06:15 UK": {
+        "main": [
+          [
+            {
+              "node": "Fetch Rate Outlook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Rate Outlook": {
+        "main": [
+          [
+            {
+              "node": "Parse Outlook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Outlook": {
+        "main": [
+          [
+            {
+              "node": "Should Send?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Should Send?": {
+        "main": [
+          [
+            {
+              "node": "Send Outlook Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 81a28770",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-04-24T12:56:36.517Z",
+      "createdAt": "2026-04-24T12:56:36.517Z",
+      "id": "HosoTRrdWJ3aYiz9",
+      "name": "Octopus Energy DE"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-25T01:00:19.170Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
