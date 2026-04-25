@@ -1,0 +1,221 @@
+{
+  "updatedAt": "2026-04-24T12:57:33.751Z",
+  "createdAt": "2026-04-24T12:57:33.751Z",
+  "id": "ZfnCh4jnY3xXcrLA",
+  "name": "DE Collect Sunshine Forecast",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cfbc3d59-5509-4a5a-9ec8-a6be2a667eeb",
+      "name": "Daily 06:00 UK"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python transforms/collect_sunshine_forecast.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "913c6690-b85c-4dc0-b467-dc3f2c54a9b7",
+      "name": "Collect Sunshine Forecast",
+      "maxTries": 2,
+      "waitBetweenTries": 60000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubunto07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`collect_sunshine_forecast.py failed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "27dd4781-e205-40f7-8722-c7ebaceeeb8e",
+      "name": "Check Output"
+    }
+  ],
+  "connections": {
+    "Daily 06:00 UK": {
+      "main": [
+        [
+          {
+            "node": "Collect Sunshine Forecast",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Sunshine Forecast": {
+      "main": [
+        [
+          {
+            "node": "Check Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Daily 06:00 UK": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "5a43269a-7482-4c3c-a466-1a95ea927b23",
+  "activeVersionId": "5a43269a-7482-4c3c-a466-1a95ea927b23",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-24T12:57:33.754Z",
+      "createdAt": "2026-04-24T12:57:33.754Z",
+      "role": "workflow:owner",
+      "workflowId": "ZfnCh4jnY3xXcrLA",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-24T13:05:29.000Z",
+    "createdAt": "2026-04-24T12:57:33.755Z",
+    "versionId": "5a43269a-7482-4c3c-a466-1a95ea927b23",
+    "workflowId": "ZfnCh4jnY3xXcrLA",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 6 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "cfbc3d59-5509-4a5a-9ec8-a6be2a667eeb",
+        "name": "Daily 06:00 UK"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python transforms/collect_sunshine_forecast.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          288,
+          0
+        ],
+        "id": "913c6690-b85c-4dc0-b467-dc3f2c54a9b7",
+        "name": "Collect Sunshine Forecast",
+        "maxTries": 2,
+        "waitBetweenTries": 60000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubunto07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('FAILED:')) {\n  throw new Error(`collect_sunshine_forecast.py failed:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          576,
+          0
+        ],
+        "id": "27dd4781-e205-40f7-8722-c7ebaceeeb8e",
+        "name": "Check Output"
+      }
+    ],
+    "connections": {
+      "Daily 06:00 UK": {
+        "main": [
+          [
+            {
+              "node": "Collect Sunshine Forecast",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Sunshine Forecast": {
+        "main": [
+          [
+            {
+              "node": "Check Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 5a43269a",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-04-24T12:56:36.517Z",
+      "createdAt": "2026-04-24T12:56:36.517Z",
+      "id": "HosoTRrdWJ3aYiz9",
+      "name": "Octopus Energy DE"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-25T01:00:19.170Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
