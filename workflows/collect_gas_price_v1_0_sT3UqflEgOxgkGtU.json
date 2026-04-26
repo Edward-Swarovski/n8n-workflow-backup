@@ -1,0 +1,221 @@
+{
+  "updatedAt": "2026-04-25T21:44:19.293Z",
+  "createdAt": "2026-04-25T21:44:19.293Z",
+  "id": "sT3UqflEgOxgkGtU",
+  "name": "Collect Gas Price v1.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "72b2ea72-2fd4-4a58-8d66-59f2bef4fa09",
+      "name": "Daily 08:00 UK"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/gas_price_collect.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "5b32b92b-9458-4fdd-9fba-a21e5b111b6a",
+      "name": "Collect Gas Price",
+      "maxTries": 2,
+      "waitBetweenTries": 60000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('ERROR')) {\n  throw new Error('gas_price_collect.py failed: ' + stdout.slice(-300));\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "2ba2b36c-6ffb-475f-8b9c-67d97973147f",
+      "name": "Check Output"
+    }
+  ],
+  "connections": {
+    "Daily 08:00 UK": {
+      "main": [
+        [
+          {
+            "node": "Collect Gas Price",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Gas Price": {
+      "main": [
+        [
+          {
+            "node": "Check Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Daily 08:00 UK": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "73454c38-0a99-480b-9227-1991d04e432a",
+  "activeVersionId": "73454c38-0a99-480b-9227-1991d04e432a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-25T21:44:19.295Z",
+      "createdAt": "2026-04-25T21:44:19.295Z",
+      "role": "workflow:owner",
+      "workflowId": "sT3UqflEgOxgkGtU",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-25T21:44:26.000Z",
+    "createdAt": "2026-04-25T21:44:19.296Z",
+    "versionId": "73454c38-0a99-480b-9227-1991d04e432a",
+    "workflowId": "sT3UqflEgOxgkGtU",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 8 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "72b2ea72-2fd4-4a58-8d66-59f2bef4fa09",
+        "name": "Daily 08:00 UK"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/gas_price_collect.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          288,
+          0
+        ],
+        "id": "5b32b92b-9458-4fdd-9fba-a21e5b111b6a",
+        "name": "Collect Gas Price",
+        "maxTries": 2,
+        "waitBetweenTries": 60000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('ERROR')) {\n  throw new Error('gas_price_collect.py failed: ' + stdout.slice(-300));\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          576,
+          0
+        ],
+        "id": "2ba2b36c-6ffb-475f-8b9c-67d97973147f",
+        "name": "Check Output"
+      }
+    ],
+    "connections": {
+      "Daily 08:00 UK": {
+        "main": [
+          [
+            {
+              "node": "Collect Gas Price",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Gas Price": {
+        "main": [
+          [
+            {
+              "node": "Check Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 73454c38",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-26T01:00:19.175Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
