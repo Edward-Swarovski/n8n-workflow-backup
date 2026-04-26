@@ -1,0 +1,221 @@
+{
+  "updatedAt": "2026-04-25T21:43:55.869Z",
+  "createdAt": "2026-04-25T21:43:55.869Z",
+  "id": "0WWLnZZUyMxfloG2",
+  "name": "Collect Wholesale Price v1.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 2 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "73b4f8bd-a7d2-4354-a574-45fd3644a126",
+      "name": "Daily 02:30 UK"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/wholesale_price_collect.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "cd576535-4706-4052-b06a-bd9f45f9ce72",
+      "name": "Collect Wholesale Price",
+      "maxTries": 2,
+      "waitBetweenTries": 60000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('ERROR')) {\n  throw new Error('wholesale_price_collect.py failed: ' + stdout.slice(-300));\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "3ec07eec-d49c-454c-b67c-253f66b72fe7",
+      "name": "Check Output"
+    }
+  ],
+  "connections": {
+    "Daily 02:30 UK": {
+      "main": [
+        [
+          {
+            "node": "Collect Wholesale Price",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Wholesale Price": {
+      "main": [
+        [
+          {
+            "node": "Check Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Daily 02:30 UK": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "0997d7aa-44a4-4a6c-bebd-fa52478846f9",
+  "activeVersionId": "0997d7aa-44a4-4a6c-bebd-fa52478846f9",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-25T21:43:55.871Z",
+      "createdAt": "2026-04-25T21:43:55.871Z",
+      "role": "workflow:owner",
+      "workflowId": "0WWLnZZUyMxfloG2",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-25T21:43:57.000Z",
+    "createdAt": "2026-04-25T21:43:55.872Z",
+    "versionId": "0997d7aa-44a4-4a6c-bebd-fa52478846f9",
+    "workflowId": "0WWLnZZUyMxfloG2",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "30 2 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "73b4f8bd-a7d2-4354-a574-45fd3644a126",
+        "name": "Daily 02:30 UK"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/wholesale_price_collect.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          288,
+          0
+        ],
+        "id": "cd576535-4706-4052-b06a-bd9f45f9ce72",
+        "name": "Collect Wholesale Price",
+        "maxTries": 2,
+        "waitBetweenTries": 60000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('ERROR')) {\n  throw new Error('wholesale_price_collect.py failed: ' + stdout.slice(-300));\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          576,
+          0
+        ],
+        "id": "3ec07eec-d49c-454c-b67c-253f66b72fe7",
+        "name": "Check Output"
+      }
+    ],
+    "connections": {
+      "Daily 02:30 UK": {
+        "main": [
+          [
+            {
+              "node": "Collect Wholesale Price",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Wholesale Price": {
+        "main": [
+          [
+            {
+              "node": "Check Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 0997d7aa",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-26T01:00:19.175Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
