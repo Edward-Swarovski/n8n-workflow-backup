@@ -1,0 +1,221 @@
+{
+  "updatedAt": "2026-04-25T21:42:50.779Z",
+  "createdAt": "2026-04-25T21:42:50.779Z",
+  "id": "DALdgbygpPGmtJb7",
+  "name": "Collect Carbon Intensity v1.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ca52139f-3544-4258-88ed-ebdce81a3493",
+      "name": "Daily 06:00 UK"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/carbon_intensity_collect.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "51dd3e2a-8304-4212-8264-72d311ebdecf",
+      "name": "Collect Carbon Intensity",
+      "maxTries": 2,
+      "waitBetweenTries": 60000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('ERROR')) {\n  throw new Error('carbon_intensity_collect.py failed: ' + stdout.slice(-300));\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "6a65206c-14db-4652-a871-c7bfed832284",
+      "name": "Check Output"
+    }
+  ],
+  "connections": {
+    "Daily 06:00 UK": {
+      "main": [
+        [
+          {
+            "node": "Collect Carbon Intensity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Carbon Intensity": {
+      "main": [
+        [
+          {
+            "node": "Check Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Daily 06:00 UK": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "75a6a45c-a6aa-454a-b7ee-ae46fdc80041",
+  "activeVersionId": "75a6a45c-a6aa-454a-b7ee-ae46fdc80041",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-25T21:42:50.783Z",
+      "createdAt": "2026-04-25T21:42:50.783Z",
+      "role": "workflow:owner",
+      "workflowId": "DALdgbygpPGmtJb7",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-25T21:43:04.000Z",
+    "createdAt": "2026-04-25T21:42:50.784Z",
+    "versionId": "75a6a45c-a6aa-454a-b7ee-ae46fdc80041",
+    "workflowId": "DALdgbygpPGmtJb7",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 6 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "ca52139f-3544-4258-88ed-ebdce81a3493",
+        "name": "Daily 06:00 UK"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/carbon_intensity_collect.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          288,
+          0
+        ],
+        "id": "51dd3e2a-8304-4212-8264-72d311ebdecf",
+        "name": "Collect Carbon Intensity",
+        "maxTries": 2,
+        "waitBetweenTries": 60000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('ERROR')) {\n  throw new Error('carbon_intensity_collect.py failed: ' + stdout.slice(-300));\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          576,
+          0
+        ],
+        "id": "6a65206c-14db-4652-a871-c7bfed832284",
+        "name": "Check Output"
+      }
+    ],
+    "connections": {
+      "Daily 06:00 UK": {
+        "main": [
+          [
+            {
+              "node": "Collect Carbon Intensity",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Carbon Intensity": {
+        "main": [
+          [
+            {
+              "node": "Check Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 75a6a45c",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-26T01:00:19.175Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
