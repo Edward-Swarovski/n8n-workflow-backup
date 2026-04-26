@@ -1,0 +1,221 @@
+{
+  "updatedAt": "2026-04-25T21:43:28.814Z",
+  "createdAt": "2026-04-25T21:43:28.814Z",
+  "id": "UAQtcf0F6XqBjzmu",
+  "name": "Collect Solar Generation v1.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "45 * * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ce2a2678-89a9-4740-a37c-b2c304207b11",
+      "name": "Every Hour at :45"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python collectors/solar_generation_collect.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "44b72faf-c47b-4f8b-bc77-90f666be2393",
+      "name": "Collect Solar Generation",
+      "maxTries": 2,
+      "waitBetweenTries": 60000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('ERROR')) {\n  throw new Error('solar_generation_collect.py failed: ' + stdout.slice(-300));\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "9fc10a66-f689-4819-adb1-6faf86ee38db",
+      "name": "Check Output"
+    }
+  ],
+  "connections": {
+    "Every Hour at :45": {
+      "main": [
+        [
+          {
+            "node": "Collect Solar Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Solar Generation": {
+      "main": [
+        [
+          {
+            "node": "Check Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Every Hour at :45": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "242d84cb-729e-4ec4-8853-9d497fc3deb5",
+  "activeVersionId": "242d84cb-729e-4ec4-8853-9d497fc3deb5",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-25T21:43:28.816Z",
+      "createdAt": "2026-04-25T21:43:28.816Z",
+      "role": "workflow:owner",
+      "workflowId": "UAQtcf0F6XqBjzmu",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-25T21:43:31.000Z",
+    "createdAt": "2026-04-25T21:43:28.818Z",
+    "versionId": "242d84cb-729e-4ec4-8853-9d497fc3deb5",
+    "workflowId": "UAQtcf0F6XqBjzmu",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "45 * * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "ce2a2678-89a9-4740-a37c-b2c304207b11",
+        "name": "Every Hour at :45"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python collectors/solar_generation_collect.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          288,
+          0
+        ],
+        "id": "44b72faf-c47b-4f8b-bc77-90f666be2393",
+        "name": "Collect Solar Generation",
+        "maxTries": 2,
+        "waitBetweenTries": 60000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stderr.includes('Traceback') || stdout.includes('ERROR')) {\n  throw new Error('solar_generation_collect.py failed: ' + stdout.slice(-300));\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          576,
+          0
+        ],
+        "id": "9fc10a66-f689-4819-adb1-6faf86ee38db",
+        "name": "Check Output"
+      }
+    ],
+    "connections": {
+      "Every Hour at :45": {
+        "main": [
+          [
+            {
+              "node": "Collect Solar Generation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Solar Generation": {
+        "main": [
+          [
+            {
+              "node": "Check Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 242d84cb",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-26T01:00:19.175Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
