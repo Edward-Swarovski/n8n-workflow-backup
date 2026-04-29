@@ -1,0 +1,2615 @@
+{
+  "updatedAt": "2026-04-28T09:33:37.827Z",
+  "createdAt": "2026-04-09T17:10:25.111Z",
+  "id": "4QRfOONk2GEUG6Ik",
+  "name": "Data_Engineer_auto_job_search v2.2",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "return [ items[0] ];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3312,
+        1248
+      ],
+      "id": "553ed078-5a0e-46f9-9c0a-66d728526acb",
+      "name": "Trigger Searches"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        2720,
+        1120
+      ],
+      "id": "706c757c-3fa9-4cee-96bf-f210c76b1eec",
+      "name": "When clicking 'Execute workflow'"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  min_salary_perm: 55000,\n  min_salary_contract: 65000,\n  results_per_page: 50\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2960,
+        1248
+      ],
+      "id": "7d78d0a7-350a-41fa-aa23-0264229c7495",
+      "name": "Global Configuration"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input is already one job per item\nconst jobs = items.map(i => i.json);\n\nconst blacklist = [\n  'software developer',\n  'software engineer',\n  'frontend',\n  'backend',\n  'full stack',\n  'trainee',\n  'coding',\n  'machine learning engineer',\n  'ml engineer',\n  'data scientist',\n  'research scientist',\n  'java developer',\n  'python developer'\n];\n\n// SC / DV / security clearance terms — checked against full text\nconst clearancePatterns = [\n  /\\bsc cleared\\b/i,\n  /\\bsc clearance\\b/i,\n  /require.*\\bsc\\b/i,\n  /\\bactive sc\\b/i,\n  /\\bhold.*\\bsc\\b/i,\n  /\\bdv cleared\\b/i,\n  /\\bdv clearance\\b/i,\n  /developed vetting/i,\n  /\\bnsc\\b/i,\n  /nato secret/i\n];\n\nconst whitelist = [\n  'data engineer',\n  'data platform',\n  'data pipeline',\n  'etl',\n  'elt',\n  'elasticsearch',\n  'hadoop',\n  'spark',\n  'kafka',\n  'databricks',\n  'airflow',\n  'mongodb',\n  'big data',\n  'data infrastructure',\n  'data ops',\n  'dataops',\n  'data integration',\n  'analytics engineer'\n];\n\nconst filtered = jobs.filter(job => {\n  // Support both Adzuna (title/description) and Reed (jobTitle/jobDescription) field names\n  const title = (job.title || job.jobTitle || '').toLowerCase();\n  const body  = (job.description || job.jobDescription || '').toLowerCase();\n  const fullText = `${title} ${body}`;\n\n  const hasDE = whitelist.some(w => fullText.includes(w));\n\n  // Only kill if title CLEARLY indicates excluded role\n  const isExcludedTitle = blacklist.some(b => title.includes(b));\n\n  // Reject any job requiring SC/DV clearance (candidate cannot hold SC until next year)\n  const requiresClearance = clearancePatterns.some(p => p.test(fullText));\n\n  return hasDE && !isExcludedTitle && !requiresClearance;\n});\n\n// Return as n8n items\nreturn filtered.map(job => ({ json: job }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4432,
+        1264
+      ],
+      "id": "f64b9493-28df-4a01-94d0-e2b5bf6212ab",
+      "name": "Filter – Exclude Non-DE Jobs"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const job = item.json;\n\n  // ── Detect source by field presence ──────────────────────────────────────\n  const isReed = job.jobId !== undefined;\n\n  // ── Normalise raw fields per source ──────────────────────────────────────\n  const rawTitle       = isReed ? (job.jobTitle       || '') : (job.title        || '');\n  const rawCompany     = isReed ? (job.employerName   || '') : (job.company?.display_name || '');\n  const rawLocation    = isReed ? (job.locationName   || '') : (job.location?.display_name || '');\n  const rawDesc        = isReed ? (job.jobDescription || '') : (job.description  || '');\n  const rawApplyUrl    = isReed ? (job.jobUrl         || '') : (job.redirect_url || '');\n  const rawSalaryMin   = isReed ? (job.minimumSalary  || null) : (job.salary_min || null);\n  const rawSalaryMax   = isReed ? (job.maximumSalary  || null) : (job.salary_max || null);\n  const rawPostedAt    = isReed ? (job.date           || null) : (job.created    || null);\n  const rawContractType = isReed\n    ? (job.jobType || null)\n    : (job.contract_type || job.contract_time || null);\n  const rawCategory    = isReed ? null : (job.category?.tag || null);\n  const rawEmploymentType = isReed\n    ? (job.fullTime === true ? 'full_time' : job.fullTime === false ? 'part_time' : null)\n    : (job.contract_time || null);\n\n  // ── Contract/permanent detection ─────────────────────────────────────────\n  const desc = rawDesc.toLowerCase();\n  const isDailyRate = /per day|\\/day|daily rate|inside ir35|outside ir35/i.test(desc);\n\n  let isContract, isPermanent;\n  if (isReed) {\n    const isHourly = rawSalaryMax !== null && rawSalaryMax < 1000;\n    isContract  = isDailyRate && !isHourly;\n    isPermanent = !isHourly && !isContract;\n  } else {\n    isContract  = job.contract_type === 'contract' || job.contract_time === 'contract' || isDailyRate;\n    isPermanent = !isContract && (job.contract_time === 'full_time' || job.contract_type === 'permanent');\n  }\n\n  // ── Stable job_id (prefix Reed IDs to avoid collisions) ──────────────────\n  const jobId = isReed\n    ? `reed_${job.jobId}`\n    : (job.id || null);\n\n  return {\n    json: {\n      job_id: jobId,\n      source: isReed ? 'Reed' : 'Adzuna',\n      title: rawTitle,\n      company: rawCompany,\n      location: rawLocation,\n      job_description: rawDesc,\n      apply_url: rawApplyUrl,\n      salary_min: rawSalaryMin,\n      salary_max: rawSalaryMax,\n      salary_is_estimated: isReed ? false : (job.salary_is_predicted || false),\n      contract_type: rawContractType,\n      employment_type: rawEmploymentType,\n      posted_at: rawPostedAt,\n      category: rawCategory,\n      is_contract: isContract,\n      is_permanent: isPermanent,\n      llm_input: `\nJob Title:\n${rawTitle || 'N/A'}\n\nCompany:\n${rawCompany || 'N/A'}\n\nLocation:\n${rawLocation || 'N/A'}\n\nContract Type:\n${rawContractType || 'N/A'}\n\nSalary:\n${rawSalaryMin || 'N/A'} – ${rawSalaryMax || 'N/A'}\n\nJob Description:\n${rawDesc || 'N/A'}\n`.trim()\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4608,
+        1264
+      ],
+      "id": "e5db7cbe-87b3-4d65-89ce-2749d1ab70a1",
+      "name": "Normalize – DE Job for LLM"
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-4-26b-a4b-it",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        5328,
+        1296
+      ],
+      "id": "4c222b1a-45f7-4d2d-a77c-fea9a84b2033",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "LYXAooPqXDxnww2H",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are evaluating a job posting for a specific candidate. Your job is to reason about how well this role fits this person — not to do keyword matching.\n\nCANDIDATE PROFILE:\n- Senior Database Platform Engineer transitioning into Data Engineering, 25+ years total experience in IT.\n- Most recent role: Senior Database Platform Engineer at Nomura (investment banking), 2023–2025.\n  - Terraform and Git-driven CI/CD pipelines for automated database provisioning\n  - Migrated ~2.3TB of databases using IaC automation\n  - MSSQL, MySQL, and Sybase ASE production platforms; multi-site HA/DR architecture\n- Prior major role: System Analyst / Database Administrator at Hospital Authority HK (healthcare), 2002–2022.\n  - Implemented and operated a MongoDB platform (~3TB) supporting Electronic Health Record system across 44 public hospitals — sharded clusters, replica sets, MongoDB Ops Manager, Community-to-Enterprise upgrade\n  - Built and operated a 9-node Elasticsearch cluster ingesting ~50GB/day of log data (ELK Stack: Elasticsearch, Logstash, Kibana); centralised logging for enterprise hospital systems\n  - Administered Apache Hadoop cluster for secure data workflows and analytics\n  - Automation tooling for monitoring, data processing, and cross-platform integration\n\nSELF-DIRECTED DATA ENGINEERING PROJECT (Octopus Energy Monitor — Version 3, Apr 2026):\nThe candidate has independently built a production-grade personal data engineering system demonstrating genuine DE skills beyond operational database work:\n- Designed and built a 6-phase ELT pipeline in Python, transforming raw operational data into a star schema (1 fact table + 8 dimension tables) stored in DuckDB for OLAP analytics\n- Implemented an incremental watermark pattern to avoid full reprocessing on each pipeline run\n- Multi-source REST API ingestion and backfill across 4 external data sources (National Grid ESO, Sheffield PVLive, Elexon BMRS, ONS SAP) — 40,000+ records per source\n- Automated data quality framework covering completeness, range validation, and fact-vs-source divergence checks at every pipeline boundary\n- Built a 141-test pytest suite covering staging transforms, fact materialisation, DQ checks, and utility functions\n- Extended a FastAPI service with 7 new /de/* endpoints serving daily summaries, rate outlook, half-hourly facts, and cheapest-slot recommendations to Grafana dashboards\n- Exploratory Jupyter Notebook with 6 analytical sections using DuckDB, including a cheapest-hours heatmap and cost breakdown over 24 months\n- Containerised services (n8n, Grafana, FastAPI) using Docker on a Linux VM; orchestrated pipeline execution via n8n\n\nKEY TECHNICAL SKILLS RELEVANT TO DATA ENGINEERING:\n- ELT pipeline development: Python (REST API ingestion, staging transforms, fact materialisation, backfill), DuckDB (OLAP star schema, incremental loads)\n- Data quality: automated completeness, range, and divergence checks; health-check scripts\n- Testing: pytest (141-test DE pipeline suite)\n- API development: FastAPI (7 REST endpoints serving analytics data)\n- Exploratory analytics: Jupyter Notebook with DuckDB\n- Pipeline orchestration: n8n (scheduling, workflow automation)\n- Data platforms: MongoDB (sharded, replica sets, Ops Manager), Elasticsearch/ELK Stack, Apache Hadoop (HDFS, cluster admin)\n- Infrastructure & automation: Terraform (IaC), Git-driven CI/CD pipelines, Ansible/Ansible Tower, Bash scripting, PowerShell\n- Databases: MSSQL (Always On AG), MySQL (GTID replication), Sybase ASE, Oracle (early career)\n- Containerisation: Docker (multi-service deployment on Linux)\n- Scale experience: 100–1200+ database servers; multi-terabyte data migrations; 24x7 production environments\n- Sectors: Investment banking (Nomura) and regulated healthcare (Hospital Authority, 44 hospitals)\n\nWHAT THE CANDIDATE IS LOOKING FOR:\n- Data Engineer, Data Platform Engineer, or Data Infrastructure roles involving hands-on pipeline development, platform operations, data infrastructure design, or observability/monitoring at scale.\n- Roles combining database/data platform expertise with DevOps/IaC tooling (Terraform, CI/CD, Ansible) are a strong fit.\n- The candidate is making a career transition into Data Engineering and is open to mid-level DE roles where the technical content is a genuine match — title seniority alone should not disqualify a role.\n- The candidate has genuine Elasticsearch, Hadoop, and MongoDB operational experience and can step into roles requiring these technologies.\n- NOT interested in: pure BI/reporting/dashboard roles, data science/ML roles, software development roles, or roles requiring advanced Python data science libraries (scikit-learn, TensorFlow, PyTorch) as the primary skill.\n\nTECHNOLOGY NOTES:\n- \"ELK Stack\", \"Elastic Stack\", \"Elasticsearch\", \"Logstash\", \"Kibana\" — candidate has production operations experience with a large-scale cluster. Treat as a strong operational match.\n- \"Hadoop\", \"HDFS\", \"MapReduce\" — candidate has hands-on cluster administration experience.\n- \"MongoDB\" — candidate has deep production DBA experience including sharding, Ops Manager, and a 3TB enterprise deployment.\n- \"Terraform\", \"Ansible\", \"CI/CD\", \"GitOps\" — candidate has direct production experience from Nomura. Data Platform/DE roles combining these with data tools are a strong fit.\n- \"DuckDB\" — candidate has built a star schema (1 fact + 8 dims) and run OLAP analytics against it in a personal DE project.\n- \"FastAPI\" — candidate has built and extended a REST API serving DE analytics data.\n- \"pytest\" — candidate has authored a 141-test suite covering DE pipeline components.\n- \"n8n\" — candidate uses for pipeline orchestration; treat as relevant experience for Airflow-adjacent or orchestration roles.\n- \"Jupyter Notebook\" — candidate has used for exploratory analytics with DuckDB.\n- \"Spark\", \"Kafka\", \"Airflow\", \"dbt\", \"Databricks\" — the candidate does not have direct experience with these, but has strong adjacent infrastructure and pipeline skills. Score as MAYBE if these are the primary requirements; higher if they appear alongside MongoDB/Elasticsearch/Hadoop or general pipeline/ELT work.\n- \"Python\" for scripting/ETL/pipeline work — candidate has demonstrated Python ELT pipeline development in the Octopus Energy project. Do not penalise for Python requirements.\n- \"Data Warehouse\", \"Snowflake\", \"Redshift\", \"BigQuery\", \"dbt\" — limited direct experience. Score as MAYBE unless combined with familiar technologies.\n- Cloud platforms (AWS, Azure, GCP) — candidate has no direct cloud experience but has Terraform IaC skills. Score lower if cloud-native expertise is the primary requirement.\n- Pure analytics, BI (Tableau, Power BI), or data visualisation roles — NOT a good fit. SKIP unless significant data engineering platform work is also involved.\n\nIMPORTANT SCORING GUIDANCE:\n- A role focused on Elasticsearch/ELK operations, MongoDB platform engineering, or Hadoop cluster administration is a STRONG match (score 75–100).\n- Data Platform Engineer or Data Infrastructure roles combining IaC/automation (Terraform, Ansible, CI/CD) with data technologies are a strong fit given the candidate's Nomura experience.\n- ELT/pipeline engineering roles in Python where Hadoop, Elasticsearch, MongoDB, or DuckDB are involved score 65–85.\n- Roles requiring ELT pipeline development, data quality, REST API ingestion, or star schema design score 60–75 — the candidate has delivered all of these in the Octopus Energy project.\n- Spark/Kafka/Airflow-primary roles score 40–60 (MAYBE) — adjacent but not directly experienced.\n- Pure BI, visualisation, or data science roles score below 30 (SKIP).\n- Seniority: the candidate is open to mid-level Data Engineer roles as part of a career transition. Score mid-level roles based on technical fit — do not penalise for lack of a \"Senior\" title. Only hard-cap roles explicitly labelled Junior, Graduate, Entry-Level, or Trainee (cap at 20, SKIP).\n\nBased on your reasoning, produce:\n- score: 0–100 representing overall fit (technical match + seniority + work style). Ignore compensation entirely.\n- recommendation: APPLY (score ≥ 60), MAYBE (score 40–59), or SKIP (score < 40).\n- role_type: one of DE_PLATFORM, DE_PIPELINE, DE_ANALYTICS, DEVOPS, DBA, MANAGEMENT, NOT_DE.\n- reason: 1–2 sentences explaining the key factors behind your score and recommendation.\n\nOUTPUT FORMAT (strict — return only valid JSON, no markdown, no extra text):\n{\n  \"score\": 75,\n  \"role_type\": \"DE_PIPELINE\",\n  \"recommendation\": \"APPLY\",\n  \"reason\": \"Role requires ELT pipeline development and data quality checks in Python — skills the candidate has demonstrated hands-on in the Octopus Energy DE project; Elasticsearch experience also relevant.\"\n}\n\nJOB DATA:\n{{ $json.llm_input }}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an experienced technical recruiter specialising in Data Engineering and Data Platform placements across all seniority levels. You understand the difference between data engineering (pipelines, infrastructure, platform operations) and data science (ML, modelling, statistics). Your goal is to evaluate genuine fit — not surface-level keyword matching. A candidate with deep operational experience in Elasticsearch, MongoDB, and Hadoop, plus hands-on ELT pipeline development (Python, DuckDB, pytest, FastAPI), is a strong candidate for data platform and pipeline roles even without Spark or Kafka experience. The candidate is making a career transition into DE and mid-level roles are acceptable targets. Be honest and realistic. Compensation and salary are irrelevant to your evaluation — that is handled separately. Return only valid JSON."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        5216,
+        1152
+      ],
+      "id": "77192e23-2508-4545-a3f5-597a7d68b44d",
+      "name": "LLM – DE Job Scoring",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = (item.json.text || '').trim();\nconst originalJob = $('Wait – Rate Limit').item.json;\n\nlet parsed;\ntry {\n  const cleanJson = raw.replace(/^```json\\n?/, '').replace(/\\n?```$/, '').trim();\n  parsed = JSON.parse(cleanJson);\n} catch (e) {\n  return {\n    json: {\n      ...originalJob,\n      score: 0,\n      role_type: 'NOT_DE',\n      recommendation: 'SKIP',\n      reason: 'LLM Error: Failed to parse response JSON.'\n    }\n  };\n}\n\nconst score = parsed.score || 0;\n\n// Enforce recommendation based on score thresholds — overrides LLM decision\nlet recommendation;\nif (score >= 60) {\n  recommendation = 'APPLY';\n} else if (score >= 40) {\n  recommendation = 'MAYBE';\n} else {\n  recommendation = 'SKIP';\n}\n\nreturn {\n  json: {\n    ...originalJob,\n    score,\n    role_type: parsed.role_type || 'NOT_DE',\n    recommendation,\n    reason: parsed.reason || 'Missing reason in LLM response.'\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5536,
+        1152
+      ],
+      "id": "23f7f079-090c-46e0-be81-518461a40fb5",
+      "name": "Parse LLM Result"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM",
+          "mode": "list",
+          "cachedResultName": "n8n_sent_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "de_sent_jobs",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3152,
+        1248
+      ],
+      "id": "3b46d884-65e8-4554-afc5-b9cae9f43a5e",
+      "name": "Load Sent Job History",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DgucYvkJJQVWqK51",
+          "name": "Job.Automation Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const newJobs = $(\"Normalize – DE Job for LLM\").all();\n\n// Safely load history — empty sheet returns 0 items\nlet sentHistory = [];\ntry {\n  sentHistory = $(\"Load Sent Job History\").all();\n  sentHistory = sentHistory.filter(item => item.json.job_id);\n} catch(e) {\n  sentHistory = [];\n}\n\n// Build sets from history: by job_id AND by normalised company+title\nconst sentIds = new Set(sentHistory.map(item => String(item.json.job_id).trim()));\nconst sentTitleKeys = new Set(\n  sentHistory.map(item => {\n    const title = (item.json.title || '').toLowerCase().trim();\n    const company = (item.json.company || '').toLowerCase().trim();\n    return `${company}||${title}`;\n  })\n);\n\n// Deduplicate within this run too\nconst seen = new Set();\nconst result = [];\nfor (const item of newJobs) {\n  const id = String(item.json.job_id || '').trim();\n  const titleKey = `${(item.json.company || '').toLowerCase().trim()}||${(item.json.title || '').toLowerCase().trim()}`;\n\n  if (!sentIds.has(id) && !sentTitleKeys.has(titleKey) && !seen.has(id)) {\n    seen.add(id);\n    result.push(item);\n  }\n}\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4784,
+        1264
+      ],
+      "id": "0e64060a-162e-4985-ad45-4a80b9dbac83",
+      "name": "Filter Out Sent Jobs"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        6496,
+        1584
+      ],
+      "id": "51d2d35f-fc6b-460c-a411-f2eed2f291a7",
+      "name": "Send Job to GMAIL",
+      "webhookId": "de-gmail-webhook-v10",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ON4cMVnRGPKgOQl0",
+          "name": "Job.Automation Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Current job item \nconst job = $('Parse LLM Result').item.json;\n\n// Safe helper\nconst safe = (v) => (v === undefined || v === null || v === '' ? 'N/A' : v);\n\n// Description handling\nconst desc = job.job_description || '';\nconst shortDesc =\n  desc.length > 2000\n    ? desc.slice(0, 2000).replace(/\\n/g, '<br>') +\n      '<br><br><em>[Description truncated]</em>'\n    : desc.replace(/\\n/g, '<br>');\n\n// Subject\nconst subject = `[DE Job Match v1.0 – ${safe(job.score)}] ${safe(job.title)} – ${safe(job.company)}`;\n\nreturn {\n  json: {\n    to: 'edwardtong@gmail.com',\n    subject,\n    html: `\n<div style=\"font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222;\">\n\n  <h2 style=\"margin-bottom: 4px;\">${safe(job.title)}</h2>\n\n  <p style=\"margin-top: 0; color: #555;\">\n    <strong>${safe(job.company)}</strong> · ${safe(job.location)}\n  </p>\n\n  <hr>\n\n  <table cellpadding=\"6\" cellspacing=\"0\">\n    <tr><td><strong>Score</strong></td><td>${safe(job.score)}</td></tr>\n    <tr><td><strong>Recommendation</strong></td><td>${safe(job.recommendation)}</td></tr>\n    <tr><td><strong>Role Type</strong></td><td>${safe(job.role_type)}</td></tr>\n    <tr><td><strong>Reason</strong></td><td>${safe(job.reason)}</td></tr>\n    <tr><td><strong>Salary</strong></td>\n        <td>£${safe(job.salary_min)} – £${safe(job.salary_max)}</td></tr>\n    <tr><td><strong>Contract</strong></td><td>${safe(job.contract_type)}</td></tr>\n  </table>\n\n  <p style=\"margin:16px 0;\">\n    <a href=\"${safe(job.apply_url)}\"\n       style=\"background:#0d7c3e;color:#fff;padding:10px 16px;\n              text-decoration:none;border-radius:4px;font-weight:bold;\">\n      Apply for this job →\n    </a>\n  </p>\n\n  <hr>\n\n  <h3>Job Description</h3>\n  <p style=\"line-height:1.5;\">${shortDesc || '<em>No description provided</em>'}</p>\n\n  <hr>\n\n  <p style=\"font-size:12px;color:#777;\">\n    Sent automatically by n8n · Source: ${safe(job.source)} · Data Engineer Search\n  </p>\n\n</div>\n`.trim()\n  }\n};\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6320,
+        1568
+      ],
+      "id": "b0d19630-21bb-4dad-a055-0f072193f42e",
+      "name": "Prepare Gmail HTTP Format"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1-5"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 12 * * 1-5"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "30 16 * * 1-5"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        2720,
+        1392
+      ],
+      "id": "4714e753-e5cb-4774-b3b1-c1edc27aa041",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst output = [];\n\nfor (const item of items) {\n  const job = item.json;\n\n  let key = job.id || job.jobId;\n\n  if (!key) {\n    key = [\n      job.title || job.jobTitle || '',\n      job.company?.display_name || job.employerName || '',\n      job.location?.display_name || job.locationName || ''\n    ].join('|').toLowerCase();\n  }\n\n  if (!seen.has(key)) {\n    seen.add(key);\n    output.push({ json: job });\n  }\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4208,
+        1264
+      ],
+      "id": "836b7cdb-458a-4597-8042-ce5943225bee",
+      "name": "Deduplication"
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "app_id",
+              "value": "={{$env.ADZUNA_APP_ID}}"
+            },
+            {
+              "name": "app_key",
+              "value": "={{$env.ADZUNA_APP_KEY}}"
+            },
+            {
+              "name": "what",
+              "value": "data engineer"
+            },
+            {
+              "name": "where",
+              "value": "Berkshire"
+            },
+            {
+              "name": "results_per_page",
+              "value": "={{ $node[\"Global Configuration\"].json[\"results_per_page\"] }}"
+            },
+            {
+              "name": "sort_by",
+              "value": "date"
+            },
+            {
+              "name": "category",
+              "value": "it-jobs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3536,
+        1088
+      ],
+      "id": "cd91a8bb-98de-4e3a-9973-1c5d1d2d86e4",
+      "name": "Adzuna – Search DE Jobs in Berkshire"
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "app_id",
+              "value": "={{$env.ADZUNA_APP_ID}}"
+            },
+            {
+              "name": "app_key",
+              "value": "={{$env.ADZUNA_APP_KEY}}"
+            },
+            {
+              "name": "what",
+              "value": "data engineer"
+            },
+            {
+              "name": "where",
+              "value": "London"
+            },
+            {
+              "name": "results_per_page",
+              "value": "={{ $node[\"Global Configuration\"].json[\"results_per_page\"] }}"
+            },
+            {
+              "name": "sort_by",
+              "value": "date"
+            },
+            {
+              "name": "category",
+              "value": "it-jobs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3536,
+        1280
+      ],
+      "id": "0502e9ed-9bda-480f-a9d2-3ab3d3495b0d",
+      "name": "Adzuna – Search DE Jobs in London"
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "app_id",
+              "value": "={{$env.ADZUNA_APP_ID}}"
+            },
+            {
+              "name": "app_key",
+              "value": "={{$env.ADZUNA_APP_KEY}}"
+            },
+            {
+              "name": "what_or",
+              "value": "elasticsearch hadoop spark kafka airflow databricks"
+            },
+            {
+              "name": "where",
+              "value": "Berkshire"
+            },
+            {
+              "name": "results_per_page",
+              "value": "={{ $node[\"Global Configuration\"].json[\"results_per_page\"] }}"
+            },
+            {
+              "name": "sort_by",
+              "value": "date"
+            },
+            {
+              "name": "category",
+              "value": "it-jobs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3536,
+        896
+      ],
+      "id": "8e2fe275-44a7-4f80-8483-419fc086a63f",
+      "name": "Adzuna – Search DE Keywords in Berkshire"
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "app_id",
+              "value": "={{$env.ADZUNA_APP_ID}}"
+            },
+            {
+              "name": "app_key",
+              "value": "={{$env.ADZUNA_APP_KEY}}"
+            },
+            {
+              "name": "what_or",
+              "value": "elasticsearch hadoop spark kafka airflow databricks"
+            },
+            {
+              "name": "where",
+              "value": "London"
+            },
+            {
+              "name": "results_per_page",
+              "value": "={{ $node[\"Global Configuration\"].json[\"results_per_page\"] }}"
+            },
+            {
+              "name": "sort_by",
+              "value": "date"
+            },
+            {
+              "name": "category",
+              "value": "it-jobs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3536,
+        704
+      ],
+      "id": "6e546a7e-0f4a-499b-8a57-50769bdb10dd",
+      "name": "Adzuna – Search DE Keywords in London"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        896
+      ],
+      "id": "000753eb-943f-43c1-9a69-c2dadb447a77",
+      "name": "Convert Jobs - Keywords Berkshire"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        704
+      ],
+      "id": "2daee2be-84c4-4834-8f74-83975ef7cec6",
+      "name": "Convert Jobs - Keywords London"
+    },
+    {
+      "parameters": {
+        "numberInputs": 6
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3984,
+        1264
+      ],
+      "id": "a9d09ba2-745d-444d-a000-9d5f29a8b8f7",
+      "name": "Merge Jobs"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        1088
+      ],
+      "id": "379c1827-1196-4872-9201-d886b5e8b460",
+      "name": "Convert Jobs - Berkshire"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        1280
+      ],
+      "id": "e4236740-cd4a-4b67-965f-e105f07efe8e",
+      "name": "Convert Jobs - London"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "de-cond-apply",
+              "leftValue": "={{ $('Parse LLM Result').item.json.recommendation }}",
+              "rightValue": "APPLY",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "de-cond-maybe",
+              "leftValue": "={{ $('Parse LLM Result').item.json.recommendation }}",
+              "rightValue": "MAYBE",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        5872,
+        1440
+      ],
+      "id": "fc420db2-8039-435e-bad3-72b09ef635d9",
+      "name": "Job Description Filter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "de-salary-cond",
+              "leftValue": "={{ !$('Parse LLM Result').item.json.salary_max ? true : $('Parse LLM Result').item.json.is_contract === true ? $('Parse LLM Result').item.json.salary_max >= $('Global Configuration').first().json.min_salary_contract : $('Parse LLM Result').item.json.salary_max >= $('Global Configuration').first().json.min_salary_perm }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        6096,
+        1504
+      ],
+      "id": "cd67810c-013a-429e-bd5a-acd7cbd4e225",
+      "name": "Meet Salary Filter?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4976,
+        1264
+      ],
+      "id": "3d56800d-de24-4a67-9b03-e8922ed84135",
+      "name": "Split – LLM Throttle"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5264,
+        1408
+      ],
+      "id": "a4526458-3dea-49c3-a34e-730f510fc111",
+      "name": "Wait – Rate Limit"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        3856,
+        560
+      ],
+      "id": "6f606bef-1181-43c7-b291-e3d1be307392",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM",
+          "mode": "list",
+          "cachedResultName": "n8n_sent_jobs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "de_sent_jobs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "source": "={{ $json.source }}",
+            "title": "={{ $json.title }}",
+            "company": "={{ $json.company }}",
+            "score": "={{ $json.score }}",
+            "recommendation": "={{ $json.recommendation }}",
+            "sent_at": "={{ new Date().toISOString() }}",
+            "salary_max": "={{ $json.salary_max }}",
+            "employment_type": "={{ $json.employment_type }}",
+            "apply_url": "={{ $json.apply_url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "salary_max",
+              "displayName": "salary_max",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "employment_type",
+              "displayName": "employment_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "apply_url",
+              "displayName": "apply_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5712,
+        1280
+      ],
+      "id": "7cdad259-733e-4053-803d-05e00002797b",
+      "name": "Record Seen Jobs",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DgucYvkJJQVWqK51",
+          "name": "Job.Automation Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "edwardtong@gmail.com",
+        "subject": "=&#x274C; DE Job Search Failed: {{ $json.execution.error.httpCode ? $json.execution.error.httpCode + \" – \" : \"\" }}{{ $json.execution.lastNodeExecuted }} | Exec #{{ $json.execution.id }}",
+        "message": "=<div style=\"font-family: Arial, sans-serif; padding: 20px; border: 2px solid #d93025; background: #fff5f5; color: #333; max-width: 650px;\">\n  <h2 style=\"margin-top: 0; color: #d93025;\">&#x274C; DE Workflow Failure Alert</h2>\n\n  <table style=\"width: 100%; border-collapse: collapse; margin-bottom: 16px;\">\n    <tr>\n      <td style=\"padding: 6px 12px 6px 0; font-weight: bold; width: 140px; vertical-align: top;\">Workflow:</td>\n      <td style=\"padding: 6px 0;\">{{ $json.workflow.name }}</td>\n    </tr>\n    <tr style=\"background: #ffeaea;\">\n      <td style=\"padding: 6px 12px 6px 0; font-weight: bold; vertical-align: top;\">Failed Node:</td>\n      <td style=\"padding: 6px 0;\">{{ $json.execution.lastNodeExecuted }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 6px 12px 6px 0; font-weight: bold; vertical-align: top;\">Error:</td>\n      <td style=\"padding: 6px 0; font-size: 13px;\">{{ $json.execution.error.message }}</td>\n    </tr>\n    <tr style=\"background: #ffeaea;\">\n      <td style=\"padding: 6px 12px 6px 0; font-weight: bold; vertical-align: top;\">Execution ID:</td>\n      <td style=\"padding: 6px 0;\">{{ $json.execution.id }}</td>\n    </tr>\n  </table>\n\n  <p style=\"margin: 0;\">\n    <a href=\"{{ $json.execution.url }}\" style=\"background: #d93025; color: white; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;\">\n      &#x1F50D; View Execution in n8n\n    </a>\n  </p>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        4048,
+        560
+      ],
+      "id": "e7abcea9-6ef8-47c4-8940-7099f150036f",
+      "name": "Gmail for Job Failure",
+      "webhookId": "de-gmail-webhook-v10",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ON4cMVnRGPKgOQl0",
+          "name": "Job.Automation Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{'https://' + $env.REED_JOBSEEKER_KEY + ':@www.reed.co.uk/api/1.0/search'}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "keywords",
+              "value": "\"data engineer\" OR \"data platform\" OR \"data pipeline\" OR elasticsearch OR hadoop OR spark OR kafka OR airflow OR databricks"
+            },
+            {
+              "name": "locationName",
+              "value": "Reading"
+            },
+            {
+              "name": "distanceFromLocation",
+              "value": "25"
+            },
+            {
+              "name": "resultsToTake",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3536,
+        1472
+      ],
+      "id": "28c56219-fb6c-4e1a-8ebd-b94a40e9f5a6",
+      "name": "Reed – Search DE Jobs in Berkshire"
+    },
+    {
+      "parameters": {
+        "url": "={{'https://' + $env.REED_JOBSEEKER_KEY + ':@www.reed.co.uk/api/1.0/search'}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "keywords",
+              "value": "\"data engineer\" OR \"data platform\" OR \"data pipeline\" OR elasticsearch OR hadoop OR spark OR kafka OR airflow OR databricks"
+            },
+            {
+              "name": "locationName",
+              "value": "London"
+            },
+            {
+              "name": "distanceFromLocation",
+              "value": "10"
+            },
+            {
+              "name": "resultsToTake",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3536,
+        1664
+      ],
+      "id": "0e7374d0-db9a-4f19-ae12-055c70a89281",
+      "name": "Reed – Search DE Jobs in London"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        1472
+      ],
+      "id": "5a047077-cbff-440f-9751-ccbc7ba25ffe",
+      "name": "Convert Jobs - Reed Berkshire"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        1664
+      ],
+      "id": "d73235ff-9278-4ea1-aaa5-461eafd6def4",
+      "name": "Convert Jobs - Reed London"
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "Global Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Global Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Global Configuration": {
+      "main": [
+        [
+          {
+            "node": "Load Sent Job History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Sent Job History": {
+      "main": [
+        [
+          {
+            "node": "Trigger Searches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Searches": {
+      "main": [
+        [
+          {
+            "node": "Adzuna – Search DE Jobs in Berkshire",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Adzuna – Search DE Jobs in London",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Adzuna – Search DE Keywords in Berkshire",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Adzuna – Search DE Keywords in London",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reed – Search DE Jobs in Berkshire",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reed – Search DE Jobs in London",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adzuna – Search DE Jobs in Berkshire": {
+      "main": [
+        [
+          {
+            "node": "Convert Jobs - Berkshire",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adzuna – Search DE Jobs in London": {
+      "main": [
+        [
+          {
+            "node": "Convert Jobs - London",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adzuna – Search DE Keywords in Berkshire": {
+      "main": [
+        [
+          {
+            "node": "Convert Jobs - Keywords Berkshire",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adzuna – Search DE Keywords in London": {
+      "main": [
+        [
+          {
+            "node": "Convert Jobs - Keywords London",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reed – Search DE Jobs in Berkshire": {
+      "main": [
+        [
+          {
+            "node": "Convert Jobs - Reed Berkshire",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reed – Search DE Jobs in London": {
+      "main": [
+        [
+          {
+            "node": "Convert Jobs - Reed London",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Jobs - Berkshire": {
+      "main": [
+        [
+          {
+            "node": "Merge Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Jobs - London": {
+      "main": [
+        [
+          {
+            "node": "Merge Jobs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Convert Jobs - Reed Berkshire": {
+      "main": [
+        [
+          {
+            "node": "Merge Jobs",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Convert Jobs - Reed London": {
+      "main": [
+        [
+          {
+            "node": "Merge Jobs",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Convert Jobs - Keywords Berkshire": {
+      "main": [
+        [
+          {
+            "node": "Merge Jobs",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Convert Jobs - Keywords London": {
+      "main": [
+        [
+          {
+            "node": "Merge Jobs",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Merge Jobs": {
+      "main": [
+        [
+          {
+            "node": "Deduplication",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplication": {
+      "main": [
+        [
+          {
+            "node": "Filter – Exclude Non-DE Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter – Exclude Non-DE Jobs": {
+      "main": [
+        [
+          {
+            "node": "Normalize – DE Job for LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize – DE Job for LLM": {
+      "main": [
+        [
+          {
+            "node": "Filter Out Sent Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Out Sent Jobs": {
+      "main": [
+        [
+          {
+            "node": "Split – LLM Throttle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split – LLM Throttle": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait – Rate Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait – Rate Limit": {
+      "main": [
+        [
+          {
+            "node": "LLM – DE Job Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM – DE Job Scoring": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM – DE Job Scoring",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM Result": {
+      "main": [
+        [
+          {
+            "node": "Record Seen Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Seen Jobs": {
+      "main": [
+        [
+          {
+            "node": "Job Description Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Description Filter": {
+      "main": [
+        [
+          {
+            "node": "Meet Salary Filter?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split – LLM Throttle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meet Salary Filter?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Gmail HTTP Format",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split – LLM Throttle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Gmail HTTP Format": {
+      "main": [
+        [
+          {
+            "node": "Send Job to GMAIL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Job to GMAIL": {
+      "main": [
+        [
+          {
+            "node": "Split – LLM Throttle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail for Job Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "2a273797-86c9-40a3-8372-0ee3e1b21221",
+  "activeVersionId": "2a273797-86c9-40a3-8372-0ee3e1b21221",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-09T17:10:25.115Z",
+      "createdAt": "2026-04-09T17:10:25.115Z",
+      "role": "workflow:owner",
+      "workflowId": "4QRfOONk2GEUG6Ik",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-28T09:34:09.000Z",
+    "createdAt": "2026-04-28T09:33:37.829Z",
+    "versionId": "2a273797-86c9-40a3-8372-0ee3e1b21221",
+    "workflowId": "4QRfOONk2GEUG6Ik",
+    "nodes": [
+      {
+        "parameters": {
+          "jsCode": "return [ items[0] ];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3312,
+          1248
+        ],
+        "id": "553ed078-5a0e-46f9-9c0a-66d728526acb",
+        "name": "Trigger Searches"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          2720,
+          1120
+        ],
+        "id": "706c757c-3fa9-4cee-96bf-f210c76b1eec",
+        "name": "When clicking 'Execute workflow'"
+      },
+      {
+        "parameters": {
+          "jsCode": "return {\n  min_salary_perm: 55000,\n  min_salary_contract: 65000,\n  results_per_page: 50\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2960,
+          1248
+        ],
+        "id": "7d78d0a7-350a-41fa-aa23-0264229c7495",
+        "name": "Global Configuration"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Input is already one job per item\nconst jobs = items.map(i => i.json);\n\nconst blacklist = [\n  'software developer',\n  'software engineer',\n  'frontend',\n  'backend',\n  'full stack',\n  'trainee',\n  'coding',\n  'machine learning engineer',\n  'ml engineer',\n  'data scientist',\n  'research scientist',\n  'java developer',\n  'python developer'\n];\n\n// SC / DV / security clearance terms — checked against full text\nconst clearancePatterns = [\n  /\\bsc cleared\\b/i,\n  /\\bsc clearance\\b/i,\n  /require.*\\bsc\\b/i,\n  /\\bactive sc\\b/i,\n  /\\bhold.*\\bsc\\b/i,\n  /\\bdv cleared\\b/i,\n  /\\bdv clearance\\b/i,\n  /developed vetting/i,\n  /\\bnsc\\b/i,\n  /nato secret/i\n];\n\nconst whitelist = [\n  'data engineer',\n  'data platform',\n  'data pipeline',\n  'etl',\n  'elt',\n  'elasticsearch',\n  'hadoop',\n  'spark',\n  'kafka',\n  'databricks',\n  'airflow',\n  'mongodb',\n  'big data',\n  'data infrastructure',\n  'data ops',\n  'dataops',\n  'data integration',\n  'analytics engineer'\n];\n\nconst filtered = jobs.filter(job => {\n  // Support both Adzuna (title/description) and Reed (jobTitle/jobDescription) field names\n  const title = (job.title || job.jobTitle || '').toLowerCase();\n  const body  = (job.description || job.jobDescription || '').toLowerCase();\n  const fullText = `${title} ${body}`;\n\n  const hasDE = whitelist.some(w => fullText.includes(w));\n\n  // Only kill if title CLEARLY indicates excluded role\n  const isExcludedTitle = blacklist.some(b => title.includes(b));\n\n  // Reject any job requiring SC/DV clearance (candidate cannot hold SC until next year)\n  const requiresClearance = clearancePatterns.some(p => p.test(fullText));\n\n  return hasDE && !isExcludedTitle && !requiresClearance;\n});\n\n// Return as n8n items\nreturn filtered.map(job => ({ json: job }));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4432,
+          1264
+        ],
+        "id": "f64b9493-28df-4a01-94d0-e2b5bf6212ab",
+        "name": "Filter – Exclude Non-DE Jobs"
+      },
+      {
+        "parameters": {
+          "jsCode": "return items.map(item => {\n  const job = item.json;\n\n  // ── Detect source by field presence ──────────────────────────────────────\n  const isReed = job.jobId !== undefined;\n\n  // ── Normalise raw fields per source ──────────────────────────────────────\n  const rawTitle       = isReed ? (job.jobTitle       || '') : (job.title        || '');\n  const rawCompany     = isReed ? (job.employerName   || '') : (job.company?.display_name || '');\n  const rawLocation    = isReed ? (job.locationName   || '') : (job.location?.display_name || '');\n  const rawDesc        = isReed ? (job.jobDescription || '') : (job.description  || '');\n  const rawApplyUrl    = isReed ? (job.jobUrl         || '') : (job.redirect_url || '');\n  const rawSalaryMin   = isReed ? (job.minimumSalary  || null) : (job.salary_min || null);\n  const rawSalaryMax   = isReed ? (job.maximumSalary  || null) : (job.salary_max || null);\n  const rawPostedAt    = isReed ? (job.date           || null) : (job.created    || null);\n  const rawContractType = isReed\n    ? (job.jobType || null)\n    : (job.contract_type || job.contract_time || null);\n  const rawCategory    = isReed ? null : (job.category?.tag || null);\n  const rawEmploymentType = isReed\n    ? (job.fullTime === true ? 'full_time' : job.fullTime === false ? 'part_time' : null)\n    : (job.contract_time || null);\n\n  // ── Contract/permanent detection ─────────────────────────────────────────\n  const desc = rawDesc.toLowerCase();\n  const isDailyRate = /per day|\\/day|daily rate|inside ir35|outside ir35/i.test(desc);\n\n  let isContract, isPermanent;\n  if (isReed) {\n    const isHourly = rawSalaryMax !== null && rawSalaryMax < 1000;\n    isContract  = isDailyRate && !isHourly;\n    isPermanent = !isHourly && !isContract;\n  } else {\n    isContract  = job.contract_type === 'contract' || job.contract_time === 'contract' || isDailyRate;\n    isPermanent = !isContract && (job.contract_time === 'full_time' || job.contract_type === 'permanent');\n  }\n\n  // ── Stable job_id (prefix Reed IDs to avoid collisions) ──────────────────\n  const jobId = isReed\n    ? `reed_${job.jobId}`\n    : (job.id || null);\n\n  return {\n    json: {\n      job_id: jobId,\n      source: isReed ? 'Reed' : 'Adzuna',\n      title: rawTitle,\n      company: rawCompany,\n      location: rawLocation,\n      job_description: rawDesc,\n      apply_url: rawApplyUrl,\n      salary_min: rawSalaryMin,\n      salary_max: rawSalaryMax,\n      salary_is_estimated: isReed ? false : (job.salary_is_predicted || false),\n      contract_type: rawContractType,\n      employment_type: rawEmploymentType,\n      posted_at: rawPostedAt,\n      category: rawCategory,\n      is_contract: isContract,\n      is_permanent: isPermanent,\n      llm_input: `\nJob Title:\n${rawTitle || 'N/A'}\n\nCompany:\n${rawCompany || 'N/A'}\n\nLocation:\n${rawLocation || 'N/A'}\n\nContract Type:\n${rawContractType || 'N/A'}\n\nSalary:\n${rawSalaryMin || 'N/A'} – ${rawSalaryMax || 'N/A'}\n\nJob Description:\n${rawDesc || 'N/A'}\n`.trim()\n    }\n  };\n});\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4608,
+          1264
+        ],
+        "id": "e5db7cbe-87b3-4d65-89ce-2749d1ab70a1",
+        "name": "Normalize – DE Job for LLM"
+      },
+      {
+        "parameters": {
+          "model": "google/gemma-4-26b-a4b-it",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          5328,
+          1296
+        ],
+        "id": "4c222b1a-45f7-4d2d-a77c-fea9a84b2033",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "LYXAooPqXDxnww2H",
+            "name": "OpenRouter account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=You are evaluating a job posting for a specific candidate. Your job is to reason about how well this role fits this person — not to do keyword matching.\n\nCANDIDATE PROFILE:\n- Senior Database Platform Engineer transitioning into Data Engineering, 25+ years total experience in IT.\n- Most recent role: Senior Database Platform Engineer at Nomura (investment banking), 2023–2025.\n  - Terraform and Git-driven CI/CD pipelines for automated database provisioning\n  - Migrated ~2.3TB of databases using IaC automation\n  - MSSQL, MySQL, and Sybase ASE production platforms; multi-site HA/DR architecture\n- Prior major role: System Analyst / Database Administrator at Hospital Authority HK (healthcare), 2002–2022.\n  - Implemented and operated a MongoDB platform (~3TB) supporting Electronic Health Record system across 44 public hospitals — sharded clusters, replica sets, MongoDB Ops Manager, Community-to-Enterprise upgrade\n  - Built and operated a 9-node Elasticsearch cluster ingesting ~50GB/day of log data (ELK Stack: Elasticsearch, Logstash, Kibana); centralised logging for enterprise hospital systems\n  - Administered Apache Hadoop cluster for secure data workflows and analytics\n  - Automation tooling for monitoring, data processing, and cross-platform integration\n\nSELF-DIRECTED DATA ENGINEERING PROJECT (Octopus Energy Monitor — Version 3, Apr 2026):\nThe candidate has independently built a production-grade personal data engineering system demonstrating genuine DE skills beyond operational database work:\n- Designed and built a 6-phase ELT pipeline in Python, transforming raw operational data into a star schema (1 fact table + 8 dimension tables) stored in DuckDB for OLAP analytics\n- Implemented an incremental watermark pattern to avoid full reprocessing on each pipeline run\n- Multi-source REST API ingestion and backfill across 4 external data sources (National Grid ESO, Sheffield PVLive, Elexon BMRS, ONS SAP) — 40,000+ records per source\n- Automated data quality framework covering completeness, range validation, and fact-vs-source divergence checks at every pipeline boundary\n- Built a 141-test pytest suite covering staging transforms, fact materialisation, DQ checks, and utility functions\n- Extended a FastAPI service with 7 new /de/* endpoints serving daily summaries, rate outlook, half-hourly facts, and cheapest-slot recommendations to Grafana dashboards\n- Exploratory Jupyter Notebook with 6 analytical sections using DuckDB, including a cheapest-hours heatmap and cost breakdown over 24 months\n- Containerised services (n8n, Grafana, FastAPI) using Docker on a Linux VM; orchestrated pipeline execution via n8n\n\nKEY TECHNICAL SKILLS RELEVANT TO DATA ENGINEERING:\n- ELT pipeline development: Python (REST API ingestion, staging transforms, fact materialisation, backfill), DuckDB (OLAP star schema, incremental loads)\n- Data quality: automated completeness, range, and divergence checks; health-check scripts\n- Testing: pytest (141-test DE pipeline suite)\n- API development: FastAPI (7 REST endpoints serving analytics data)\n- Exploratory analytics: Jupyter Notebook with DuckDB\n- Pipeline orchestration: n8n (scheduling, workflow automation)\n- Data platforms: MongoDB (sharded, replica sets, Ops Manager), Elasticsearch/ELK Stack, Apache Hadoop (HDFS, cluster admin)\n- Infrastructure & automation: Terraform (IaC), Git-driven CI/CD pipelines, Ansible/Ansible Tower, Bash scripting, PowerShell\n- Databases: MSSQL (Always On AG), MySQL (GTID replication), Sybase ASE, Oracle (early career)\n- Containerisation: Docker (multi-service deployment on Linux)\n- Scale experience: 100–1200+ database servers; multi-terabyte data migrations; 24x7 production environments\n- Sectors: Investment banking (Nomura) and regulated healthcare (Hospital Authority, 44 hospitals)\n\nWHAT THE CANDIDATE IS LOOKING FOR:\n- Data Engineer, Data Platform Engineer, or Data Infrastructure roles involving hands-on pipeline development, platform operations, data infrastructure design, or observability/monitoring at scale.\n- Roles combining database/data platform expertise with DevOps/IaC tooling (Terraform, CI/CD, Ansible) are a strong fit.\n- The candidate is making a career transition into Data Engineering and is open to mid-level DE roles where the technical content is a genuine match — title seniority alone should not disqualify a role.\n- The candidate has genuine Elasticsearch, Hadoop, and MongoDB operational experience and can step into roles requiring these technologies.\n- NOT interested in: pure BI/reporting/dashboard roles, data science/ML roles, software development roles, or roles requiring advanced Python data science libraries (scikit-learn, TensorFlow, PyTorch) as the primary skill.\n\nTECHNOLOGY NOTES:\n- \"ELK Stack\", \"Elastic Stack\", \"Elasticsearch\", \"Logstash\", \"Kibana\" — candidate has production operations experience with a large-scale cluster. Treat as a strong operational match.\n- \"Hadoop\", \"HDFS\", \"MapReduce\" — candidate has hands-on cluster administration experience.\n- \"MongoDB\" — candidate has deep production DBA experience including sharding, Ops Manager, and a 3TB enterprise deployment.\n- \"Terraform\", \"Ansible\", \"CI/CD\", \"GitOps\" — candidate has direct production experience from Nomura. Data Platform/DE roles combining these with data tools are a strong fit.\n- \"DuckDB\" — candidate has built a star schema (1 fact + 8 dims) and run OLAP analytics against it in a personal DE project.\n- \"FastAPI\" — candidate has built and extended a REST API serving DE analytics data.\n- \"pytest\" — candidate has authored a 141-test suite covering DE pipeline components.\n- \"n8n\" — candidate uses for pipeline orchestration; treat as relevant experience for Airflow-adjacent or orchestration roles.\n- \"Jupyter Notebook\" — candidate has used for exploratory analytics with DuckDB.\n- \"Spark\", \"Kafka\", \"Airflow\", \"dbt\", \"Databricks\" — the candidate does not have direct experience with these, but has strong adjacent infrastructure and pipeline skills. Score as MAYBE if these are the primary requirements; higher if they appear alongside MongoDB/Elasticsearch/Hadoop or general pipeline/ELT work.\n- \"Python\" for scripting/ETL/pipeline work — candidate has demonstrated Python ELT pipeline development in the Octopus Energy project. Do not penalise for Python requirements.\n- \"Data Warehouse\", \"Snowflake\", \"Redshift\", \"BigQuery\", \"dbt\" — limited direct experience. Score as MAYBE unless combined with familiar technologies.\n- Cloud platforms (AWS, Azure, GCP) — candidate has no direct cloud experience but has Terraform IaC skills. Score lower if cloud-native expertise is the primary requirement.\n- Pure analytics, BI (Tableau, Power BI), or data visualisation roles — NOT a good fit. SKIP unless significant data engineering platform work is also involved.\n\nIMPORTANT SCORING GUIDANCE:\n- A role focused on Elasticsearch/ELK operations, MongoDB platform engineering, or Hadoop cluster administration is a STRONG match (score 75–100).\n- Data Platform Engineer or Data Infrastructure roles combining IaC/automation (Terraform, Ansible, CI/CD) with data technologies are a strong fit given the candidate's Nomura experience.\n- ELT/pipeline engineering roles in Python where Hadoop, Elasticsearch, MongoDB, or DuckDB are involved score 65–85.\n- Roles requiring ELT pipeline development, data quality, REST API ingestion, or star schema design score 60–75 — the candidate has delivered all of these in the Octopus Energy project.\n- Spark/Kafka/Airflow-primary roles score 40–60 (MAYBE) — adjacent but not directly experienced.\n- Pure BI, visualisation, or data science roles score below 30 (SKIP).\n- Seniority: the candidate is open to mid-level Data Engineer roles as part of a career transition. Score mid-level roles based on technical fit — do not penalise for lack of a \"Senior\" title. Only hard-cap roles explicitly labelled Junior, Graduate, Entry-Level, or Trainee (cap at 20, SKIP).\n\nBased on your reasoning, produce:\n- score: 0–100 representing overall fit (technical match + seniority + work style). Ignore compensation entirely.\n- recommendation: APPLY (score ≥ 60), MAYBE (score 40–59), or SKIP (score < 40).\n- role_type: one of DE_PLATFORM, DE_PIPELINE, DE_ANALYTICS, DEVOPS, DBA, MANAGEMENT, NOT_DE.\n- reason: 1–2 sentences explaining the key factors behind your score and recommendation.\n\nOUTPUT FORMAT (strict — return only valid JSON, no markdown, no extra text):\n{\n  \"score\": 75,\n  \"role_type\": \"DE_PIPELINE\",\n  \"recommendation\": \"APPLY\",\n  \"reason\": \"Role requires ELT pipeline development and data quality checks in Python — skills the candidate has demonstrated hands-on in the Octopus Energy DE project; Elasticsearch experience also relevant.\"\n}\n\nJOB DATA:\n{{ $json.llm_input }}\n",
+          "messages": {
+            "messageValues": [
+              {
+                "message": "You are an experienced technical recruiter specialising in Data Engineering and Data Platform placements across all seniority levels. You understand the difference between data engineering (pipelines, infrastructure, platform operations) and data science (ML, modelling, statistics). Your goal is to evaluate genuine fit — not surface-level keyword matching. A candidate with deep operational experience in Elasticsearch, MongoDB, and Hadoop, plus hands-on ELT pipeline development (Python, DuckDB, pytest, FastAPI), is a strong candidate for data platform and pipeline roles even without Spark or Kafka experience. The candidate is making a career transition into DE and mid-level roles are acceptable targets. Be honest and realistic. Compensation and salary are irrelevant to your evaluation — that is handled separately. Return only valid JSON."
+              }
+            ]
+          },
+          "batching": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.9,
+        "position": [
+          5216,
+          1152
+        ],
+        "id": "77192e23-2508-4545-a3f5-597a7d68b44d",
+        "name": "LLM – DE Job Scoring",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const raw = (item.json.text || '').trim();\nconst originalJob = $('Wait – Rate Limit').item.json;\n\nlet parsed;\ntry {\n  const cleanJson = raw.replace(/^```json\\n?/, '').replace(/\\n?```$/, '').trim();\n  parsed = JSON.parse(cleanJson);\n} catch (e) {\n  return {\n    json: {\n      ...originalJob,\n      score: 0,\n      role_type: 'NOT_DE',\n      recommendation: 'SKIP',\n      reason: 'LLM Error: Failed to parse response JSON.'\n    }\n  };\n}\n\nconst score = parsed.score || 0;\n\n// Enforce recommendation based on score thresholds — overrides LLM decision\nlet recommendation;\nif (score >= 60) {\n  recommendation = 'APPLY';\n} else if (score >= 40) {\n  recommendation = 'MAYBE';\n} else {\n  recommendation = 'SKIP';\n}\n\nreturn {\n  json: {\n    ...originalJob,\n    score,\n    role_type: parsed.role_type || 'NOT_DE',\n    recommendation,\n    reason: parsed.reason || 'Missing reason in LLM response.'\n  }\n};\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          5536,
+          1152
+        ],
+        "id": "23f7f079-090c-46e0-be81-518461a40fb5",
+        "name": "Parse LLM Result"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM",
+            "mode": "list",
+            "cachedResultName": "n8n_sent_jobs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "de_sent_jobs",
+            "mode": "name"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          3152,
+          1248
+        ],
+        "id": "3b46d884-65e8-4554-afc5-b9cae9f43a5e",
+        "name": "Load Sent Job History",
+        "alwaysOutputData": true,
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DgucYvkJJQVWqK51",
+            "name": "Job.Automation Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const newJobs = $(\"Normalize – DE Job for LLM\").all();\n\n// Safely load history — empty sheet returns 0 items\nlet sentHistory = [];\ntry {\n  sentHistory = $(\"Load Sent Job History\").all();\n  sentHistory = sentHistory.filter(item => item.json.job_id);\n} catch(e) {\n  sentHistory = [];\n}\n\n// Build sets from history: by job_id AND by normalised company+title\nconst sentIds = new Set(sentHistory.map(item => String(item.json.job_id).trim()));\nconst sentTitleKeys = new Set(\n  sentHistory.map(item => {\n    const title = (item.json.title || '').toLowerCase().trim();\n    const company = (item.json.company || '').toLowerCase().trim();\n    return `${company}||${title}`;\n  })\n);\n\n// Deduplicate within this run too\nconst seen = new Set();\nconst result = [];\nfor (const item of newJobs) {\n  const id = String(item.json.job_id || '').trim();\n  const titleKey = `${(item.json.company || '').toLowerCase().trim()}||${(item.json.title || '').toLowerCase().trim()}`;\n\n  if (!sentIds.has(id) && !sentTitleKeys.has(titleKey) && !seen.has(id)) {\n    seen.add(id);\n    result.push(item);\n  }\n}\nreturn result;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4784,
+          1264
+        ],
+        "id": "0e64060a-162e-4985-ad45-4a80b9dbac83",
+        "name": "Filter Out Sent Jobs"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.to }}",
+          "subject": "={{ $json.subject }}",
+          "message": "={{ $json.html }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          6496,
+          1584
+        ],
+        "id": "51d2d35f-fc6b-460c-a411-f2eed2f291a7",
+        "name": "Send Job to GMAIL",
+        "webhookId": "de-gmail-webhook-v10",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "ON4cMVnRGPKgOQl0",
+            "name": "Job.Automation Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// Current job item \nconst job = $('Parse LLM Result').item.json;\n\n// Safe helper\nconst safe = (v) => (v === undefined || v === null || v === '' ? 'N/A' : v);\n\n// Description handling\nconst desc = job.job_description || '';\nconst shortDesc =\n  desc.length > 2000\n    ? desc.slice(0, 2000).replace(/\\n/g, '<br>') +\n      '<br><br><em>[Description truncated]</em>'\n    : desc.replace(/\\n/g, '<br>');\n\n// Subject\nconst subject = `[DE Job Match v1.0 – ${safe(job.score)}] ${safe(job.title)} – ${safe(job.company)}`;\n\nreturn {\n  json: {\n    to: 'edwardtong@gmail.com',\n    subject,\n    html: `\n<div style=\"font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222;\">\n\n  <h2 style=\"margin-bottom: 4px;\">${safe(job.title)}</h2>\n\n  <p style=\"margin-top: 0; color: #555;\">\n    <strong>${safe(job.company)}</strong> · ${safe(job.location)}\n  </p>\n\n  <hr>\n\n  <table cellpadding=\"6\" cellspacing=\"0\">\n    <tr><td><strong>Score</strong></td><td>${safe(job.score)}</td></tr>\n    <tr><td><strong>Recommendation</strong></td><td>${safe(job.recommendation)}</td></tr>\n    <tr><td><strong>Role Type</strong></td><td>${safe(job.role_type)}</td></tr>\n    <tr><td><strong>Reason</strong></td><td>${safe(job.reason)}</td></tr>\n    <tr><td><strong>Salary</strong></td>\n        <td>£${safe(job.salary_min)} – £${safe(job.salary_max)}</td></tr>\n    <tr><td><strong>Contract</strong></td><td>${safe(job.contract_type)}</td></tr>\n  </table>\n\n  <p style=\"margin:16px 0;\">\n    <a href=\"${safe(job.apply_url)}\"\n       style=\"background:#0d7c3e;color:#fff;padding:10px 16px;\n              text-decoration:none;border-radius:4px;font-weight:bold;\">\n      Apply for this job →\n    </a>\n  </p>\n\n  <hr>\n\n  <h3>Job Description</h3>\n  <p style=\"line-height:1.5;\">${shortDesc || '<em>No description provided</em>'}</p>\n\n  <hr>\n\n  <p style=\"font-size:12px;color:#777;\">\n    Sent automatically by n8n · Source: ${safe(job.source)} · Data Engineer Search\n  </p>\n\n</div>\n`.trim()\n  }\n};\n\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          6320,
+          1568
+        ],
+        "id": "b0d19630-21bb-4dad-a055-0f072193f42e",
+        "name": "Prepare Gmail HTTP Format"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 9 * * 1-5"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 12 * * 1-5"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "30 16 * * 1-5"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          2720,
+          1392
+        ],
+        "id": "4714e753-e5cb-4774-b3b1-c1edc27aa041",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "jsCode": "const seen = new Set();\nconst output = [];\n\nfor (const item of items) {\n  const job = item.json;\n\n  let key = job.id || job.jobId;\n\n  if (!key) {\n    key = [\n      job.title || job.jobTitle || '',\n      job.company?.display_name || job.employerName || '',\n      job.location?.display_name || job.locationName || ''\n    ].join('|').toLowerCase();\n  }\n\n  if (!seen.has(key)) {\n    seen.add(key);\n    output.push({ json: job });\n  }\n}\n\nreturn output;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4208,
+          1264
+        ],
+        "id": "836b7cdb-458a-4597-8042-ce5943225bee",
+        "name": "Deduplication"
+      },
+      {
+        "parameters": {
+          "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "app_id",
+                "value": "={{$env.ADZUNA_APP_ID}}"
+              },
+              {
+                "name": "app_key",
+                "value": "={{$env.ADZUNA_APP_KEY}}"
+              },
+              {
+                "name": "what",
+                "value": "data engineer"
+              },
+              {
+                "name": "where",
+                "value": "Berkshire"
+              },
+              {
+                "name": "results_per_page",
+                "value": "={{ $node[\"Global Configuration\"].json[\"results_per_page\"] }}"
+              },
+              {
+                "name": "sort_by",
+                "value": "date"
+              },
+              {
+                "name": "category",
+                "value": "it-jobs"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3536,
+          1088
+        ],
+        "id": "cd91a8bb-98de-4e3a-9973-1c5d1d2d86e4",
+        "name": "Adzuna – Search DE Jobs in Berkshire"
+      },
+      {
+        "parameters": {
+          "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "app_id",
+                "value": "={{$env.ADZUNA_APP_ID}}"
+              },
+              {
+                "name": "app_key",
+                "value": "={{$env.ADZUNA_APP_KEY}}"
+              },
+              {
+                "name": "what",
+                "value": "data engineer"
+              },
+              {
+                "name": "where",
+                "value": "London"
+              },
+              {
+                "name": "results_per_page",
+                "value": "={{ $node[\"Global Configuration\"].json[\"results_per_page\"] }}"
+              },
+              {
+                "name": "sort_by",
+                "value": "date"
+              },
+              {
+                "name": "category",
+                "value": "it-jobs"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3536,
+          1280
+        ],
+        "id": "0502e9ed-9bda-480f-a9d2-3ab3d3495b0d",
+        "name": "Adzuna – Search DE Jobs in London"
+      },
+      {
+        "parameters": {
+          "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "app_id",
+                "value": "={{$env.ADZUNA_APP_ID}}"
+              },
+              {
+                "name": "app_key",
+                "value": "={{$env.ADZUNA_APP_KEY}}"
+              },
+              {
+                "name": "what_or",
+                "value": "elasticsearch hadoop spark kafka airflow databricks"
+              },
+              {
+                "name": "where",
+                "value": "Berkshire"
+              },
+              {
+                "name": "results_per_page",
+                "value": "={{ $node[\"Global Configuration\"].json[\"results_per_page\"] }}"
+              },
+              {
+                "name": "sort_by",
+                "value": "date"
+              },
+              {
+                "name": "category",
+                "value": "it-jobs"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3536,
+          896
+        ],
+        "id": "8e2fe275-44a7-4f80-8483-419fc086a63f",
+        "name": "Adzuna – Search DE Keywords in Berkshire"
+      },
+      {
+        "parameters": {
+          "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "app_id",
+                "value": "={{$env.ADZUNA_APP_ID}}"
+              },
+              {
+                "name": "app_key",
+                "value": "={{$env.ADZUNA_APP_KEY}}"
+              },
+              {
+                "name": "what_or",
+                "value": "elasticsearch hadoop spark kafka airflow databricks"
+              },
+              {
+                "name": "where",
+                "value": "London"
+              },
+              {
+                "name": "results_per_page",
+                "value": "={{ $node[\"Global Configuration\"].json[\"results_per_page\"] }}"
+              },
+              {
+                "name": "sort_by",
+                "value": "date"
+              },
+              {
+                "name": "category",
+                "value": "it-jobs"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3536,
+          704
+        ],
+        "id": "6e546a7e-0f4a-499b-8a57-50769bdb10dd",
+        "name": "Adzuna – Search DE Keywords in London"
+      },
+      {
+        "parameters": {
+          "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3760,
+          896
+        ],
+        "id": "000753eb-943f-43c1-9a69-c2dadb447a77",
+        "name": "Convert Jobs - Keywords Berkshire"
+      },
+      {
+        "parameters": {
+          "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3760,
+          704
+        ],
+        "id": "2daee2be-84c4-4834-8f74-83975ef7cec6",
+        "name": "Convert Jobs - Keywords London"
+      },
+      {
+        "parameters": {
+          "numberInputs": 6
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          3984,
+          1264
+        ],
+        "id": "a9d09ba2-745d-444d-a000-9d5f29a8b8f7",
+        "name": "Merge Jobs"
+      },
+      {
+        "parameters": {
+          "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3760,
+          1088
+        ],
+        "id": "379c1827-1196-4872-9201-d886b5e8b460",
+        "name": "Convert Jobs - Berkshire"
+      },
+      {
+        "parameters": {
+          "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3760,
+          1280
+        ],
+        "id": "e4236740-cd4a-4b67-965f-e105f07efe8e",
+        "name": "Convert Jobs - London"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "de-cond-apply",
+                "leftValue": "={{ $('Parse LLM Result').item.json.recommendation }}",
+                "rightValue": "APPLY",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "de-cond-maybe",
+                "leftValue": "={{ $('Parse LLM Result').item.json.recommendation }}",
+                "rightValue": "MAYBE",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          5872,
+          1440
+        ],
+        "id": "fc420db2-8039-435e-bad3-72b09ef635d9",
+        "name": "Job Description Filter"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "de-salary-cond",
+                "leftValue": "={{ !$('Parse LLM Result').item.json.salary_max ? true : $('Parse LLM Result').item.json.is_contract === true ? $('Parse LLM Result').item.json.salary_max >= $('Global Configuration').first().json.min_salary_contract : $('Parse LLM Result').item.json.salary_max >= $('Global Configuration').first().json.min_salary_perm }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          6096,
+          1504
+        ],
+        "id": "cd67810c-013a-429e-bd5a-acd7cbd4e225",
+        "name": "Meet Salary Filter?"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          4976,
+          1264
+        ],
+        "id": "3d56800d-de24-4a67-9b03-e8922ed84135",
+        "name": "Split – LLM Throttle"
+      },
+      {
+        "parameters": {
+          "jsCode": "return items;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          5264,
+          1408
+        ],
+        "id": "a4526458-3dea-49c3-a34e-730f510fc111",
+        "name": "Wait – Rate Limit"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          3856,
+          560
+        ],
+        "id": "6f606bef-1181-43c7-b291-e3d1be307392",
+        "name": "Error Trigger"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM",
+            "mode": "list",
+            "cachedResultName": "n8n_sent_jobs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/110sc2VFTAlT5JYy4iRpqVbffN7kRdwM7WMdTWYZMBIM/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "de_sent_jobs",
+            "mode": "name"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "job_id": "={{ $json.job_id }}",
+              "source": "={{ $json.source }}",
+              "title": "={{ $json.title }}",
+              "company": "={{ $json.company }}",
+              "score": "={{ $json.score }}",
+              "recommendation": "={{ $json.recommendation }}",
+              "sent_at": "={{ new Date().toISOString() }}",
+              "salary_max": "={{ $json.salary_max }}",
+              "employment_type": "={{ $json.employment_type }}",
+              "apply_url": "={{ $json.apply_url }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "job_id",
+                "displayName": "job_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source",
+                "displayName": "source",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "title",
+                "displayName": "title",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "company",
+                "displayName": "company",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "salary_max",
+                "displayName": "salary_max",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "employment_type",
+                "displayName": "employment_type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "apply_url",
+                "displayName": "apply_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "score",
+                "displayName": "score",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "recommendation",
+                "displayName": "recommendation",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "sent_at",
+                "displayName": "sent_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          5712,
+          1280
+        ],
+        "id": "7cdad259-733e-4053-803d-05e00002797b",
+        "name": "Record Seen Jobs",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DgucYvkJJQVWqK51",
+            "name": "Job.Automation Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sendTo": "edwardtong@gmail.com",
+          "subject": "=&#x274C; DE Job Search Failed: {{ $json.execution.error.httpCode ? $json.execution.error.httpCode + \" – \" : \"\" }}{{ $json.execution.lastNodeExecuted }} | Exec #{{ $json.execution.id }}",
+          "message": "=<div style=\"font-family: Arial, sans-serif; padding: 20px; border: 2px solid #d93025; background: #fff5f5; color: #333; max-width: 650px;\">\n  <h2 style=\"margin-top: 0; color: #d93025;\">&#x274C; DE Workflow Failure Alert</h2>\n\n  <table style=\"width: 100%; border-collapse: collapse; margin-bottom: 16px;\">\n    <tr>\n      <td style=\"padding: 6px 12px 6px 0; font-weight: bold; width: 140px; vertical-align: top;\">Workflow:</td>\n      <td style=\"padding: 6px 0;\">{{ $json.workflow.name }}</td>\n    </tr>\n    <tr style=\"background: #ffeaea;\">\n      <td style=\"padding: 6px 12px 6px 0; font-weight: bold; vertical-align: top;\">Failed Node:</td>\n      <td style=\"padding: 6px 0;\">{{ $json.execution.lastNodeExecuted }}</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 6px 12px 6px 0; font-weight: bold; vertical-align: top;\">Error:</td>\n      <td style=\"padding: 6px 0; font-size: 13px;\">{{ $json.execution.error.message }}</td>\n    </tr>\n    <tr style=\"background: #ffeaea;\">\n      <td style=\"padding: 6px 12px 6px 0; font-weight: bold; vertical-align: top;\">Execution ID:</td>\n      <td style=\"padding: 6px 0;\">{{ $json.execution.id }}</td>\n    </tr>\n  </table>\n\n  <p style=\"margin: 0;\">\n    <a href=\"{{ $json.execution.url }}\" style=\"background: #d93025; color: white; padding: 10px 18px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;\">\n      &#x1F50D; View Execution in n8n\n    </a>\n  </p>\n</div>",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          4048,
+          560
+        ],
+        "id": "e7abcea9-6ef8-47c4-8940-7099f150036f",
+        "name": "Gmail for Job Failure",
+        "webhookId": "de-gmail-webhook-v10",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "ON4cMVnRGPKgOQl0",
+            "name": "Job.Automation Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{'https://' + $env.REED_JOBSEEKER_KEY + ':@www.reed.co.uk/api/1.0/search'}}",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "keywords",
+                "value": "\"data engineer\" OR \"data platform\" OR \"data pipeline\" OR elasticsearch OR hadoop OR spark OR kafka OR airflow OR databricks"
+              },
+              {
+                "name": "locationName",
+                "value": "Reading"
+              },
+              {
+                "name": "distanceFromLocation",
+                "value": "25"
+              },
+              {
+                "name": "resultsToTake",
+                "value": "100"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3536,
+          1472
+        ],
+        "id": "28c56219-fb6c-4e1a-8ebd-b94a40e9f5a6",
+        "name": "Reed – Search DE Jobs in Berkshire"
+      },
+      {
+        "parameters": {
+          "url": "={{'https://' + $env.REED_JOBSEEKER_KEY + ':@www.reed.co.uk/api/1.0/search'}}",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "keywords",
+                "value": "\"data engineer\" OR \"data platform\" OR \"data pipeline\" OR elasticsearch OR hadoop OR spark OR kafka OR airflow OR databricks"
+              },
+              {
+                "name": "locationName",
+                "value": "London"
+              },
+              {
+                "name": "distanceFromLocation",
+                "value": "10"
+              },
+              {
+                "name": "resultsToTake",
+                "value": "100"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          3536,
+          1664
+        ],
+        "id": "0e7374d0-db9a-4f19-ae12-055c70a89281",
+        "name": "Reed – Search DE Jobs in London"
+      },
+      {
+        "parameters": {
+          "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3760,
+          1472
+        ],
+        "id": "5a047077-cbff-440f-9751-ccbc7ba25ffe",
+        "name": "Convert Jobs - Reed Berkshire"
+      },
+      {
+        "parameters": {
+          "jsCode": "return $json.results.map(job => ({\n  json: job\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3760,
+          1664
+        ],
+        "id": "d73235ff-9278-4ea1-aaa5-461eafd6def4",
+        "name": "Convert Jobs - Reed London"
+      }
+    ],
+    "connections": {
+      "When clicking 'Execute workflow'": {
+        "main": [
+          [
+            {
+              "node": "Global Configuration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Global Configuration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Global Configuration": {
+        "main": [
+          [
+            {
+              "node": "Load Sent Job History",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Load Sent Job History": {
+        "main": [
+          [
+            {
+              "node": "Trigger Searches",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Trigger Searches": {
+        "main": [
+          [
+            {
+              "node": "Adzuna – Search DE Jobs in Berkshire",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Adzuna – Search DE Jobs in London",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Adzuna – Search DE Keywords in Berkshire",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Adzuna – Search DE Keywords in London",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Reed – Search DE Jobs in Berkshire",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Reed – Search DE Jobs in London",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Adzuna – Search DE Jobs in Berkshire": {
+        "main": [
+          [
+            {
+              "node": "Convert Jobs - Berkshire",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Adzuna – Search DE Jobs in London": {
+        "main": [
+          [
+            {
+              "node": "Convert Jobs - London",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Adzuna – Search DE Keywords in Berkshire": {
+        "main": [
+          [
+            {
+              "node": "Convert Jobs - Keywords Berkshire",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Adzuna – Search DE Keywords in London": {
+        "main": [
+          [
+            {
+              "node": "Convert Jobs - Keywords London",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reed – Search DE Jobs in Berkshire": {
+        "main": [
+          [
+            {
+              "node": "Convert Jobs - Reed Berkshire",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reed – Search DE Jobs in London": {
+        "main": [
+          [
+            {
+              "node": "Convert Jobs - Reed London",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convert Jobs - Berkshire": {
+        "main": [
+          [
+            {
+              "node": "Merge Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convert Jobs - London": {
+        "main": [
+          [
+            {
+              "node": "Merge Jobs",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Convert Jobs - Reed Berkshire": {
+        "main": [
+          [
+            {
+              "node": "Merge Jobs",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      },
+      "Convert Jobs - Reed London": {
+        "main": [
+          [
+            {
+              "node": "Merge Jobs",
+              "type": "main",
+              "index": 3
+            }
+          ]
+        ]
+      },
+      "Convert Jobs - Keywords Berkshire": {
+        "main": [
+          [
+            {
+              "node": "Merge Jobs",
+              "type": "main",
+              "index": 4
+            }
+          ]
+        ]
+      },
+      "Convert Jobs - Keywords London": {
+        "main": [
+          [
+            {
+              "node": "Merge Jobs",
+              "type": "main",
+              "index": 5
+            }
+          ]
+        ]
+      },
+      "Merge Jobs": {
+        "main": [
+          [
+            {
+              "node": "Deduplication",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deduplication": {
+        "main": [
+          [
+            {
+              "node": "Filter – Exclude Non-DE Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter – Exclude Non-DE Jobs": {
+        "main": [
+          [
+            {
+              "node": "Normalize – DE Job for LLM",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize – DE Job for LLM": {
+        "main": [
+          [
+            {
+              "node": "Filter Out Sent Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Out Sent Jobs": {
+        "main": [
+          [
+            {
+              "node": "Split – LLM Throttle",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split – LLM Throttle": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Wait – Rate Limit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait – Rate Limit": {
+        "main": [
+          [
+            {
+              "node": "LLM – DE Job Scoring",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LLM – DE Job Scoring": {
+        "main": [
+          [
+            {
+              "node": "Parse LLM Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "LLM – DE Job Scoring",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse LLM Result": {
+        "main": [
+          [
+            {
+              "node": "Record Seen Jobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Record Seen Jobs": {
+        "main": [
+          [
+            {
+              "node": "Job Description Filter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Job Description Filter": {
+        "main": [
+          [
+            {
+              "node": "Meet Salary Filter?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Split – LLM Throttle",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Meet Salary Filter?": {
+        "main": [
+          [
+            {
+              "node": "Prepare Gmail HTTP Format",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Split – LLM Throttle",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Gmail HTTP Format": {
+        "main": [
+          [
+            {
+              "node": "Send Job to GMAIL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Job to GMAIL": {
+        "main": [
+          [
+            {
+              "node": "Split – LLM Throttle",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Gmail for Job Failure",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 2a273797",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-04-13T09:30:17.398Z",
+      "createdAt": "2026-04-13T09:30:17.398Z",
+      "id": "5aWBq8J7eGqw60av",
+      "name": "Job Search"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-04-29T01:00:19.141Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
