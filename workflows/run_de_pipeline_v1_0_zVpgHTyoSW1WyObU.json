@@ -1,0 +1,221 @@
+{
+  "updatedAt": "2026-05-02T22:36:12.961Z",
+  "createdAt": "2026-05-02T22:28:44.992Z",
+  "id": "zVpgHTyoSW1WyObU",
+  "name": "Run DE Pipeline v1.0",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        -112
+      ],
+      "id": "4d6aa558-4263-4230-b96d-d884c9851a42",
+      "name": "Daily 07:00 UK"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "cd de && source .venv/bin/activate && bash run_transforms.sh",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -112
+      ],
+      "id": "8e9f3b73-c1f2-4fe9-b3a9-ad0a94bd5ceb",
+      "name": "Run DE Transforms",
+      "maxTries": 2,
+      "waitBetweenTries": 60000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stdout.includes('[ERROR]') || stderr.includes('[ERROR]') || stderr.includes('Traceback')) {\n  throw new Error(`DE pipeline error:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -112
+      ],
+      "id": "3ff79df2-bdc0-4a5b-a094-1cb5eb7f5ab8",
+      "name": "Check Output"
+    }
+  ],
+  "connections": {
+    "Daily 07:00 UK": {
+      "main": [
+        [
+          {
+            "node": "Run DE Transforms",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run DE Transforms": {
+      "main": [
+        [
+          {
+            "node": "Check Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Daily 07:00 UK": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "3099d30b-0723-4c22-b33c-82540e05a2ec",
+  "activeVersionId": "3099d30b-0723-4c22-b33c-82540e05a2ec",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-02T22:28:44.997Z",
+      "createdAt": "2026-05-02T22:28:44.997Z",
+      "role": "workflow:owner",
+      "workflowId": "zVpgHTyoSW1WyObU",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-05-02T22:36:14.000Z",
+    "createdAt": "2026-05-02T22:36:12.962Z",
+    "versionId": "3099d30b-0723-4c22-b33c-82540e05a2ec",
+    "workflowId": "zVpgHTyoSW1WyObU",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 7 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          896,
+          -112
+        ],
+        "id": "4d6aa558-4263-4230-b96d-d884c9851a42",
+        "name": "Daily 07:00 UK"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "cd de && source .venv/bin/activate && bash run_transforms.sh",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          1184,
+          -112
+        ],
+        "id": "8e9f3b73-c1f2-4fe9-b3a9-ad0a94bd5ceb",
+        "name": "Run DE Transforms",
+        "maxTries": 2,
+        "waitBetweenTries": 60000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\nif (stdout.includes('[ERROR]') || stderr.includes('[ERROR]') || stderr.includes('Traceback')) {\n  throw new Error(`DE pipeline error:\\nSTDOUT: ${stdout}\\nSTDERR: ${stderr}`);\n}\n\nreturn [{ json: { success: true, stdout } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1472,
+          -112
+        ],
+        "id": "3ff79df2-bdc0-4a5b-a094-1cb5eb7f5ab8",
+        "name": "Check Output"
+      }
+    ],
+    "connections": {
+      "Daily 07:00 UK": {
+        "main": [
+          [
+            {
+              "node": "Run DE Transforms",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Run DE Transforms": {
+        "main": [
+          [
+            {
+              "node": "Check Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 3099d30b",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-05-03T01:00:19.132Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
