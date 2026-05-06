@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-13T09:34:59.201Z",
+  "updatedAt": "2026-05-05T13:53:54.453Z",
   "createdAt": "2026-04-12T22:10:38.840Z",
   "id": "F60z5MCmfN5mp0mj",
   "name": "bin_collection_alert v1.0",
@@ -116,7 +116,8 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -296,7 +297,7 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "aecda146-897b-48d7-80b0-963e9abf5657",
+  "versionId": "de4f5c44-2c55-45da-9df9-345dda025277",
   "activeVersionId": "aecda146-897b-48d7-80b0-963e9abf5657",
   "triggerCount": 1,
   "shared": [
@@ -610,7 +611,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-04-14T01:00:44.187Z",
+    "backed_up_at": "2026-05-06T01:00:19.151Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
