@@ -1,0 +1,335 @@
+{
+  "updatedAt": "2026-05-07T17:16:26.423Z",
+  "createdAt": "2026-05-07T17:16:26.423Z",
+  "id": "80HXZsgfENgD0OaZ",
+  "name": "DE Run Transforms by dbt",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 * * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cea9edbb-de59-4379-9110-d574252f4717",
+      "name": "Every Hour at :30"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && bash run_dbt_pipeline.sh 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "50996b03-b10d-4bbe-8d3e-8ae04afdf791",
+      "name": "Run dbt Pipeline",
+      "maxTries": 2,
+      "waitBetweenTries": 30000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\n// Fail if dbt pipeline script crashed\nif (stderr.includes('Traceback') || stdout.includes('Error') && !stdout.includes('WARN')) {\n  throw new Error(`run_dbt_pipeline.sh failed:\\nSTDOUT: ${stdout.slice(-1000)}\\nSTDERR: ${stderr.slice(-500)}`);\n}\n\n// Check dbt run passed all 24 models\nconst runMatch = stdout.match(/Done\\. PASS=(\\d+).*TOTAL=(\\d+).*\\n.*Finished running/);\nconst runPassed = stdout.includes('PASS=24') || stdout.includes('Completed successfully');\nif (!runPassed) {\n  throw new Error(`dbt run did not complete successfully:\\n${stdout.slice(-1000)}`);\n}\n\n// Check dbt test passed all 74 tests\nconst testPassed = stdout.includes('PASS=74');\nif (!testPassed) {\n  throw new Error(`dbt test did not pass all 74 tests:\\n${stdout.slice(-1000)}`);\n}\n\n// Extract row counts from export step for logging\nconst exportMatch = stdout.match(/Done\\. (\\d+) rows written to DuckDB/);\nconst exportRows = exportMatch ? exportMatch[1] : 'unknown';\n\nreturn [{ json: {\n  success: true,\n  export_rows: exportRows,\n  dbt_run: 'PASS=24',\n  dbt_test: 'PASS=74',\n  stdout: stdout.slice(-500)\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "d4e0e8f4-5459-46cc-9a89-9f1d1c1b7e75",
+      "name": "Check dbt Output"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "source .venv/bin/activate && python compare_pipelines.py 2>&1",
+        "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        848,
+        0
+      ],
+      "id": "976e045a-ad13-4245-9ba0-11df329e8f23",
+      "name": "Compare Pipelines",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst exitCode = $input.item.json.exitCode ?? 0;\n\n// Log the full comparison result\nconst passed = stdout.includes('RESULT: ✓ PASS');\nconst failed = stdout.includes('RESULT: ✗ FAIL');\n\n// During parallel validation we log but do NOT throw on mismatch\n// This lets the workflow complete so you can review results in n8n history\n// Change to throw new Error(...) after cutover if you want hard failures\nif (failed) {\n  console.log('PARALLEL VALIDATION WARNING: Pipeline mismatch detected. Review output.');\n  console.log(stdout);\n}\n\nreturn [{ json: {\n  comparison_passed: passed,\n  comparison_result: passed ? 'PASS' : 'FAIL — review n8n execution log',\n  stdout: stdout\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "6a631b77-cf64-49ec-bafc-d90c1c8c5ef2",
+      "name": "Check Comparison Output"
+    }
+  ],
+  "connections": {
+    "Every Hour at :30": {
+      "main": [
+        [
+          {
+            "node": "Run dbt Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run dbt Pipeline": {
+      "main": [
+        [
+          {
+            "node": "Check dbt Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check dbt Output": {
+      "main": [
+        [
+          {
+            "node": "Compare Pipelines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Pipelines": {
+      "main": [
+        [
+          {
+            "node": "Check Comparison Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Every Hour at :30": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "caf06d16-cc7c-4076-b5a7-81b59b2876f0",
+  "activeVersionId": "caf06d16-cc7c-4076-b5a7-81b59b2876f0",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-07T17:16:26.427Z",
+      "createdAt": "2026-05-07T17:16:26.427Z",
+      "role": "workflow:owner",
+      "workflowId": "80HXZsgfENgD0OaZ",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-05-07T17:16:57.000Z",
+    "createdAt": "2026-05-07T17:16:26.428Z",
+    "versionId": "caf06d16-cc7c-4076-b5a7-81b59b2876f0",
+    "workflowId": "80HXZsgfENgD0OaZ",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "30 * * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "cea9edbb-de59-4379-9110-d574252f4717",
+        "name": "Every Hour at :30"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && bash run_dbt_pipeline.sh 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          288,
+          0
+        ],
+        "id": "50996b03-b10d-4bbe-8d3e-8ae04afdf791",
+        "name": "Run dbt Pipeline",
+        "maxTries": 2,
+        "waitBetweenTries": 30000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\n\n// Fail if dbt pipeline script crashed\nif (stderr.includes('Traceback') || stdout.includes('Error') && !stdout.includes('WARN')) {\n  throw new Error(`run_dbt_pipeline.sh failed:\\nSTDOUT: ${stdout.slice(-1000)}\\nSTDERR: ${stderr.slice(-500)}`);\n}\n\n// Check dbt run passed all 24 models\nconst runMatch = stdout.match(/Done\\. PASS=(\\d+).*TOTAL=(\\d+).*\\n.*Finished running/);\nconst runPassed = stdout.includes('PASS=24') || stdout.includes('Completed successfully');\nif (!runPassed) {\n  throw new Error(`dbt run did not complete successfully:\\n${stdout.slice(-1000)}`);\n}\n\n// Check dbt test passed all 74 tests\nconst testPassed = stdout.includes('PASS=74');\nif (!testPassed) {\n  throw new Error(`dbt test did not pass all 74 tests:\\n${stdout.slice(-1000)}`);\n}\n\n// Extract row counts from export step for logging\nconst exportMatch = stdout.match(/Done\\. (\\d+) rows written to DuckDB/);\nconst exportRows = exportMatch ? exportMatch[1] : 'unknown';\n\nreturn [{ json: {\n  success: true,\n  export_rows: exportRows,\n  dbt_run: 'PASS=24',\n  dbt_test: 'PASS=74',\n  stdout: stdout.slice(-500)\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          560,
+          0
+        ],
+        "id": "d4e0e8f4-5459-46cc-9a89-9f1d1c1b7e75",
+        "name": "Check dbt Output"
+      },
+      {
+        "parameters": {
+          "authentication": "privateKey",
+          "command": "source .venv/bin/activate && python compare_pipelines.py 2>&1",
+          "cwd": "/home/uroot/python_project/octopus_energy_linux/de"
+        },
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          848,
+          0
+        ],
+        "id": "976e045a-ad13-4245-9ba0-11df329e8f23",
+        "name": "Compare Pipelines",
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst exitCode = $input.item.json.exitCode ?? 0;\n\n// Log the full comparison result\nconst passed = stdout.includes('RESULT: ✓ PASS');\nconst failed = stdout.includes('RESULT: ✗ FAIL');\n\n// During parallel validation we log but do NOT throw on mismatch\n// This lets the workflow complete so you can review results in n8n history\n// Change to throw new Error(...) after cutover if you want hard failures\nif (failed) {\n  console.log('PARALLEL VALIDATION WARNING: Pipeline mismatch detected. Review output.');\n  console.log(stdout);\n}\n\nreturn [{ json: {\n  comparison_passed: passed,\n  comparison_result: passed ? 'PASS' : 'FAIL — review n8n execution log',\n  stdout: stdout\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          0
+        ],
+        "id": "6a631b77-cf64-49ec-bafc-d90c1c8c5ef2",
+        "name": "Check Comparison Output"
+      }
+    ],
+    "connections": {
+      "Every Hour at :30": {
+        "main": [
+          [
+            {
+              "node": "Run dbt Pipeline",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Run dbt Pipeline": {
+        "main": [
+          [
+            {
+              "node": "Check dbt Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check dbt Output": {
+        "main": [
+          [
+            {
+              "node": "Compare Pipelines",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Compare Pipelines": {
+        "main": [
+          [
+            {
+              "node": "Check Comparison Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version caf06d16",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-04-24T12:56:36.517Z",
+      "createdAt": "2026-04-24T12:56:36.517Z",
+      "id": "HosoTRrdWJ3aYiz9",
+      "name": "Octopus Energy DE"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-05-08T01:00:19.212Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
