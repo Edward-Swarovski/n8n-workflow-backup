@@ -1,0 +1,385 @@
+{
+  "updatedAt": "2026-05-12T14:08:24.670Z",
+  "createdAt": "2026-05-12T12:40:39.794Z",
+  "id": "oIsizBU6TxyYJlGC",
+  "name": "MongoDB Weekly Backup",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 23 * * 4"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        96
+      ],
+      "id": "09bcfb43-81a8-46a8-8803-4cc3c893779f",
+      "name": "Every Thursday 11:30 PM"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "bash ~/mongodb/scripts/mongodb_backup.sh",
+        "cwd": "/home/uroot"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        96
+      ],
+      "id": "43d425f6-c4b9-4b4b-b9a6-6b774e212efe",
+      "name": "Run MongoDB Backup",
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "CPlKuA0owWNSPR1X",
+          "name": "ubuntu07 SSH Private Key"
+        }
+      },
+      "onError": "retryOnFail"
+    },
+    {
+      "parameters": {
+        "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('error') || stderr.includes('Error') || stderr.includes('Traceback') || !stdout.includes('MongoDB backup job completed successfully');\nreturn [{ json: { hasError, stdout, stderr } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        96
+      ],
+      "id": "26ead143-bd27-4b1b-85b9-ce1789907995",
+      "name": "Check Backup Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasError }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        96,
+        96
+      ],
+      "id": "7daf9636-05c9-49fb-966c-47fa338eb07d",
+      "name": "Backup Failed?"
+    },
+    {
+      "parameters": {
+        "fromEmail": "edwardtong@gmail.com",
+        "toEmail": "edwardtong@gmail.com",
+        "subject": "[ALERT] MongoDB Backup Failed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        352,
+        -32
+      ],
+      "id": "ccb195b6-7d18-4974-a8ba-83e71ca9e255",
+      "name": "Alert: Backup Failed",
+      "webhookId": "3333f306-ac37-407f-9437-076e8a61f2e7",
+      "credentials": {
+        "smtp": {
+          "id": "EuvA9jLaKOedTzoo",
+          "name": "Gmail SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { status: 'success', message: 'MongoDB backup completed and uploaded to MinIO successfully.', timestamp: new Date().toISOString(), stdout: $input.item.json.stdout.trim() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        208
+      ],
+      "id": "4522251d-b707-45e7-a1a2-7db7ba05b6c4",
+      "name": "Backup Successful"
+    }
+  ],
+  "connections": {
+    "Every Thursday 11:30 PM": {
+      "main": [
+        [
+          {
+            "node": "Run MongoDB Backup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run MongoDB Backup": {
+      "main": [
+        [
+          {
+            "node": "Check Backup Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Backup Output": {
+      "main": [
+        [
+          {
+            "node": "Backup Failed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Backup Failed?": {
+      "main": [
+        [
+          {
+            "node": "Alert: Backup Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Backup Successful",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Every Thursday 11:30 PM": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ccead526-7e40-420a-9345-6c8951519cc4",
+  "activeVersionId": "4a1d2670-b221-497b-9882-fd6741863b28",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-12T12:40:39.797Z",
+      "createdAt": "2026-05-12T12:40:39.797Z",
+      "role": "workflow:owner",
+      "workflowId": "oIsizBU6TxyYJlGC",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-05-12T12:41:37.000Z",
+    "createdAt": "2026-05-12T12:40:39.798Z",
+    "versionId": "4a1d2670-b221-497b-9882-fd6741863b28",
+    "workflowId": "oIsizBU6TxyYJlGC",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "30 23 * * 4"
+              }
+            ]
+          }
+        },
+        "id": "b1c880fa-5a9b-4057-9a9d-66aa47b6ea58",
+        "name": "Every Thursday 11:30 PM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -656,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "command": "bash $HOME/mongodb/scripts/mongodb_backup.sh >> $HOME/mongodb/logs/backup.log 2>&1 && echo 'SUCCESS' || echo 'FAILED'"
+        },
+        "id": "691447f2-6b92-4e30-99dc-9157246891e8",
+        "name": "Run Backup Script",
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          -448,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "check-success",
+                "leftValue": "={{ $json.stdout }}",
+                "rightValue": "SUCCESS",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "fe753061-beca-4ede-8124-206329d84805",
+        "name": "Check Result",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -224,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst now = new Date().toISOString();\n\nreturn [{\n  json: {\n    status: 'success',\n    timestamp: now,\n    message: 'MongoDB backup completed and uploaded to MinIO successfully.',\n    stdout: stdout.trim()\n  }\n}];"
+        },
+        "id": "f7535308-923d-4843-af8a-ba65ca3ee159",
+        "name": "Format Success",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst now = new Date().toISOString();\n\nreturn [{\n  json: {\n    status: 'failed',\n    timestamp: now,\n    message: 'MongoDB backup FAILED. Check logs at ~/mongodb/logs/backup.log',\n    stdout: stdout.trim(),\n    stderr: stderr.trim()\n  }\n}];"
+        },
+        "id": "d6d65bfe-5fa5-4ce3-a1b5-3b8db94bdd0a",
+        "name": "Format Failure",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          0,
+          224
+        ]
+      }
+    ],
+    "connections": {
+      "Every Thursday 11:30 PM": {
+        "main": [
+          [
+            {
+              "node": "Run Backup Script",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Run Backup Script": {
+        "main": [
+          [
+            {
+              "node": "Check Result",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Result": {
+        "main": [
+          [
+            {
+              "node": "Format Success",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Format Failure",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 4a1d2670",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-08-03T16:03:15.985Z",
+      "createdAt": "2025-08-03T16:03:15.985Z",
+      "id": "3XQOHErGRd40vm76",
+      "name": "Octopus Energy"
+    },
+    {
+      "updatedAt": "2026-04-24T12:56:36.517Z",
+      "createdAt": "2026-04-24T12:56:36.517Z",
+      "id": "HosoTRrdWJ3aYiz9",
+      "name": "Octopus Energy DE"
+    },
+    {
+      "updatedAt": "2026-05-12T14:08:14.301Z",
+      "createdAt": "2026-05-12T14:08:14.301Z",
+      "id": "nXXZxe059elZQDw2",
+      "name": "BP-companion"
+    }
+  ],
+  "_backup": {
+    "backed_up_at": "2026-05-13T01:00:19.199Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
