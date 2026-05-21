@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-28T09:33:37.827Z",
+  "updatedAt": "2026-05-20T18:33:23.559Z",
   "createdAt": "2026-04-09T17:10:25.111Z",
   "id": "4QRfOONk2GEUG6Ik",
   "name": "Data_Engineer_auto_job_search v2.2",
@@ -215,14 +215,6 @@
             {
               "field": "cronExpression",
               "expression": "0 9 * * 1-5"
-            },
-            {
-              "field": "cronExpression",
-              "expression": "0 12 * * 1-5"
-            },
-            {
-              "field": "cronExpression",
-              "expression": "30 16 * * 1-5"
             }
           ]
         }
@@ -1296,8 +1288,8 @@
   },
   "meta": null,
   "pinData": {},
-  "versionId": "2a273797-86c9-40a3-8372-0ee3e1b21221",
-  "activeVersionId": "2a273797-86c9-40a3-8372-0ee3e1b21221",
+  "versionId": "55c64506-02ae-4be0-b897-c0909d35e6e5",
+  "activeVersionId": "55c64506-02ae-4be0-b897-c0909d35e6e5",
   "triggerCount": 1,
   "shared": [
     {
@@ -1309,9 +1301,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-04-28T09:34:09.000Z",
-    "createdAt": "2026-04-28T09:33:37.829Z",
-    "versionId": "2a273797-86c9-40a3-8372-0ee3e1b21221",
+    "updatedAt": "2026-05-20T18:33:29.000Z",
+    "createdAt": "2026-05-20T18:33:23.561Z",
+    "versionId": "55c64506-02ae-4be0-b897-c0909d35e6e5",
     "workflowId": "4QRfOONk2GEUG6Ik",
     "nodes": [
       {
@@ -1523,14 +1515,6 @@
               {
                 "field": "cronExpression",
                 "expression": "0 9 * * 1-5"
-              },
-              {
-                "field": "cronExpression",
-                "expression": "0 12 * * 1-5"
-              },
-              {
-                "field": "cronExpression",
-                "expression": "30 16 * * 1-5"
               }
             ]
           }
@@ -2594,7 +2578,7 @@
       }
     },
     "authors": "4you donut",
-    "name": "Version 2a273797",
+    "name": "Version 55c64506",
     "description": "",
     "autosaved": true
   },
@@ -2607,7 +2591,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-04-29T01:00:19.141Z",
+    "backed_up_at": "2026-05-21T01:00:19.131Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
