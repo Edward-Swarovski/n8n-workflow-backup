@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-21T18:47:52.129Z",
+  "updatedAt": "2026-05-22T18:50:18.232Z",
   "createdAt": "2026-05-21T15:53:28.817Z",
   "id": "1ktYyADyUgqWDYDr",
   "name": "Receipt – Vision LLM Direct",
@@ -15,10 +15,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        2208,
-        320
+        10096,
+        0
       ],
-      "id": "74d3c54f-3d3c-4d9e-999f-32753dc4254f",
+      "id": "613852c9-d615-424d-a193-1a18d5789dfe",
       "name": "Webhook",
       "webhookId": "c48a00c3-492f-41e9-900e-e8ad76f96671"
     },
@@ -49,10 +49,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2432,
-        320
+        10320,
+        0
       ],
-      "id": "446d32f9-187a-4552-ac5e-b6cfcdfcbd2d",
+      "id": "93ae16ea-60e0-4214-82cf-b904c78cf567",
       "name": "Secret Check"
     },
     {
@@ -82,10 +82,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2656,
-        320
+        10544,
+        0
       ],
-      "id": "1d99842d-2aa5-4630-a041-00f225a9c4b6",
+      "id": "f722394f-60a1-4738-a72b-f17c484c6fc1",
       "name": "Image Check"
     },
     {
@@ -102,10 +102,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        2880,
-        320
+        10768,
+        0
       ],
-      "id": "79c5abe2-d748-4758-9d65-d9a9467f9145",
+      "id": "82b41dcf-b4ca-4558-ad2c-a5909197ec2d",
       "name": "Download Image"
     },
     {
@@ -116,10 +116,10 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        3104,
-        320
+        10992,
+        0
       ],
-      "id": "cac9ac00-6dc0-4f4e-a93d-9b5168516eb7",
+      "id": "2e48dfc0-e545-4f32-8edc-05d934fbf786",
       "name": "To Base64"
     },
     {
@@ -147,7 +147,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"perceptron/perceptron-mk1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a UK supermarket receipt parser. You will be given a photo of a supermarket receipt. Extract all data and return ONLY valid JSON — no markdown, no explanation, no code fences.\\n\\nIDENTIFY THE STORE from the header (Aldi, Tesco, Sainsbury's, Asda, Morrisons, Lidl, Waitrose, M&S, Co-op, etc.).\\n\\nStore-specific rules:\\n- Aldi/Lidl: ignore 6-digit PLU codes before item names. Discount lines follow the item they apply to.\\n- Tesco: use Clubcard price when shown, not the normal price.\\n- Sainsbury's: ignore Nectar points lines.\\n- All stores: prices are in the right column; item names in the left column.\\n\\nGeneral rules:\\n- Output pure numbers for all prices (2.49 not £2.49).\\n- quantity defaults to 1 if not shown.\\n- If a value is not clearly visible, use null — never guess.\\n- Discount lines: IsDiscountLine=true, DiscountAmount=positive number (amount saved).\\n- Date format: YYYY-MM-DD. Time format: HH:MM (24h).\\n- VAT: fresh produce/most food = 0%, hot food/snacks/alcohol = 20%.\\n- Ignore: loyalty ads, barcodes, survey codes, card **** numbers, thank-you lines.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:{{ $('Webhook').item.json.body.attachments[0].content_type }};base64,{{ $json.data }}\"\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"Parse this supermarket receipt and return JSON in this exact structure:\\n{\\n  \\\"store_name\\\": string,\\n  \\\"store_branch\\\": string | null,\\n  \\\"store_address\\\": string | null,\\n  \\\"store_postcode\\\": string | null,\\n  \\\"receipt_date\\\": string | null,\\n  \\\"receipt_time\\\": string | null,\\n  \\\"currency\\\": \\\"GBP\\\",\\n  \\\"subtotal\\\": number | null,\\n  \\\"discount_total\\\": number | null,\\n  \\\"tax_amount\\\": number | null,\\n  \\\"total_amount\\\": number | null,\\n  \\\"payment_method\\\": string | null,\\n  \\\"last4_card_digits\\\": string | null,\\n  \\\"loyalty_programme\\\": string | null,\\n  \\\"items\\\": [\\n    {\\n      \\\"line_number\\\": number,\\n      \\\"product_name\\\": string,\\n      \\\"normalised_name\\\": string,\\n      \\\"category\\\": string,\\n      \\\"quantity\\\": number,\\n      \\\"unit\\\": string | null,\\n      \\\"unit_price\\\": number | null,\\n      \\\"line_total\\\": number | null,\\n      \\\"is_discount_line\\\": boolean,\\n      \\\"discount_amount\\\": number | null,\\n      \\\"is_taxable\\\": boolean,\\n      \\\"tax_rate_percent\\\": number,\\n      \\\"brand\\\": string | null,\\n      \\\"sku_or_barcode\\\": string | null\\n    }\\n  ]\\n}\"\n        }\n      ]\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"perceptron/perceptron-mk1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a UK supermarket receipt parser. You will be given a photo of a supermarket receipt. Extract all data and return ONLY valid JSON — no markdown, no explanation, no code fences.\\n\\nIDENTIFY THE STORE from the header (Aldi, Tesco, Sainsbury's, Asda, Morrisons, Lidl, Waitrose, M&S, Co-op, Costco, etc.).\\n\\nStore-specific rules:\\n- Aldi/Lidl: ignore 6-digit PLU codes before item names. A discount line immediately follows the item it applies to — treat it as is_discount_line=true and link discount_amount to the previous item.\\n- Tesco: use Clubcard price when shown, not the normal price.\\n- Sainsbury's: ignore Nectar points lines.\\n- Costco: items have a SKU number on the left (e.g. 2631, 464916). VAT codes after the price: A=20% VAT, Z=0% VAT. If a price has a trailing minus (e.g. '1.00-Z'), output unit_price as -1.00 (negative) and set is_discount_line=true.\\n- All stores: prices are in the right column; item names in the left column.\\n\\nGeneral rules:\\n- Output pure numbers for all prices (2.49 not £2.49).\\n- quantity defaults to 1 if not shown.\\n- If a value is not clearly visible, use null — never guess.\\n- Discount lines: is_discount_line=true, discount_amount=positive number (amount saved).\\n- Date format: YYYY-MM-DD. Time format: HH:MM (24h).\\n- VAT: fresh produce/most food = 0%, hot food/snacks/alcohol = 20%.\\n- Ignore: loyalty ads, barcodes, survey codes, card **** numbers, thank-you lines, cashier names.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:{{ $('Webhook').item.json.body.attachments[0].content_type }};base64,{{ $json.data }}\"\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"Parse this supermarket receipt and return JSON in this exact structure:\\n{\\n  \\\"store_name\\\": string,\\n  \\\"store_branch\\\": string | null,\\n  \\\"store_address\\\": string | null,\\n  \\\"store_postcode\\\": string | null,\\n  \\\"receipt_date\\\": string | null,\\n  \\\"receipt_time\\\": string | null,\\n  \\\"currency\\\": \\\"GBP\\\",\\n  \\\"subtotal\\\": number | null,\\n  \\\"discount_total\\\": number | null,\\n  \\\"tax_amount\\\": number | null,\\n  \\\"total_amount\\\": number | null,\\n  \\\"payment_method\\\": string | null,\\n  \\\"last4_card_digits\\\": string | null,\\n  \\\"loyalty_programme\\\": string | null,\\n  \\\"items\\\": [\\n    {\\n      \\\"line_number\\\": number,\\n      \\\"product_name\\\": string,\\n      \\\"normalised_name\\\": string,\\n      \\\"category\\\": string,\\n      \\\"quantity\\\": number,\\n      \\\"unit\\\": string | null,\\n      \\\"unit_price\\\": number | null,\\n      \\\"line_total\\\": number | null,\\n      \\\"is_discount_line\\\": boolean,\\n      \\\"discount_amount\\\": number | null,\\n      \\\"is_taxable\\\": boolean,\\n      \\\"tax_rate_percent\\\": number,\\n      \\\"brand\\\": string | null,\\n      \\\"sku_or_barcode\\\": string | null\\n    }\\n  ]\\n}\"\n        }\n      ]\n    }\n  ]\n}",
         "options": {
           "response": {
             "response": {
@@ -159,10 +159,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        3328,
-        320
+        11216,
+        0
       ],
-      "id": "a20e4d99-641f-49d4-aa2c-646dbb334d9e",
+      "id": "1c1dce06-bffb-45d1-b87f-261b2bc1d225",
       "name": "Perceptron Vision LLM",
       "credentials": {
         "openRouterApi": {
@@ -178,10 +178,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3552,
-        320
+        11440,
+        0
       ],
-      "id": "f4dce201-a64f-48ea-b397-0cd9c6fcb732",
+      "id": "9f6db172-dba0-4968-a466-30bc6b01bdf3",
       "name": "Parse & Flatten"
     },
     {
@@ -212,10 +212,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
       "position": [
-        3776,
-        320
+        11664,
+        0
       ],
-      "id": "63602f15-74d5-4310-8bfa-3d77b1c97a99",
+      "id": "82dd897c-eef3-4546-85f7-b8ddecfe00b2",
       "name": "Filter Empty Rows"
     },
     {
@@ -570,10 +570,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        4016,
-        320
+        11904,
+        0
       ],
-      "id": "85a0dd68-9d42-40b8-bcff-c494eba4f968",
+      "id": "e6a6830a-7723-4607-b7b0-532953493a57",
       "name": "Append to Google Sheets",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -581,6 +581,17 @@
           "name": "Job.Automation Google Sheets account"
         }
       }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        11904,
+        0
+      ],
+      "id": "95781c82-7403-444f-803b-54555af92e93",
+      "name": "Limit"
     },
     {
       "parameters": {
@@ -594,23 +605,23 @@
         },
         "channelId": {
           "__rl": true,
-          "value": "1467485311335534675",
+          "value": "1507421686805434479",
           "mode": "list",
           "cachedResultName": "receipts",
-          "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1467485311335534675"
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
         },
-        "content": "=✅ Done! *{{ $('Parse & Flatten').first().json.store_name }}* — {{ $('Parse & Flatten').first().json.receipt_date }} — £{{ $('Parse & Flatten').first().json.total_amount }} ({{ $items().length }} items added to Sheets)",
+        "content": "=✅ Receipt recorded!\nStore: {{ $('Parse & Flatten').first().json.store_name }}{{ $('Parse & Flatten').first().json.store_branch ? ' – ' + $('Parse & Flatten').first().json.store_branch : '' }}\nTotal: £{{ $('Parse & Flatten').first().json.total_amount }}\nItems: {{ $('Parse & Flatten').all().filter(i => !i.json.is_discount_line).length }}",
         "options": {}
       },
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        4240,
-        320
+        12128,
+        0
       ],
-      "id": "94371eb6-cec1-4567-8643-5b5d82aa3434",
+      "id": "636d0cca-a485-43fa-ab05-9e95a8f1b1ef",
       "name": "Discord – Success",
-      "webhookId": "59776d08-2791-4e3d-8a14-221485998190",
+      "webhookId": "a83034ed-8e34-4202-af91-94fb8992e3a0",
       "credentials": {
         "discordBotApi": {
           "id": "uMc0msEp6imVVJtp",
@@ -630,10 +641,10 @@
         },
         "channelId": {
           "__rl": true,
-          "value": "1467485311335534675",
+          "value": "1507421686805434479",
           "mode": "list",
           "cachedResultName": "receipts",
-          "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1467485311335534675"
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
         },
         "content": "❌ Please upload an image of a receipt.",
         "options": {}
@@ -641,10 +652,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        2656,
-        544
+        10544,
+        224
       ],
-      "id": "bdf938a0-ec32-4100-8b4a-3f07bb675be5",
+      "id": "dcae48ab-e807-40b5-afde-0c970511f880",
       "name": "Discord – Not an Image",
       "webhookId": "c2573333-276f-4ead-9c34-ba702d6edf3a",
       "credentials": {
@@ -755,6 +766,17 @@
       "main": [
         [
           {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
             "node": "Discord – Success",
             "type": "main",
             "index": 0
@@ -770,8 +792,8 @@
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "3a71523b-4cd4-47de-ae9e-981eccc1134c",
-  "activeVersionId": "3a71523b-4cd4-47de-ae9e-981eccc1134c",
+  "versionId": "b89fb616-7a68-4eec-b2c1-41e894dc59ef",
+  "activeVersionId": "b89fb616-7a68-4eec-b2c1-41e894dc59ef",
   "triggerCount": 1,
   "shared": [
     {
@@ -783,9 +805,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-05-21T18:48:25.000Z",
-    "createdAt": "2026-05-21T18:47:52.130Z",
-    "versionId": "3a71523b-4cd4-47de-ae9e-981eccc1134c",
+    "updatedAt": "2026-05-22T18:50:22.000Z",
+    "createdAt": "2026-05-22T18:50:18.233Z",
+    "versionId": "b89fb616-7a68-4eec-b2c1-41e894dc59ef",
     "workflowId": "1ktYyADyUgqWDYDr",
     "nodes": [
       {
@@ -797,10 +819,10 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          2208,
-          320
+          10096,
+          0
         ],
-        "id": "74d3c54f-3d3c-4d9e-999f-32753dc4254f",
+        "id": "613852c9-d615-424d-a193-1a18d5789dfe",
         "name": "Webhook",
         "webhookId": "c48a00c3-492f-41e9-900e-e8ad76f96671"
       },
@@ -831,10 +853,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          2432,
-          320
+          10320,
+          0
         ],
-        "id": "446d32f9-187a-4552-ac5e-b6cfcdfcbd2d",
+        "id": "93ae16ea-60e0-4214-82cf-b904c78cf567",
         "name": "Secret Check"
       },
       {
@@ -864,10 +886,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          2656,
-          320
+          10544,
+          0
         ],
-        "id": "1d99842d-2aa5-4630-a041-00f225a9c4b6",
+        "id": "f722394f-60a1-4738-a72b-f17c484c6fc1",
         "name": "Image Check"
       },
       {
@@ -884,10 +906,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          2880,
-          320
+          10768,
+          0
         ],
-        "id": "79c5abe2-d748-4758-9d65-d9a9467f9145",
+        "id": "82b41dcf-b4ca-4558-ad2c-a5909197ec2d",
         "name": "Download Image"
       },
       {
@@ -898,10 +920,10 @@
         "type": "n8n-nodes-base.extractFromFile",
         "typeVersion": 1.1,
         "position": [
-          3104,
-          320
+          10992,
+          0
         ],
-        "id": "cac9ac00-6dc0-4f4e-a93d-9b5168516eb7",
+        "id": "2e48dfc0-e545-4f32-8edc-05d934fbf786",
         "name": "To Base64"
       },
       {
@@ -929,7 +951,7 @@
           },
           "sendBody": true,
           "specifyBody": "json",
-          "jsonBody": "={\n  \"model\": \"perceptron/perceptron-mk1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a UK supermarket receipt parser. You will be given a photo of a supermarket receipt. Extract all data and return ONLY valid JSON — no markdown, no explanation, no code fences.\\n\\nIDENTIFY THE STORE from the header (Aldi, Tesco, Sainsbury's, Asda, Morrisons, Lidl, Waitrose, M&S, Co-op, etc.).\\n\\nStore-specific rules:\\n- Aldi/Lidl: ignore 6-digit PLU codes before item names. Discount lines follow the item they apply to.\\n- Tesco: use Clubcard price when shown, not the normal price.\\n- Sainsbury's: ignore Nectar points lines.\\n- All stores: prices are in the right column; item names in the left column.\\n\\nGeneral rules:\\n- Output pure numbers for all prices (2.49 not £2.49).\\n- quantity defaults to 1 if not shown.\\n- If a value is not clearly visible, use null — never guess.\\n- Discount lines: IsDiscountLine=true, DiscountAmount=positive number (amount saved).\\n- Date format: YYYY-MM-DD. Time format: HH:MM (24h).\\n- VAT: fresh produce/most food = 0%, hot food/snacks/alcohol = 20%.\\n- Ignore: loyalty ads, barcodes, survey codes, card **** numbers, thank-you lines.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:{{ $('Webhook').item.json.body.attachments[0].content_type }};base64,{{ $json.data }}\"\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"Parse this supermarket receipt and return JSON in this exact structure:\\n{\\n  \\\"store_name\\\": string,\\n  \\\"store_branch\\\": string | null,\\n  \\\"store_address\\\": string | null,\\n  \\\"store_postcode\\\": string | null,\\n  \\\"receipt_date\\\": string | null,\\n  \\\"receipt_time\\\": string | null,\\n  \\\"currency\\\": \\\"GBP\\\",\\n  \\\"subtotal\\\": number | null,\\n  \\\"discount_total\\\": number | null,\\n  \\\"tax_amount\\\": number | null,\\n  \\\"total_amount\\\": number | null,\\n  \\\"payment_method\\\": string | null,\\n  \\\"last4_card_digits\\\": string | null,\\n  \\\"loyalty_programme\\\": string | null,\\n  \\\"items\\\": [\\n    {\\n      \\\"line_number\\\": number,\\n      \\\"product_name\\\": string,\\n      \\\"normalised_name\\\": string,\\n      \\\"category\\\": string,\\n      \\\"quantity\\\": number,\\n      \\\"unit\\\": string | null,\\n      \\\"unit_price\\\": number | null,\\n      \\\"line_total\\\": number | null,\\n      \\\"is_discount_line\\\": boolean,\\n      \\\"discount_amount\\\": number | null,\\n      \\\"is_taxable\\\": boolean,\\n      \\\"tax_rate_percent\\\": number,\\n      \\\"brand\\\": string | null,\\n      \\\"sku_or_barcode\\\": string | null\\n    }\\n  ]\\n}\"\n        }\n      ]\n    }\n  ]\n}",
+          "jsonBody": "={\n  \"model\": \"perceptron/perceptron-mk1\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a UK supermarket receipt parser. You will be given a photo of a supermarket receipt. Extract all data and return ONLY valid JSON — no markdown, no explanation, no code fences.\\n\\nIDENTIFY THE STORE from the header (Aldi, Tesco, Sainsbury's, Asda, Morrisons, Lidl, Waitrose, M&S, Co-op, Costco, etc.).\\n\\nStore-specific rules:\\n- Aldi/Lidl: ignore 6-digit PLU codes before item names. A discount line immediately follows the item it applies to — treat it as is_discount_line=true and link discount_amount to the previous item.\\n- Tesco: use Clubcard price when shown, not the normal price.\\n- Sainsbury's: ignore Nectar points lines.\\n- Costco: items have a SKU number on the left (e.g. 2631, 464916). VAT codes after the price: A=20% VAT, Z=0% VAT. If a price has a trailing minus (e.g. '1.00-Z'), output unit_price as -1.00 (negative) and set is_discount_line=true.\\n- All stores: prices are in the right column; item names in the left column.\\n\\nGeneral rules:\\n- Output pure numbers for all prices (2.49 not £2.49).\\n- quantity defaults to 1 if not shown.\\n- If a value is not clearly visible, use null — never guess.\\n- Discount lines: is_discount_line=true, discount_amount=positive number (amount saved).\\n- Date format: YYYY-MM-DD. Time format: HH:MM (24h).\\n- VAT: fresh produce/most food = 0%, hot food/snacks/alcohol = 20%.\\n- Ignore: loyalty ads, barcodes, survey codes, card **** numbers, thank-you lines, cashier names.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:{{ $('Webhook').item.json.body.attachments[0].content_type }};base64,{{ $json.data }}\"\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"Parse this supermarket receipt and return JSON in this exact structure:\\n{\\n  \\\"store_name\\\": string,\\n  \\\"store_branch\\\": string | null,\\n  \\\"store_address\\\": string | null,\\n  \\\"store_postcode\\\": string | null,\\n  \\\"receipt_date\\\": string | null,\\n  \\\"receipt_time\\\": string | null,\\n  \\\"currency\\\": \\\"GBP\\\",\\n  \\\"subtotal\\\": number | null,\\n  \\\"discount_total\\\": number | null,\\n  \\\"tax_amount\\\": number | null,\\n  \\\"total_amount\\\": number | null,\\n  \\\"payment_method\\\": string | null,\\n  \\\"last4_card_digits\\\": string | null,\\n  \\\"loyalty_programme\\\": string | null,\\n  \\\"items\\\": [\\n    {\\n      \\\"line_number\\\": number,\\n      \\\"product_name\\\": string,\\n      \\\"normalised_name\\\": string,\\n      \\\"category\\\": string,\\n      \\\"quantity\\\": number,\\n      \\\"unit\\\": string | null,\\n      \\\"unit_price\\\": number | null,\\n      \\\"line_total\\\": number | null,\\n      \\\"is_discount_line\\\": boolean,\\n      \\\"discount_amount\\\": number | null,\\n      \\\"is_taxable\\\": boolean,\\n      \\\"tax_rate_percent\\\": number,\\n      \\\"brand\\\": string | null,\\n      \\\"sku_or_barcode\\\": string | null\\n    }\\n  ]\\n}\"\n        }\n      ]\n    }\n  ]\n}",
           "options": {
             "response": {
               "response": {
@@ -941,10 +963,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          3328,
-          320
+          11216,
+          0
         ],
-        "id": "a20e4d99-641f-49d4-aa2c-646dbb334d9e",
+        "id": "1c1dce06-bffb-45d1-b87f-261b2bc1d225",
         "name": "Perceptron Vision LLM",
         "credentials": {
           "openRouterApi": {
@@ -960,10 +982,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          3552,
-          320
+          11440,
+          0
         ],
-        "id": "f4dce201-a64f-48ea-b397-0cd9c6fcb732",
+        "id": "9f6db172-dba0-4968-a466-30bc6b01bdf3",
         "name": "Parse & Flatten"
       },
       {
@@ -994,10 +1016,10 @@
         "type": "n8n-nodes-base.filter",
         "typeVersion": 2.3,
         "position": [
-          3776,
-          320
+          11664,
+          0
         ],
-        "id": "63602f15-74d5-4310-8bfa-3d77b1c97a99",
+        "id": "82dd897c-eef3-4546-85f7-b8ddecfe00b2",
         "name": "Filter Empty Rows"
       },
       {
@@ -1352,10 +1374,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          4016,
-          320
+          11904,
+          0
         ],
-        "id": "85a0dd68-9d42-40b8-bcff-c494eba4f968",
+        "id": "e6a6830a-7723-4607-b7b0-532953493a57",
         "name": "Append to Google Sheets",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -1363,6 +1385,17 @@
             "name": "Job.Automation Google Sheets account"
           }
         }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          11904,
+          0
+        ],
+        "id": "95781c82-7403-444f-803b-54555af92e93",
+        "name": "Limit"
       },
       {
         "parameters": {
@@ -1376,23 +1409,23 @@
           },
           "channelId": {
             "__rl": true,
-            "value": "1467485311335534675",
+            "value": "1507421686805434479",
             "mode": "list",
             "cachedResultName": "receipts",
-            "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1467485311335534675"
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
           },
-          "content": "=✅ Done! *{{ $('Parse & Flatten').first().json.store_name }}* — {{ $('Parse & Flatten').first().json.receipt_date }} — £{{ $('Parse & Flatten').first().json.total_amount }} ({{ $items().length }} items added to Sheets)",
+          "content": "=✅ Receipt recorded!\nStore: {{ $('Parse & Flatten').first().json.store_name }}{{ $('Parse & Flatten').first().json.store_branch ? ' – ' + $('Parse & Flatten').first().json.store_branch : '' }}\nTotal: £{{ $('Parse & Flatten').first().json.total_amount }}\nItems: {{ $('Parse & Flatten').all().filter(i => !i.json.is_discount_line).length }}",
           "options": {}
         },
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          4240,
-          320
+          12128,
+          0
         ],
-        "id": "94371eb6-cec1-4567-8643-5b5d82aa3434",
+        "id": "636d0cca-a485-43fa-ab05-9e95a8f1b1ef",
         "name": "Discord – Success",
-        "webhookId": "59776d08-2791-4e3d-8a14-221485998190",
+        "webhookId": "a83034ed-8e34-4202-af91-94fb8992e3a0",
         "credentials": {
           "discordBotApi": {
             "id": "uMc0msEp6imVVJtp",
@@ -1412,10 +1445,10 @@
           },
           "channelId": {
             "__rl": true,
-            "value": "1467485311335534675",
+            "value": "1507421686805434479",
             "mode": "list",
             "cachedResultName": "receipts",
-            "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1467485311335534675"
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
           },
           "content": "❌ Please upload an image of a receipt.",
           "options": {}
@@ -1423,10 +1456,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          2656,
-          544
+          10544,
+          224
         ],
-        "id": "bdf938a0-ec32-4100-8b4a-3f07bb675be5",
+        "id": "dcae48ab-e807-40b5-afde-0c970511f880",
         "name": "Discord – Not an Image",
         "webhookId": "c2573333-276f-4ead-9c34-ba702d6edf3a",
         "credentials": {
@@ -1537,6 +1570,17 @@
         "main": [
           [
             {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
               "node": "Discord – Success",
               "type": "main",
               "index": 0
@@ -1546,13 +1590,13 @@
       }
     },
     "authors": "4you donut",
-    "name": "Version 3a71523b",
+    "name": "Version b89fb616",
     "description": "",
     "autosaved": true
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-05-22T01:00:19.203Z",
+    "backed_up_at": "2026-05-23T01:00:19.220Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
