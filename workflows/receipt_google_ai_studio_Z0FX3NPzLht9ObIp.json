@@ -1,0 +1,2098 @@
+{
+  "updatedAt": "2026-05-23T23:25:22.303Z",
+  "createdAt": "2026-05-23T22:17:24.893Z",
+  "id": "Z0FX3NPzLht9ObIp",
+  "name": "Receipt – Google AI Studio",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "discord",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3088,
+        208
+      ],
+      "id": "45740447-5e0b-4d35-98e9-36b168b1d083",
+      "name": "Webhook",
+      "webhookId": "c48a00c3-492f-41e9-900e-e8ad76f96671"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-secret",
+              "leftValue": "={{ $json.headers['x-bot-secret'] }}",
+              "rightValue": "3qPPVe4crgE4Ev7Npd9MrDcks1OJV/fOF2J5Q1q2vzc=",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2864,
+        208
+      ],
+      "id": "7241acbd-b550-4560-a2d8-415b2c49ca0a",
+      "name": "Secret Check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-image",
+              "leftValue": "={{ $json.body.attachments[0].content_type }}",
+              "rightValue": "image/",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2640,
+        208
+      ],
+      "id": "b632c6cb-729c-48c9-b26f-c8f59dcc042a",
+      "name": "Image Check"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Webhook').item.json.body.attachments[0].proxy_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2416,
+        112
+      ],
+      "id": "c67a3fd9-e02f-4529-9305-c73c1d3f6a2f",
+      "name": "Download Image"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -2192,
+        112
+      ],
+      "id": "024f66a4-c31f-4785-9026-7dd4e1ede2f5",
+      "name": "To Base64"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"system_instruction\": {\n    \"parts\": [\n      {\n        \"text\": \"You are a UK supermarket receipt parser. You will be given a photo of a supermarket receipt. Extract all data and return ONLY valid JSON — no markdown, no explanation, no code fences.\\n\\nIDENTIFY THE STORE from the header (Aldi, Tesco, Sainsbury's, Asda, Morrisons, Lidl, Waitrose, M&S, Co-op, Costco, etc.).\\n\\nStore-specific rules:\\n- Aldi/Lidl: ignore 6-digit PLU codes before item names. A discount line immediately follows the item it applies to — treat it as is_discount_line=true and link discount_amount to the previous item.\\n- Tesco: use Clubcard price when shown, not the normal price.\\n- Sainsbury's: ignore Nectar points lines.\\n- Costco: items have a SKU number on the left (e.g. 2631, 464916). VAT code is the letter printed after the price — A=20% VAT (is_taxable=true, tax_rate_percent=20), Z=0% VAT (is_taxable=false, tax_rate_percent=0). Always use the VAT code from the receipt, do not infer VAT from the product category. If a price has a trailing minus (e.g. '1.00-Z'), output unit_price as -1.00 (negative) and set is_discount_line=true.\\n- All stores: prices are in the right column; item names in the left column.\\n\\nGeneral rules:\\n- Output pure numbers for all prices (2.49 not £2.49).\\n- quantity defaults to 1 if not shown.\\n- If a value is not clearly visible, use null — never guess.\\n- Discount lines: is_discount_line=true, discount_amount=positive number (amount saved).\\n- Date format: YYYY-MM-DD. Time format: HH:MM (24h).\\n- VAT: fresh produce/most food = 0%, hot food/snacks/alcohol = 20%.\\n- Ignore: loyalty ads, barcodes, survey codes, card **** numbers, thank-you lines, cashier names.\"\n      }\n    ]\n  },\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"inline_data\": {\n            \"mime_type\": \"{{ $('Webhook').item.json.body.attachments[0].content_type }}\",\n            \"data\": \"{{ $json.data }}\"\n          }\n        },\n        {\n          \"text\": \"Parse this supermarket receipt and return JSON in this exact structure:\\n{\\n  \\\"store_name\\\": string,\\n  \\\"store_branch\\\": string | null,\\n  \\\"store_address\\\": string | null,\\n  \\\"store_postcode\\\": string | null,\\n  \\\"receipt_date\\\": string | null,\\n  \\\"receipt_time\\\": string | null,\\n  \\\"currency\\\": \\\"GBP\\\",\\n  \\\"subtotal\\\": number | null,\\n  \\\"discount_total\\\": number | null,\\n  \\\"tax_amount\\\": number | null,\\n  \\\"total_amount\\\": number | null,\\n  \\\"payment_method\\\": string | null,\\n  \\\"last4_card_digits\\\": string | null,\\n  \\\"loyalty_programme\\\": string | null,\\n  \\\"items\\\": [\\n    {\\n      \\\"line_number\\\": number,\\n      \\\"product_name\\\": string,\\n      \\\"normalised_name\\\": string,\\n      \\\"category\\\": string,\\n      \\\"quantity\\\": number,\\n      \\\"unit\\\": string | null,\\n      \\\"unit_price\\\": number | null,\\n      \\\"line_total\\\": number | null,\\n      \\\"is_discount_line\\\": boolean,\\n      \\\"discount_amount\\\": number | null,\\n      \\\"is_taxable\\\": boolean,\\n      \\\"tax_rate_percent\\\": number,\\n      \\\"brand\\\": string | null,\\n      \\\"sku_or_barcode\\\": string | null\\n    }\\n  ]\\n}\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.1,\n    \"responseMimeType\": \"application/json\",\n    \"maxOutputTokens\": 8192\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1968,
+        112
+      ],
+      "id": "871c04ab-5117-48d2-b315-24c3f32c92b2",
+      "name": "Gemini Vision LLM",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rj11C9kBvF5GQPHA",
+          "name": "Google Api Studio - Receipt-Mgt"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.candidates[0].content.parts[0].text;\n\n// Strip markdown fences if model adds them despite instructions\nconst cleaned = raw\n  .replace(/^```json\\s*/i, '')\n  .replace(/^```\\s*/i, '')\n  .replace(/```\\s*$/i, '')\n  .trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  return [{ json: { _not_a_receipt: true } }];\n}\n\nif (!parsed.items || !Array.isArray(parsed.items) || parsed.items.length === 0) {\n  return [{ json: { _not_a_receipt: true } }];\n}\n\nconst executionId = $execution.id;\nconst receiptMeta = {\n  receipt_id: executionId,\n  store_name: parsed.store_name ?? null,\n  store_branch: parsed.store_branch ?? null,\n  store_address: parsed.store_address ?? null,\n  store_postcode: parsed.store_postcode ?? null,\n  receipt_date: parsed.receipt_date ?? null,\n  receipt_time: parsed.receipt_time ?? null,\n  currency: parsed.currency ?? 'GBP',\n  subtotal: parsed.subtotal ?? null,\n  discount_total: parsed.discount_total ?? null,\n  tax_amount: parsed.tax_amount ?? null,\n  total_amount: parsed.total_amount ?? null,\n  payment_method: parsed.payment_method ?? null,\n  last4_card_digits: parsed.last4_card_digits ?? null,\n  loyalty_programme: parsed.loyalty_programme ?? null,\n  source_image_url: $('Webhook').item.json.body.attachments[0].url,\n  discord_user: $('Webhook').item.json.body.author.username,\n  created_at: new Date().toISOString(),\n};\n\nreturn parsed.items.map(item => ({\n  json: {\n    ...receiptMeta,\n    line_number: item.line_number,\n    product_name: item.product_name,\n    normalised_name: item.normalised_name,\n    category: item.category,\n    quantity: item.quantity,\n    unit: item.unit ?? null,\n    unit_price: item.unit_price ?? null,\n    line_total: item.line_total ?? null,\n    is_discount_line: item.is_discount_line ?? false,\n    discount_amount: item.discount_amount ?? null,\n    is_taxable: item.is_taxable ?? false,\n    tax_rate_percent: item.tax_rate_percent ?? 0,\n    brand: item.brand ?? null,\n    sku_or_barcode: item.sku_or_barcode ?? null,\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1744,
+        112
+      ],
+      "id": "f5510b07-14bc-4e4f-b3c1-d51d0b0ea674",
+      "name": "Parse & Flatten"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-not-receipt",
+              "leftValue": "={{ $json._not_a_receipt }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1520,
+        112
+      ],
+      "id": "bf3d1dd7-e5af-4ff5-b86b-9f760da0590f",
+      "name": "Is Receipt?"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1467482881210323021",
+          "mode": "list",
+          "cachedResultName": "donut-automation",
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1507421686805434479",
+          "mode": "list",
+          "cachedResultName": "receipts",
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
+        },
+        "content": "❌ Could not parse a receipt from this image. Please upload a clear photo of a supermarket receipt.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        -1296,
+        208
+      ],
+      "id": "b4c1a4b5-1fc0-44ec-960d-512286a5f801",
+      "name": "Discord – Not a Receipt",
+      "webhookId": "e2ef9c31-d576-4433-90b6-af548e52d1dc",
+      "credentials": {
+        "discordBotApi": {
+          "id": "uMc0msEp6imVVJtp",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-valid-row",
+              "leftValue": "={{ $json.product_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1296,
+        16
+      ],
+      "id": "1cb6fa3a-99c5-4365-a6b8-62f5c6554e40",
+      "name": "Filter Empty Rows"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ",
+          "mode": "list",
+          "cachedResultName": "Receipts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "supermarkets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1072,
+        16
+      ],
+      "id": "3595bd7c-9f2b-47c6-8e9c-49ebb7d80321",
+      "name": "Read Existing Receipts",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DgucYvkJJQVWqK51",
+          "name": "Job.Automation Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const receipt = $('Filter Empty Rows').first().json;\nconst receiptDate = (receipt.receipt_date ?? '').toString().trim();\nconst receiptTime = (receipt.receipt_time ?? '').toString().trim();\nconst storeName = (receipt.store_name ?? '').toString().trim().toLowerCase();\nconst storeBranch = (receipt.store_branch ?? '').toString().trim().toLowerCase();\nconst discordUser = (receipt.discord_user ?? '').toString().trim().toLowerCase();\n\nconst existingRows = $input.all();\nconst duplicate = existingRows.find(row => {\n  return (\n    (row.json.receipt_date ?? '').toString().trim() === receiptDate &&\n    (row.json.receipt_time ?? '').toString().trim() === receiptTime &&\n    (row.json.store_name ?? '').toString().trim().toLowerCase() === storeName &&\n    (row.json.store_branch ?? '').toString().trim().toLowerCase() === storeBranch &&\n    (row.json.discord_user ?? '').toString().trim().toLowerCase() === discordUser\n  );\n});\n\nreturn $('Filter Empty Rows').all().map(item => ({\n  json: {\n    ...item.json,\n    _is_duplicate: !!duplicate,\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        16
+      ],
+      "id": "51749355-b928-493c-a2ae-ee612d9f1254",
+      "name": "Check Duplicate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-not-duplicate",
+              "leftValue": "={{ $json._is_duplicate }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -624,
+        16
+      ],
+      "id": "28028fd0-cd7b-4bab-9187-8547072b146a",
+      "name": "Is Duplicate?"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ",
+          "mode": "list",
+          "cachedResultName": "Receipts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "supermarkets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "receipt_id": "={{ $json.receipt_id }}",
+            "receipt_date": "={{ $json.receipt_date }}",
+            "receipt_time": "={{ $json.receipt_time }}",
+            "store_name": "={{ $json.store_name }}",
+            "store_branch": "={{ $json.store_branch }}",
+            "store_address": "={{ $json.store_address }}",
+            "store_postcode": "={{ $json.store_postcode }}",
+            "currency": "={{ $json.currency }}",
+            "subtotal": "={{ $json.subtotal }}",
+            "discount_total": "={{ $json.discount_total }}",
+            "tax_amount": "={{ $json.tax_amount }}",
+            "total_amount": "={{ $json.total_amount }}",
+            "payment_method": "={{ $json.payment_method }}",
+            "last4_card_digits": "={{ $json.last4_card_digits }}",
+            "loyalty_programme": "={{ $json.loyalty_programme }}",
+            "line_number": "={{ $json.line_number }}",
+            "product_name": "={{ $json.product_name }}",
+            "normalised_name": "={{ $json.normalised_name }}",
+            "category": "={{ $json.category }}",
+            "quantity": "={{ $json.quantity }}",
+            "unit": "={{ $json.unit }}",
+            "unit_price": "={{ $json.unit_price }}",
+            "line_total": "={{ $json.line_total }}",
+            "is_discount_line": "={{ $json.is_discount_line }}",
+            "discount_amount": "={{ $json.discount_amount }}",
+            "is_taxable": "={{ $json.is_taxable }}",
+            "tax_rate_percent": "={{ $json.tax_rate_percent }}",
+            "brand": "={{ $json.brand }}",
+            "sku_or_barcode": "={{ $json.sku_or_barcode }}",
+            "source_image_url": "={{ $json.source_image_url }}",
+            "discord_user": "={{ $json.discord_user }}",
+            "created_at": "={{ $json.created_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "receipt_id",
+              "displayName": "receipt_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "receipt_date",
+              "displayName": "receipt_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "receipt_time",
+              "displayName": "receipt_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "store_name",
+              "displayName": "store_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "store_branch",
+              "displayName": "store_branch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "store_address",
+              "displayName": "store_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "store_postcode",
+              "displayName": "store_postcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subtotal",
+              "displayName": "subtotal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "discount_total",
+              "displayName": "discount_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tax_amount",
+              "displayName": "tax_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_amount",
+              "displayName": "total_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_method",
+              "displayName": "payment_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last4_card_digits",
+              "displayName": "last4_card_digits",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "loyalty_programme",
+              "displayName": "loyalty_programme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "line_number",
+              "displayName": "line_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "normalised_name",
+              "displayName": "normalised_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit",
+              "displayName": "unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit_price",
+              "displayName": "unit_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "line_total",
+              "displayName": "line_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_discount_line",
+              "displayName": "is_discount_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "discount_amount",
+              "displayName": "discount_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_taxable",
+              "displayName": "is_taxable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tax_rate_percent",
+              "displayName": "tax_rate_percent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "brand",
+              "displayName": "brand",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sku_or_barcode",
+              "displayName": "sku_or_barcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_image_url",
+              "displayName": "source_image_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "discord_user",
+              "displayName": "discord_user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        -80
+      ],
+      "id": "ba9b4d52-dc93-470e-80b8-57d60c4210bf",
+      "name": "Append to Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DgucYvkJJQVWqK51",
+          "name": "Job.Automation Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -80
+      ],
+      "id": "de18b9b9-5e3d-4383-90ad-c8eea6390654",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1467482881210323021",
+          "mode": "list",
+          "cachedResultName": "donut-automation",
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1507421686805434479",
+          "mode": "list",
+          "cachedResultName": "receipts",
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
+        },
+        "content": "=✅ Receipt recorded!\nStore: {{ $('Parse & Flatten').first().json.store_name }}{{ $('Parse & Flatten').first().json.store_branch ? ' – ' + $('Parse & Flatten').first().json.store_branch : '' }}\nTotal: £{{ $('Parse & Flatten').first().json.total_amount }}\nItems: {{ $('Parse & Flatten').all().filter(i => !i.json.is_discount_line).length }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        48,
+        -80
+      ],
+      "id": "2e25d9dd-c786-4450-86cb-5491b60ce1ad",
+      "name": "Discord – Success",
+      "webhookId": "0076f3f0-c12c-435f-bfa5-2982e70d1b20",
+      "credentials": {
+        "discordBotApi": {
+          "id": "uMc0msEp6imVVJtp",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        112
+      ],
+      "id": "d478f505-79f3-4e1a-9812-1d3aba06f7b3",
+      "name": "Limit Duplicate"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1467482881210323021",
+          "mode": "list",
+          "cachedResultName": "donut-automation",
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1507421686805434479",
+          "mode": "list",
+          "cachedResultName": "receipts",
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
+        },
+        "content": "=⚠️ Duplicate receipt detected!\nThis receipt appears to have already been recorded:\nStore: {{ $('Check Duplicate').first().json.store_name }}{{ $('Check Duplicate').first().json.store_branch ? ' – ' + $('Check Duplicate').first().json.store_branch : '' }}\nDate: {{ $('Check Duplicate').first().json.receipt_date }} {{ $('Check Duplicate').first().json.receipt_time }}\nIf this is a new receipt, please check the spreadsheet and resubmit if needed.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        112
+      ],
+      "id": "574250d3-293b-4966-bca9-671a3efb3efa",
+      "name": "Discord – Duplicate Warning",
+      "webhookId": "49b14540-ca1a-40c1-bb5f-09ed357edd6f",
+      "credentials": {
+        "discordBotApi": {
+          "id": "uMc0msEp6imVVJtp",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1467482881210323021",
+          "mode": "list",
+          "cachedResultName": "donut-automation",
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1507421686805434479",
+          "mode": "list",
+          "cachedResultName": "receipts",
+          "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
+        },
+        "content": "❌ Please upload an image of a receipt.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        -2416,
+        304
+      ],
+      "id": "bb55ba5e-fc09-42d1-9192-97347bacc322",
+      "name": "Discord – Not an Image",
+      "webhookId": "efc98116-ad78-419d-bb54-21c6d8ff0556",
+      "credentials": {
+        "discordBotApi": {
+          "id": "uMc0msEp6imVVJtp",
+          "name": "Discord Bot account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Secret Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Secret Check": {
+      "main": [
+        [
+          {
+            "node": "Image Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Check": {
+      "main": [
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Discord – Not an Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "To Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "To Base64": {
+      "main": [
+        [
+          {
+            "node": "Gemini Vision LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Vision LLM": {
+      "main": [
+        [
+          {
+            "node": "Parse & Flatten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Flatten": {
+      "main": [
+        [
+          {
+            "node": "Is Receipt?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Receipt?": {
+      "main": [
+        [
+          {
+            "node": "Discord – Not a Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter Empty Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Empty Rows": {
+      "main": [
+        [
+          {
+            "node": "Read Existing Receipts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Existing Receipts": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Is Duplicate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Duplicate?": {
+      "main": [
+        [
+          {
+            "node": "Append to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Limit Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Discord – Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Discord – Duplicate Warning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "2876e0d7-0e4a-4953-a794-daba4b9fdba0",
+  "activeVersionId": "2876e0d7-0e4a-4953-a794-daba4b9fdba0",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-23T22:17:24.895Z",
+      "createdAt": "2026-05-23T22:17:24.895Z",
+      "role": "workflow:owner",
+      "workflowId": "Z0FX3NPzLht9ObIp",
+      "projectId": "PorrnAHK6jPReB5P"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-05-23T23:25:32.000Z",
+    "createdAt": "2026-05-23T23:25:22.305Z",
+    "versionId": "2876e0d7-0e4a-4953-a794-daba4b9fdba0",
+    "workflowId": "Z0FX3NPzLht9ObIp",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "discord",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -3088,
+          208
+        ],
+        "id": "45740447-5e0b-4d35-98e9-36b168b1d083",
+        "name": "Webhook",
+        "webhookId": "c48a00c3-492f-41e9-900e-e8ad76f96671"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cond-secret",
+                "leftValue": "={{ $json.headers['x-bot-secret'] }}",
+                "rightValue": "3qPPVe4crgE4Ev7Npd9MrDcks1OJV/fOF2J5Q1q2vzc=",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -2864,
+          208
+        ],
+        "id": "7241acbd-b550-4560-a2d8-415b2c49ca0a",
+        "name": "Secret Check"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cond-image",
+                "leftValue": "={{ $json.body.attachments[0].content_type }}",
+                "rightValue": "image/",
+                "operator": {
+                  "type": "string",
+                  "operation": "startsWith"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -2640,
+          208
+        ],
+        "id": "b632c6cb-729c-48c9-b26f-c8f59dcc042a",
+        "name": "Image Check"
+      },
+      {
+        "parameters": {
+          "url": "={{ $('Webhook').item.json.body.attachments[0].proxy_url }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -2416,
+          112
+        ],
+        "id": "c67a3fd9-e02f-4529-9305-c73c1d3f6a2f",
+        "name": "Download Image"
+      },
+      {
+        "parameters": {
+          "operation": "binaryToPropery",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1.1,
+        "position": [
+          -2192,
+          112
+        ],
+        "id": "024f66a4-c31f-4785-9026-7dd4e1ede2f5",
+        "name": "To Base64"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googlePalmApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"system_instruction\": {\n    \"parts\": [\n      {\n        \"text\": \"You are a UK supermarket receipt parser. You will be given a photo of a supermarket receipt. Extract all data and return ONLY valid JSON — no markdown, no explanation, no code fences.\\n\\nIDENTIFY THE STORE from the header (Aldi, Tesco, Sainsbury's, Asda, Morrisons, Lidl, Waitrose, M&S, Co-op, Costco, etc.).\\n\\nStore-specific rules:\\n- Aldi/Lidl: ignore 6-digit PLU codes before item names. A discount line immediately follows the item it applies to — treat it as is_discount_line=true and link discount_amount to the previous item.\\n- Tesco: use Clubcard price when shown, not the normal price.\\n- Sainsbury's: ignore Nectar points lines.\\n- Costco: items have a SKU number on the left (e.g. 2631, 464916). VAT code is the letter printed after the price — A=20% VAT (is_taxable=true, tax_rate_percent=20), Z=0% VAT (is_taxable=false, tax_rate_percent=0). Always use the VAT code from the receipt, do not infer VAT from the product category. If a price has a trailing minus (e.g. '1.00-Z'), output unit_price as -1.00 (negative) and set is_discount_line=true.\\n- All stores: prices are in the right column; item names in the left column.\\n\\nGeneral rules:\\n- Output pure numbers for all prices (2.49 not £2.49).\\n- quantity defaults to 1 if not shown.\\n- If a value is not clearly visible, use null — never guess.\\n- Discount lines: is_discount_line=true, discount_amount=positive number (amount saved).\\n- Date format: YYYY-MM-DD. Time format: HH:MM (24h).\\n- VAT: fresh produce/most food = 0%, hot food/snacks/alcohol = 20%.\\n- Ignore: loyalty ads, barcodes, survey codes, card **** numbers, thank-you lines, cashier names.\"\n      }\n    ]\n  },\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"inline_data\": {\n            \"mime_type\": \"{{ $('Webhook').item.json.body.attachments[0].content_type }}\",\n            \"data\": \"{{ $json.data }}\"\n          }\n        },\n        {\n          \"text\": \"Parse this supermarket receipt and return JSON in this exact structure:\\n{\\n  \\\"store_name\\\": string,\\n  \\\"store_branch\\\": string | null,\\n  \\\"store_address\\\": string | null,\\n  \\\"store_postcode\\\": string | null,\\n  \\\"receipt_date\\\": string | null,\\n  \\\"receipt_time\\\": string | null,\\n  \\\"currency\\\": \\\"GBP\\\",\\n  \\\"subtotal\\\": number | null,\\n  \\\"discount_total\\\": number | null,\\n  \\\"tax_amount\\\": number | null,\\n  \\\"total_amount\\\": number | null,\\n  \\\"payment_method\\\": string | null,\\n  \\\"last4_card_digits\\\": string | null,\\n  \\\"loyalty_programme\\\": string | null,\\n  \\\"items\\\": [\\n    {\\n      \\\"line_number\\\": number,\\n      \\\"product_name\\\": string,\\n      \\\"normalised_name\\\": string,\\n      \\\"category\\\": string,\\n      \\\"quantity\\\": number,\\n      \\\"unit\\\": string | null,\\n      \\\"unit_price\\\": number | null,\\n      \\\"line_total\\\": number | null,\\n      \\\"is_discount_line\\\": boolean,\\n      \\\"discount_amount\\\": number | null,\\n      \\\"is_taxable\\\": boolean,\\n      \\\"tax_rate_percent\\\": number,\\n      \\\"brand\\\": string | null,\\n      \\\"sku_or_barcode\\\": string | null\\n    }\\n  ]\\n}\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.1,\n    \"responseMimeType\": \"application/json\",\n    \"maxOutputTokens\": 8192\n  }\n}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -1968,
+          112
+        ],
+        "id": "871c04ab-5117-48d2-b315-24c3f32c92b2",
+        "name": "Gemini Vision LLM",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "rj11C9kBvF5GQPHA",
+            "name": "Google Api Studio - Receipt-Mgt"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const raw = $json.candidates[0].content.parts[0].text;\n\n// Strip markdown fences if model adds them despite instructions\nconst cleaned = raw\n  .replace(/^```json\\s*/i, '')\n  .replace(/^```\\s*/i, '')\n  .replace(/```\\s*$/i, '')\n  .trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  return [{ json: { _not_a_receipt: true } }];\n}\n\nif (!parsed.items || !Array.isArray(parsed.items) || parsed.items.length === 0) {\n  return [{ json: { _not_a_receipt: true } }];\n}\n\nconst executionId = $execution.id;\nconst receiptMeta = {\n  receipt_id: executionId,\n  store_name: parsed.store_name ?? null,\n  store_branch: parsed.store_branch ?? null,\n  store_address: parsed.store_address ?? null,\n  store_postcode: parsed.store_postcode ?? null,\n  receipt_date: parsed.receipt_date ?? null,\n  receipt_time: parsed.receipt_time ?? null,\n  currency: parsed.currency ?? 'GBP',\n  subtotal: parsed.subtotal ?? null,\n  discount_total: parsed.discount_total ?? null,\n  tax_amount: parsed.tax_amount ?? null,\n  total_amount: parsed.total_amount ?? null,\n  payment_method: parsed.payment_method ?? null,\n  last4_card_digits: parsed.last4_card_digits ?? null,\n  loyalty_programme: parsed.loyalty_programme ?? null,\n  source_image_url: $('Webhook').item.json.body.attachments[0].url,\n  discord_user: $('Webhook').item.json.body.author.username,\n  created_at: new Date().toISOString(),\n};\n\nreturn parsed.items.map(item => ({\n  json: {\n    ...receiptMeta,\n    line_number: item.line_number,\n    product_name: item.product_name,\n    normalised_name: item.normalised_name,\n    category: item.category,\n    quantity: item.quantity,\n    unit: item.unit ?? null,\n    unit_price: item.unit_price ?? null,\n    line_total: item.line_total ?? null,\n    is_discount_line: item.is_discount_line ?? false,\n    discount_amount: item.discount_amount ?? null,\n    is_taxable: item.is_taxable ?? false,\n    tax_rate_percent: item.tax_rate_percent ?? 0,\n    brand: item.brand ?? null,\n    sku_or_barcode: item.sku_or_barcode ?? null,\n  }\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1744,
+          112
+        ],
+        "id": "f5510b07-14bc-4e4f-b3c1-d51d0b0ea674",
+        "name": "Parse & Flatten"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cond-not-receipt",
+                "leftValue": "={{ $json._not_a_receipt }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -1520,
+          112
+        ],
+        "id": "bf3d1dd7-e5af-4ff5-b86b-9f760da0590f",
+        "name": "Is Receipt?"
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1467482881210323021",
+            "mode": "list",
+            "cachedResultName": "donut-automation",
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1507421686805434479",
+            "mode": "list",
+            "cachedResultName": "receipts",
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
+          },
+          "content": "❌ Could not parse a receipt from this image. Please upload a clear photo of a supermarket receipt.",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          -1296,
+          208
+        ],
+        "id": "b4c1a4b5-1fc0-44ec-960d-512286a5f801",
+        "name": "Discord – Not a Receipt",
+        "webhookId": "e2ef9c31-d576-4433-90b6-af548e52d1dc",
+        "credentials": {
+          "discordBotApi": {
+            "id": "uMc0msEp6imVVJtp",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cond-valid-row",
+                "leftValue": "={{ $json.product_name }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          -1296,
+          16
+        ],
+        "id": "1cb6fa3a-99c5-4365-a6b8-62f5c6554e40",
+        "name": "Filter Empty Rows"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ",
+            "mode": "list",
+            "cachedResultName": "Receipts",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "supermarkets",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ/edit#gid=0"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          -1072,
+          16
+        ],
+        "id": "3595bd7c-9f2b-47c6-8e9c-49ebb7d80321",
+        "name": "Read Existing Receipts",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DgucYvkJJQVWqK51",
+            "name": "Job.Automation Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const receipt = $('Filter Empty Rows').first().json;\nconst receiptDate = (receipt.receipt_date ?? '').toString().trim();\nconst receiptTime = (receipt.receipt_time ?? '').toString().trim();\nconst storeName = (receipt.store_name ?? '').toString().trim().toLowerCase();\nconst storeBranch = (receipt.store_branch ?? '').toString().trim().toLowerCase();\nconst discordUser = (receipt.discord_user ?? '').toString().trim().toLowerCase();\n\nconst existingRows = $input.all();\nconst duplicate = existingRows.find(row => {\n  return (\n    (row.json.receipt_date ?? '').toString().trim() === receiptDate &&\n    (row.json.receipt_time ?? '').toString().trim() === receiptTime &&\n    (row.json.store_name ?? '').toString().trim().toLowerCase() === storeName &&\n    (row.json.store_branch ?? '').toString().trim().toLowerCase() === storeBranch &&\n    (row.json.discord_user ?? '').toString().trim().toLowerCase() === discordUser\n  );\n});\n\nreturn $('Filter Empty Rows').all().map(item => ({\n  json: {\n    ...item.json,\n    _is_duplicate: !!duplicate,\n  }\n}));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -848,
+          16
+        ],
+        "id": "51749355-b928-493c-a2ae-ee612d9f1254",
+        "name": "Check Duplicate"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cond-not-duplicate",
+                "leftValue": "={{ $json._is_duplicate }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -624,
+          16
+        ],
+        "id": "28028fd0-cd7b-4bab-9187-8547072b146a",
+        "name": "Is Duplicate?"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ",
+            "mode": "list",
+            "cachedResultName": "Receipts",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "supermarkets",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "receipt_id": "={{ $json.receipt_id }}",
+              "receipt_date": "={{ $json.receipt_date }}",
+              "receipt_time": "={{ $json.receipt_time }}",
+              "store_name": "={{ $json.store_name }}",
+              "store_branch": "={{ $json.store_branch }}",
+              "store_address": "={{ $json.store_address }}",
+              "store_postcode": "={{ $json.store_postcode }}",
+              "currency": "={{ $json.currency }}",
+              "subtotal": "={{ $json.subtotal }}",
+              "discount_total": "={{ $json.discount_total }}",
+              "tax_amount": "={{ $json.tax_amount }}",
+              "total_amount": "={{ $json.total_amount }}",
+              "payment_method": "={{ $json.payment_method }}",
+              "last4_card_digits": "={{ $json.last4_card_digits }}",
+              "loyalty_programme": "={{ $json.loyalty_programme }}",
+              "line_number": "={{ $json.line_number }}",
+              "product_name": "={{ $json.product_name }}",
+              "normalised_name": "={{ $json.normalised_name }}",
+              "category": "={{ $json.category }}",
+              "quantity": "={{ $json.quantity }}",
+              "unit": "={{ $json.unit }}",
+              "unit_price": "={{ $json.unit_price }}",
+              "line_total": "={{ $json.line_total }}",
+              "is_discount_line": "={{ $json.is_discount_line }}",
+              "discount_amount": "={{ $json.discount_amount }}",
+              "is_taxable": "={{ $json.is_taxable }}",
+              "tax_rate_percent": "={{ $json.tax_rate_percent }}",
+              "brand": "={{ $json.brand }}",
+              "sku_or_barcode": "={{ $json.sku_or_barcode }}",
+              "source_image_url": "={{ $json.source_image_url }}",
+              "discord_user": "={{ $json.discord_user }}",
+              "created_at": "={{ $json.created_at }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "receipt_id",
+                "displayName": "receipt_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "receipt_date",
+                "displayName": "receipt_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "receipt_time",
+                "displayName": "receipt_time",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "store_name",
+                "displayName": "store_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "store_branch",
+                "displayName": "store_branch",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "store_address",
+                "displayName": "store_address",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "store_postcode",
+                "displayName": "store_postcode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "currency",
+                "displayName": "currency",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "subtotal",
+                "displayName": "subtotal",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "discount_total",
+                "displayName": "discount_total",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "tax_amount",
+                "displayName": "tax_amount",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "total_amount",
+                "displayName": "total_amount",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "payment_method",
+                "displayName": "payment_method",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "last4_card_digits",
+                "displayName": "last4_card_digits",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "loyalty_programme",
+                "displayName": "loyalty_programme",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "line_number",
+                "displayName": "line_number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "product_name",
+                "displayName": "product_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "normalised_name",
+                "displayName": "normalised_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "category",
+                "displayName": "category",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "quantity",
+                "displayName": "quantity",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "unit",
+                "displayName": "unit",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "unit_price",
+                "displayName": "unit_price",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "line_total",
+                "displayName": "line_total",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "is_discount_line",
+                "displayName": "is_discount_line",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "discount_amount",
+                "displayName": "discount_amount",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "is_taxable",
+                "displayName": "is_taxable",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "tax_rate_percent",
+                "displayName": "tax_rate_percent",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "brand",
+                "displayName": "brand",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "sku_or_barcode",
+                "displayName": "sku_or_barcode",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "source_image_url",
+                "displayName": "source_image_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "discord_user",
+                "displayName": "discord_user",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "created_at",
+                "displayName": "created_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          -400,
+          -80
+        ],
+        "id": "ba9b4d52-dc93-470e-80b8-57d60c4210bf",
+        "name": "Append to Google Sheets",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DgucYvkJJQVWqK51",
+            "name": "Job.Automation Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          -176,
+          -80
+        ],
+        "id": "de18b9b9-5e3d-4383-90ad-c8eea6390654",
+        "name": "Limit"
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1467482881210323021",
+            "mode": "list",
+            "cachedResultName": "donut-automation",
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1507421686805434479",
+            "mode": "list",
+            "cachedResultName": "receipts",
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
+          },
+          "content": "=✅ Receipt recorded!\nStore: {{ $('Parse & Flatten').first().json.store_name }}{{ $('Parse & Flatten').first().json.store_branch ? ' – ' + $('Parse & Flatten').first().json.store_branch : '' }}\nTotal: £{{ $('Parse & Flatten').first().json.total_amount }}\nItems: {{ $('Parse & Flatten').all().filter(i => !i.json.is_discount_line).length }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          48,
+          -80
+        ],
+        "id": "2e25d9dd-c786-4450-86cb-5491b60ce1ad",
+        "name": "Discord – Success",
+        "webhookId": "0076f3f0-c12c-435f-bfa5-2982e70d1b20",
+        "credentials": {
+          "discordBotApi": {
+            "id": "uMc0msEp6imVVJtp",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.limit",
+        "typeVersion": 1,
+        "position": [
+          -400,
+          112
+        ],
+        "id": "d478f505-79f3-4e1a-9812-1d3aba06f7b3",
+        "name": "Limit Duplicate"
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1467482881210323021",
+            "mode": "list",
+            "cachedResultName": "donut-automation",
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1507421686805434479",
+            "mode": "list",
+            "cachedResultName": "receipts",
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
+          },
+          "content": "=⚠️ Duplicate receipt detected!\nThis receipt appears to have already been recorded:\nStore: {{ $('Check Duplicate').first().json.store_name }}{{ $('Check Duplicate').first().json.store_branch ? ' – ' + $('Check Duplicate').first().json.store_branch : '' }}\nDate: {{ $('Check Duplicate').first().json.receipt_date }} {{ $('Check Duplicate').first().json.receipt_time }}\nIf this is a new receipt, please check the spreadsheet and resubmit if needed.",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          -176,
+          112
+        ],
+        "id": "574250d3-293b-4966-bca9-671a3efb3efa",
+        "name": "Discord – Duplicate Warning",
+        "webhookId": "49b14540-ca1a-40c1-bb5f-09ed357edd6f",
+        "credentials": {
+          "discordBotApi": {
+            "id": "uMc0msEp6imVVJtp",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1467482881210323021",
+            "mode": "list",
+            "cachedResultName": "donut-automation",
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1507421686805434479",
+            "mode": "list",
+            "cachedResultName": "receipts",
+            "cachedResultUrl": "https://discord.com/channels/1467482881210323021/1507421686805434479"
+          },
+          "content": "❌ Please upload an image of a receipt.",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          -2416,
+          304
+        ],
+        "id": "bb55ba5e-fc09-42d1-9192-97347bacc322",
+        "name": "Discord – Not an Image",
+        "webhookId": "efc98116-ad78-419d-bb54-21c6d8ff0556",
+        "credentials": {
+          "discordBotApi": {
+            "id": "uMc0msEp6imVVJtp",
+            "name": "Discord Bot account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Secret Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Secret Check": {
+        "main": [
+          [
+            {
+              "node": "Image Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Image Check": {
+        "main": [
+          [
+            {
+              "node": "Download Image",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Discord – Not an Image",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Image": {
+        "main": [
+          [
+            {
+              "node": "To Base64",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "To Base64": {
+        "main": [
+          [
+            {
+              "node": "Gemini Vision LLM",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini Vision LLM": {
+        "main": [
+          [
+            {
+              "node": "Parse & Flatten",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse & Flatten": {
+        "main": [
+          [
+            {
+              "node": "Is Receipt?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Receipt?": {
+        "main": [
+          [
+            {
+              "node": "Discord – Not a Receipt",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Filter Empty Rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Empty Rows": {
+        "main": [
+          [
+            {
+              "node": "Read Existing Receipts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Existing Receipts": {
+        "main": [
+          [
+            {
+              "node": "Check Duplicate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Duplicate": {
+        "main": [
+          [
+            {
+              "node": "Is Duplicate?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Duplicate?": {
+        "main": [
+          [
+            {
+              "node": "Append to Google Sheets",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Limit Duplicate",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append to Google Sheets": {
+        "main": [
+          [
+            {
+              "node": "Limit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit": {
+        "main": [
+          [
+            {
+              "node": "Discord – Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Limit Duplicate": {
+        "main": [
+          [
+            {
+              "node": "Discord – Duplicate Warning",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "4you donut",
+    "name": "Version 2876e0d7",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": [],
+  "_backup": {
+    "backed_up_at": "2026-05-24T01:00:19.214Z",
+    "source": "n8n",
+    "backup_type": "workflow",
+    "status": "published"
+  }
+}
