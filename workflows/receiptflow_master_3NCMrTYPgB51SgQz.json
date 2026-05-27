@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-25T14:40:18.125Z",
+  "updatedAt": "2026-05-26T13:27:17.407Z",
   "createdAt": "2026-05-24T15:55:51.661Z",
   "id": "3NCMrTYPgB51SgQz",
   "name": "ReceiptFlow – Master",
@@ -15,10 +15,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        27920,
-        8480
+        40144,
+        9312
       ],
-      "id": "1b867867-0dcd-4361-affa-022a02dafacc",
+      "id": "bb2dc6c4-4136-4fb3-93fb-6fb35fc05897",
       "name": "Webhook",
       "webhookId": "c48a00c3-492f-41e9-900e-e8ad76f96671"
     },
@@ -49,10 +49,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        28144,
-        8480
+        40368,
+        9312
       ],
-      "id": "44325ffe-9c82-42c0-85e9-a37bedec6d86",
+      "id": "5a3d411e-4316-4827-b39b-8a168086e31a",
       "name": "Secret Check"
     },
     {
@@ -116,23 +116,23 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        28368,
-        8480
+        40592,
+        9312
       ],
-      "id": "dc70797c-4372-4755-ba9e-2968b6b64352",
+      "id": "06f65f4f-0083-4be8-b9b1-19ab4bf0435e",
       "name": "Message Router"
     },
     {
       "parameters": {
-        "jsCode": "const content = $json.body.content.trim();\nconst discordUser = $json.body.author.username;\nconst parts = content.split(/\\s+/);\nconst cmd = parts[0].toLowerCase();\n\nconst now = new Date();\nconst fourWeeksAgo = new Date(now);\nfourWeeksAgo.setDate(now.getDate() - 28);\nconst defaultDateFrom = fourWeeksAgo.toISOString().slice(0, 10);\nconst defaultDateTo = now.toISOString().slice(0, 10);\n\nconst fiftyTwoWeeksAgo = new Date(now);\nfiftyTwoWeeksAgo.setDate(now.getDate() - 364);\nconst storesDateFrom = fiftyTwoWeeksAgo.toISOString().slice(0, 10);\n\nfunction parseYYYYMMDD(s) {\n  if (!s || !/^\\d{8}$/.test(s)) return null;\n  return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;\n}\n\nfunction formatDisplayDate(isoDate) {\n  if (!isoDate) return '';\n  const d = new Date(isoDate);\n  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\n}\n\nlet result = { cmd, discordUser, valid: true, error: null };\n\nif (cmd === '!help') {\n  result.action = 'help';\n\n} else if (cmd === '!email') {\n  const email = parts[1] ?? null;\n  if (!email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) {\n    result.valid = false;\n    result.error = '❌ Invalid email address. Usage: !email you@example.com';\n  } else {\n    result.action = 'email';\n    result.email = email;\n  }\n\n} else if (cmd === '!stores') {\n  result.action = 'stores';\n  result.dateFrom = storesDateFrom;\n  result.dateTo = defaultDateTo;\n\n} else if (cmd === '!last') {\n  let n = parseInt(parts[1] ?? '5', 10);\n  if (isNaN(n) || n < 1) {\n    result.valid = false;\n    result.error = '❌ Invalid number. Usage: !last N (e.g. !last 5)';\n  } else if (n > 20) {\n    result.valid = false;\n    result.error = '❌ Maximum allowed is 20. Usage: !last N (e.g. !last 20)';\n  } else {\n    result.action = 'last';\n    result.n = n;\n  }\n\n} else if (cmd === '!summary') {\n  let dateFrom, dateTo;\n  if (parts.length >= 3) {\n    dateFrom = parseYYYYMMDD(parts[1]);\n    dateTo = parseYYYYMMDD(parts[2]);\n    if (!dateFrom || !dateTo) {\n      result.valid = false;\n      result.error = '❌ Invalid date format. Usage: !summary YYYYMMDD YYYYMMDD\\nExample: !summary 20260501 20260524';\n    } else if (dateFrom > dateTo) {\n      result.valid = false;\n      result.error = '❌ Start date must be before end date.';\n    }\n  } else {\n    dateFrom = defaultDateFrom;\n    dateTo = defaultDateTo;\n  }\n  if (result.valid) {\n    result.action = 'summary';\n    result.dateFrom = dateFrom;\n    result.dateTo = dateTo;\n    result.displayFrom = formatDisplayDate(dateFrom);\n    result.displayTo = formatDisplayDate(dateTo);\n  }\n\n} else if (cmd === '!export') {\n  let dateFrom, dateTo;\n  if (parts.length >= 3) {\n    dateFrom = parseYYYYMMDD(parts[1]);\n    dateTo = parseYYYYMMDD(parts[2]);\n    if (!dateFrom || !dateTo) {\n      result.valid = false;\n      result.error = '❌ Invalid date format. Usage: !export YYYYMMDD YYYYMMDD\\nExample: !export 20260501 20260524';\n    } else if (dateFrom > dateTo) {\n      result.valid = false;\n      result.error = '❌ Start date must be before end date.';\n    }\n  } else {\n    dateFrom = defaultDateFrom;\n    dateTo = defaultDateTo;\n  }\n  if (result.valid) {\n    result.action = 'export';\n    result.dateFrom = dateFrom;\n    result.dateTo = dateTo;\n    result.displayFrom = formatDisplayDate(dateFrom);\n    result.displayTo = formatDisplayDate(dateTo);\n  }\n\n} else {\n  result.action = 'unknown';\n}\n\nreturn [{ json: result }];\n"
+        "jsCode": "const content = $json.body.content.trim();\nconst discordUser = $json.body.author.username;\nconst parts = content.split(/\\s+/);\nconst cmd = parts[0].toLowerCase();\n\nconst now = new Date();\nconst fourWeeksAgo = new Date(now);\nfourWeeksAgo.setDate(now.getDate() - 28);\nconst defaultDateFrom = fourWeeksAgo.toISOString().slice(0, 10);\nconst defaultDateTo = now.toISOString().slice(0, 10);\n\nconst fiftyTwoWeeksAgo = new Date(now);\nfiftyTwoWeeksAgo.setDate(now.getDate() - 364);\nconst storesDateFrom = fiftyTwoWeeksAgo.toISOString().slice(0, 10);\n\nfunction parseYYYYMMDD(s) {\n  if (!s || !/^\\d{8}$/.test(s)) return null;\n  return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;\n}\n\nfunction formatDisplayDate(isoDate) {\n  if (!isoDate) return '';\n  const d = new Date(isoDate);\n  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\n}\n\nlet result = { cmd, discordUser, valid: true, error: null };\n\nif (cmd === '!help') {\n  result.action = 'help';\n\n} else if (cmd === '!email') {\n  const email = parts[1] ?? null;\n  if (!email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) {\n    result.valid = false;\n    result.error = '❌ Invalid email address. Usage: !email you@example.com';\n  } else {\n    result.action = 'email';\n    result.email = email;\n  }\n\n} else if (cmd === '!stores') {\n  result.action = 'stores';\n  result.dateFrom = storesDateFrom;\n  result.dateTo = defaultDateTo;\n\n} else if (cmd === '!last') {\n  let n = parseInt(parts[1] ?? '1', 10);\n  if (isNaN(n) || n < 1) {\n    result.valid = false;\n    result.error = '❌ Invalid number. Usage: !last N (e.g. !last 5)';\n  } else if (n > 20) {\n    result.valid = false;\n    result.error = '❌ Maximum allowed is 20. Usage: !last N (e.g. !last 20)';\n  } else {\n    result.action = 'last';\n    result.n = n;\n  }\n\n} else if (cmd === '!summary') {\n  let dateFrom, dateTo;\n  if (parts.length >= 3) {\n    dateFrom = parseYYYYMMDD(parts[1]);\n    dateTo = parseYYYYMMDD(parts[2]);\n    if (!dateFrom || !dateTo) {\n      result.valid = false;\n      result.error = '❌ Invalid date format. Usage: !summary YYYYMMDD YYYYMMDD\\nExample: !summary 20260501 20260524';\n    } else if (dateFrom > dateTo) {\n      result.valid = false;\n      result.error = '❌ Start date must be before end date.';\n    }\n  } else {\n    dateFrom = defaultDateFrom;\n    dateTo = defaultDateTo;\n  }\n  if (result.valid) {\n    result.action = 'summary';\n    result.dateFrom = dateFrom;\n    result.dateTo = dateTo;\n    result.displayFrom = formatDisplayDate(dateFrom);\n    result.displayTo = formatDisplayDate(dateTo);\n  }\n\n} else if (cmd === '!export') {\n  let dateFrom, dateTo;\n  if (parts.length >= 3) {\n    dateFrom = parseYYYYMMDD(parts[1]);\n    dateTo = parseYYYYMMDD(parts[2]);\n    if (!dateFrom || !dateTo) {\n      result.valid = false;\n      result.error = '❌ Invalid date format. Usage: !export YYYYMMDD YYYYMMDD\\nExample: !export 20260501 20260524';\n    } else if (dateFrom > dateTo) {\n      result.valid = false;\n      result.error = '❌ Start date must be before end date.';\n    }\n  } else {\n    dateFrom = defaultDateFrom;\n    dateTo = defaultDateTo;\n  }\n  if (result.valid) {\n    result.action = 'export';\n    result.dateFrom = dateFrom;\n    result.dateTo = dateTo;\n    result.displayFrom = formatDisplayDate(dateFrom);\n    result.displayTo = formatDisplayDate(dateTo);\n  }\n\n} else {\n  result.action = 'unknown';\n}\n\nreturn [{ json: result }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        28592,
-        8000
+        40816,
+        8736
       ],
-      "id": "f64b9ac5-81a3-4d97-b6bf-60dbcd92f780",
+      "id": "b6d1e250-f09f-40bb-8f96-8475034d1c0a",
       "name": "Parse Command"
     },
     {
@@ -316,10 +316,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        28816,
-        7904
+        41040,
+        8640
       ],
-      "id": "8ec186d1-d83c-44d3-bc72-085182f4e179",
+      "id": "95a0c83e-ac11-4e18-a8d5-59afd8e9a6c7",
       "name": "Command Router"
     },
     {
@@ -343,10 +343,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        29040,
-        7328
+        41264,
+        8064
       ],
-      "id": "f865f258-7c1a-4c23-8eb9-10ce6a12cf3d",
+      "id": "15f0cdde-637b-4de8-a30e-409e6affc906",
       "name": "Discord – Error",
       "webhookId": "e2a307f2-5847-40b5-bcb2-4b67c68de3c1",
       "credentials": {
@@ -371,16 +371,16 @@
           "mode": "list",
           "cachedResultName": "receipts"
         },
-        "content": "📖 ReceiptFlow Commands\n─────────────────────────────\n!summary [YYYYMMDD YYYYMMDD]\n  → Your receipt summary for a date range\n  → Defaults to last 4 weeks if no dates given\n  → Example: !summary 20260501 20260524\n\n!last [N]\n  → Your last N receipts (default 5, max 20)\n  → Example: !last 5\n\n!stores\n  → Stores you have visited in the last 52 weeks with spend totals\n\n!email you@example.com\n  → Register or update your email address\n\n!export [YYYYMMDD YYYYMMDD]\n  → Email a CSV report to your registered email\n  → Defaults to last 4 weeks if no dates given\n  → Example: !export 20260501 20260524\n\n!help\n  → Show this help message\n\n─────────────────────────────\n⚠️ Disclaimer\nReceiptFlow uses AI (LLM) to parse receipt images. Receipt data may be used by the LLM provider for model training. This system is in testing — accuracy is not guaranteed and records may be deleted without prior notice. Use at your own discretion.",
+        "content": "📖 ReceiptFlow Commands\n─────────────────────────────\n!summary [YYYYMMDD YYYYMMDD]\n  → Your receipt summary for a date range\n  → Defaults to last 4 weeks if no dates given\n  → Example: !summary 20260501 20260524\n\n!last [N]\n  → Emails a CSV of your last N receipts to your registered email\n  → Sorted by import date — most recently captured first\n  → Defaults to last 1 receipt, max 20\n  → Example: !last 3\n\n!stores\n  → Stores you have visited in the last 52 weeks with spend totals\n\n!email you@example.com\n  → Register or update your email address\n\n!export [YYYYMMDD YYYYMMDD]\n  → Email a CSV report to your registered email\n  → Defaults to last 4 weeks if no dates given\n  → Example: !export 20260501 20260524\n\n!help\n  → Show this help message\n\n─────────────────────────────\n⚠️ Disclaimer\nReceiptFlow uses AI (LLM) to parse receipt images. Receipt data may be used by the LLM provider for model training. This system is in testing — accuracy is not guaranteed and records may be deleted without prior notice. Use at your own discretion.",
         "options": {}
       },
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        29040,
-        7520
+        41264,
+        8256
       ],
-      "id": "e971fa24-ba10-431a-8b4e-ac37e997d944",
+      "id": "b943f9c3-c7bc-4ffe-94cf-8afeab29674c",
       "name": "Discord – Help",
       "webhookId": "2ea8ae51-5130-49cb-9b91-316f657bf8cb",
       "credentials": {
@@ -439,10 +439,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        29040,
-        7712
+        41264,
+        8448
       ],
-      "id": "5dbc6b36-2921-489c-a61f-0c2a9cb8bddb",
+      "id": "77398c1c-1c71-4756-b17f-075ae73a1c14",
       "name": "Append Email (email cmd)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -471,10 +471,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        29264,
-        7712
+        41488,
+        8448
       ],
-      "id": "4578eba1-7189-4c48-b3fd-3d4eedd01539",
+      "id": "8a656eeb-686e-4803-aad4-869804b9fae3",
       "name": "Read All Users (cleanup)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -492,10 +492,10 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        29264,
-        7712
+        41712,
+        8448
       ],
-      "id": "873587ec-cb19-4031-8248-343aa3ca414f",
+      "id": "28cf553e-3780-4068-8cfd-376907a02c5e",
       "name": "Aggregate Users"
     },
     {
@@ -505,10 +505,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        29488,
-        7712
+        41936,
+        8448
       ],
-      "id": "bf140868-3aa6-4a44-8df5-c0302a9b2b23",
+      "id": "d0020249-a5dd-4efb-b650-2c7ff052aaf3",
       "name": "Find Old Rows"
     },
     {
@@ -538,10 +538,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        29712,
-        7712
+        42160,
+        8448
       ],
-      "id": "072ac6be-d77c-4f24-88f4-efb4f89f6851",
+      "id": "28387795-93ff-4f3a-a9b5-532937644bf5",
       "name": "Has Old Rows?"
     },
     {
@@ -558,10 +558,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        29936,
-        7648
+        42384,
+        8384
       ],
-      "id": "3e753056-0a51-4336-a85b-4245dd3a222f",
+      "id": "91e16399-d867-4862-bd75-30fc3a76c1ff",
       "name": "Delete Old Rows",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -591,10 +591,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        30160,
-        7712
+        42608,
+        8448
       ],
-      "id": "3c058adc-ba47-4d60-b615-841725745e27",
+      "id": "ca2e9dcd-81d5-44e4-bf35-117036c44c6e",
       "name": "Discord – Email Updated",
       "webhookId": "628c3958-645c-4a85-8feb-ceef9fcacbed",
       "credentials": {
@@ -615,10 +615,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        30384,
-        7712
+        42832,
+        8448
       ],
-      "id": "8403593d-ace5-4d31-803b-f23939191781",
+      "id": "5b66d138-219f-47f8-b3a6-14385cf53bd7",
       "name": "Delete Discord Message (cmd)",
       "credentials": {
         "httpHeaderAuth": {
@@ -646,10 +646,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        29040,
-        7904
+        41264,
+        8640
       ],
-      "id": "78fd0415-1c2a-409d-88f2-0117d1ac4d61",
+      "id": "cd856b16-04ec-4011-bba2-d2e6ae34882b",
       "name": "Read Sheets (stores)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -665,10 +665,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        29264,
-        7904
+        41488,
+        8640
       ],
-      "id": "a599de8d-1d5c-412e-b8ee-a758e7af01e2",
+      "id": "20810fac-ae63-4c6c-b396-0472a24fe48c",
       "name": "Aggregate Stores"
     },
     {
@@ -692,10 +692,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        29488,
-        7904
+        41712,
+        8640
       ],
-      "id": "1b373853-e373-4ea3-8eb9-6b6a06506439",
+      "id": "c55d7639-dc5b-428a-83f5-6de4807d5900",
       "name": "Discord – Stores",
       "webhookId": "8e3b784f-4b1f-4a25-9850-7db98542c840",
       "credentials": {
@@ -724,10 +724,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        29040,
-        8096
+        41264,
+        8832
       ],
-      "id": "0410baff-a5fa-4c86-b1e5-fd282582e338",
+      "id": "463e8b90-caf5-4741-b6c0-2519209bbdd4",
       "name": "Read Sheets (last)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -743,10 +743,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        29264,
-        8096
+        41488,
+        8832
       ],
-      "id": "dee07750-ae00-4af8-9037-bdcac70ab5ee",
+      "id": "9589df00-b397-417b-96dc-2c1add12dfdc",
       "name": "Aggregate Last"
     },
     {
@@ -764,18 +764,223 @@
           "mode": "list",
           "cachedResultName": "receipts"
         },
-        "content": "={{ $json._empty ? '⚠️ No receipts found.' : $json.message }}",
+        "content": "=📧 Last {{ $('Parse Command').first().json.n }} receipt(s) will be sent to your registered email.",
         "options": {}
       },
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        29488,
-        8096
+        41712,
+        8832
       ],
-      "id": "0a977985-575a-457c-aa60-6340120af7cd",
+      "id": "f02f20f7-6c65-4991-b9e3-c1990b5df773",
       "name": "Discord – Last",
       "webhookId": "d79a8aa9-11ac-45c7-887c-2df80810cb3d",
+      "credentials": {
+        "discordBotApi": {
+          "id": "uMc0msEp6imVVJtp",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ",
+          "mode": "list",
+          "cachedResultName": "Receipts"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "1905451540",
+          "mode": "list",
+          "cachedResultName": "users"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        41936,
+        8832
+      ],
+      "id": "a8edbd59-f7bf-4c54-a0de-392efcb62a37",
+      "name": "Read Users (last export)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DgucYvkJJQVWqK51",
+          "name": "Job.Automation Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const discordUser = $('Parse Command').first().json.discordUser.toLowerCase();\nconst rows = $input.all().filter(r => (r.json.discord_user ?? '').toString().toLowerCase() === discordUser);\nconst match = rows.length > 0 ? rows[rows.length - 1] : null;\nreturn [{ json: { email: match ? (match.json.email ?? '') : '' } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        42160,
+        8832
+      ],
+      "id": "484b0f07-e873-4047-b5a3-d4aca263fdab",
+      "name": "Find Email (last export)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-last-has-email",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        42384,
+        8832
+      ],
+      "id": "cfaf688c-65d7-4a26-beb0-4bb99719d93a",
+      "name": "Last Export Has Email?"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1467482881210323021",
+          "mode": "list",
+          "cachedResultName": "donut-automation"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1507421686805434479",
+          "mode": "list",
+          "cachedResultName": "receipts"
+        },
+        "content": "❌ No email registered. Use !email you@example.com to register your email first.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        42608,
+        8928
+      ],
+      "id": "4811efec-f713-46a0-98d7-835e62bd916f",
+      "name": "Discord – Last No Email",
+      "webhookId": "67a25c8d-1903-4622-b02f-1d988fa5b8fb",
+      "credentials": {
+        "discordBotApi": {
+          "id": "uMc0msEp6imVVJtp",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const parsed = $('Parse Command').first().json;\nconst rows = $('Read Sheets (last)').all();\nconst user = (parsed.discordUser ?? '').toLowerCase();\nconst n = parsed.n ?? 1;\nconst email = $input.first().json.email;\n\n// Filter to this user's rows\nconst userRows = rows.filter(r => (r.json.discord_user ?? '').toLowerCase() === user);\n\n// Group by receipt_id, keep latest created_at per receipt\nconst receiptMap = new Map();\nfor (const row of userRows) {\n  const r = row.json;\n  const id = r.receipt_id;\n  if (!receiptMap.has(id)) {\n    receiptMap.set(id, { createdAt: r.created_at ?? '', rows: [] });\n  }\n  receiptMap.get(id).rows.push(r);\n  if ((r.created_at ?? '') > receiptMap.get(id).createdAt) {\n    receiptMap.get(id).createdAt = r.created_at ?? '';\n  }\n}\n\n// Sort by created_at desc, take N\nconst sortedIds = [...receiptMap.entries()]\n  .sort((a, b) => b[1].createdAt.localeCompare(a[1].createdAt))\n  .slice(0, n)\n  .map(([id]) => id);\n\nconst selectedIdSet = new Set(sortedIds);\nconst filtered = userRows\n  .map(r => r.json)\n  .filter(r => selectedIdSet.has(r.receipt_id));\n\nif (filtered.length === 0) return [{ json: { _empty: true, email } }];\n\nconst headers = ['receipt_id','receipt_date','receipt_time','store_name','store_branch','line_number','product_name','normalised_name','category','quantity','unit_price','line_total','is_discount_line','discount_amount','is_taxable','tax_rate_percent','receipt_total','payment_method'];\n\nfiltered.forEach(r => { r.receipt_total = r.total_amount; });\n\nconst csvRows = [headers.join(',')];\nfor (const r of filtered) {\n  const row = headers.map(h => {\n    const v = r[h] ?? '';\n    const s = String(v);\n    return s.includes(',') || s.includes('\"') || s.includes('\\n') ? `\"${s.replace(/\"/g, '\"\"')}\"` : s;\n  });\n  csvRows.push(row.join(','));\n}\n\nconst csv = csvRows.join('\\n');\nconst csv_base64 = Buffer.from(csv).toString('base64');\nconst receiptCount = sortedIds.length;\nconst totalSpend = [...receiptMap.entries()]\n  .filter(([id]) => selectedIdSet.has(id))\n  .reduce((sum, [, v]) => sum + parseFloat(v.rows[0].total_amount ?? 0), 0)\n  .toFixed(2);\n\nconst today = new Date().toISOString().slice(0, 10).replace(/-/g, '');\nconst filename = `receipts_last${n}_${today}.csv`;\n\nreturn [{ json: { _empty: false, email, csv_base64, filename, receiptCount, totalSpend, discordUser: parsed.discordUser } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        42608,
+        8736
+      ],
+      "id": "991e5759-5df2-4fec-b307-aec0f8c6d556",
+      "name": "Build Last CSV"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nreturn [{\n  json: {\n    email: data.email,\n    receiptCount: data.receiptCount,\n    totalSpend: data.totalSpend,\n    filename: data.filename,\n    discordUser: data.discordUser\n  },\n  binary: {\n    attachment: {\n      data: data.csv_base64,\n      mimeType: 'text/csv',\n      fileName: data.filename\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        42832,
+        8736
+      ],
+      "id": "ddd4cf76-eb64-41eb-9cdc-c26f68ef38d6",
+      "name": "Prepare Last Attachment"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=ReceiptFlow – Last {{ $json.receiptCount }} Receipt{{ $json.receiptCount !== 1 ? 's' : '' }}",
+        "emailType": "text",
+        "message": "=Hi {{ $json.discordUser }},\n\nPlease find your last {{ $json.receiptCount }} receipt{{ $json.receiptCount !== 1 ? 's' : '' }} attached for your review.\n\nReceipts: {{ $json.receiptCount }}\nTotal spend: £{{ $json.totalSpend }}\n\n---\n⚠️ This report was generated by ReceiptFlow (AI-assisted). Data accuracy is not guaranteed. Records may be deleted without prior notice.\n\nReceiptFlow",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "attachment"
+              }
+            ]
+          },
+          "senderName": "Super Market Receipt Flow",
+          "replyTo": "no-reply@noreply.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        43056,
+        8736
+      ],
+      "id": "f5bb8a5e-59a2-4d29-9574-a31c50493bbb",
+      "name": "Send Last Email",
+      "webhookId": "8cc7c0f9-4196-4999-ba39-f0e80de44555",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ON4cMVnRGPKgOQl0",
+          "name": "Job.Automation Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1467482881210323021",
+          "mode": "list",
+          "cachedResultName": "donut-automation"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1507421686805434479",
+          "mode": "list",
+          "cachedResultName": "receipts"
+        },
+        "content": "=✅ Receipt report sent to your registered email.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        43280,
+        8736
+      ],
+      "id": "b3fd5461-4064-4489-8317-a4a7bb7c1916",
+      "name": "Discord – Last Export Sent",
+      "webhookId": "5ad50248-970f-43b3-8044-b728eb0c654f",
       "credentials": {
         "discordBotApi": {
           "id": "uMc0msEp6imVVJtp",
@@ -802,10 +1007,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        29040,
-        8288
+        41264,
+        9024
       ],
-      "id": "85154884-963a-4220-99dc-328b08e47bbd",
+      "id": "aca1e591-cb57-45fa-8b20-42f49457bedf",
       "name": "Read Sheets (summary)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -821,10 +1026,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        29264,
-        8288
+        41488,
+        9024
       ],
-      "id": "6b357ca8-3b31-44aa-813c-76f6d4b2fadd",
+      "id": "ae336dca-5d0d-4828-831f-b2dc05352b58",
       "name": "Aggregate Summary"
     },
     {
@@ -848,10 +1053,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        29488,
-        8288
+        41712,
+        9024
       ],
-      "id": "09b38538-b926-4083-9ae7-150daf00baab",
+      "id": "b7f832bc-6cec-467f-86db-684c4b3034b2",
       "name": "Discord – Summary",
       "webhookId": "fb3dbe2c-0fc9-4124-ace9-9e4bffeefa96",
       "credentials": {
@@ -881,10 +1086,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        29040,
-        8480
+        41264,
+        9312
       ],
-      "id": "70e65ff9-bf19-442f-95a2-455ed52f0e84",
+      "id": "ae1b4f06-b81a-48e2-bb8b-d13e1e1c41c7",
       "name": "Read Users (export)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -900,10 +1105,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        29264,
-        8480
+        41488,
+        9312
       ],
-      "id": "7cc47cc4-3379-4270-89d8-f397f66077e2",
+      "id": "cc715831-1795-42b8-8d34-a9f0c662a6b7",
       "name": "Find Email (export)"
     },
     {
@@ -934,10 +1139,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        29488,
-        8480
+        41712,
+        9312
       ],
-      "id": "305a8dd1-68f5-4b66-ba3d-110d461e6fd3",
+      "id": "dce16cf5-7946-45ab-9eac-46237cbaf947",
       "name": "Export Has Email?"
     },
     {
@@ -961,10 +1166,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        29712,
-        8576
+        41936,
+        9408
       ],
-      "id": "ecae50be-8ff3-4017-9004-dab7f750b2ec",
+      "id": "a7c7742f-5c6d-4080-bb39-e85bb7e54f3f",
       "name": "Discord – Export No Email",
       "webhookId": "f7e40aa9-7b86-4419-bfbd-6155aee08eef",
       "credentials": {
@@ -993,10 +1198,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        29712,
-        8288
+        41936,
+        9216
       ],
-      "id": "a2aa43bb-1d8f-4257-9334-84942722f7ab",
+      "id": "734a5608-c5f9-41c7-bdb7-eace2a7966b3",
       "name": "Read Sheets (export)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1012,10 +1217,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        29936,
-        8288
+        42160,
+        9216
       ],
-      "id": "ee667ee3-5881-4377-95b8-86d04a6cca5a",
+      "id": "a003dfe8-957d-4f96-8ebe-082dab81093d",
       "name": "Build CSV"
     },
     {
@@ -1045,10 +1250,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        30160,
-        8288
+        42384,
+        9216
       ],
-      "id": "abd640fb-7572-49ae-9f89-607a8fd4367b",
+      "id": "69d1f680-7757-4ceb-8fda-6011b311a64e",
       "name": "Export Has Data?"
     },
     {
@@ -1072,10 +1277,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        30384,
-        8384
+        42608,
+        9312
       ],
-      "id": "cdb22a7a-05e5-43b3-a8c1-f703b08958c7",
+      "id": "b416df14-df89-4247-8cd4-ed42221e611e",
       "name": "Discord – Export Empty",
       "webhookId": "977ece98-f71e-4532-a3a5-8853388dee02",
       "credentials": {
@@ -1092,10 +1297,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        30384,
-        8192
+        42608,
+        9120
       ],
-      "id": "0a4ef259-4366-4483-a61d-3eee342389ca",
+      "id": "25224d96-a3b7-49cf-af7b-b7cd61649f86",
       "name": "Prepare Attachment"
     },
     {
@@ -1111,16 +1316,18 @@
                 "property": "attachment"
               }
             ]
-          }
+          },
+          "senderName": "Super Market Receipt Flow",
+          "replyTo": "no-reply@noreply.com"
         }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        30608,
-        8192
+        42832,
+        9120
       ],
-      "id": "1169fdf2-1b5e-440e-9411-7ecc8870d69c",
+      "id": "be3f2927-283c-435f-ab63-f1bd0566e334",
       "name": "Send Email",
       "webhookId": "042b38da-ebac-4c9f-b431-cf52a46ce325",
       "credentials": {
@@ -1151,10 +1358,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        30832,
-        8192
+        43056,
+        9120
       ],
-      "id": "77c94cf7-efdd-4f22-b594-a06cd9a956be",
+      "id": "8b3fa68d-f1ea-4412-a25c-026226cada3b",
       "name": "Discord – Export Sent",
       "webhookId": "51788cb6-695f-41cb-80c3-6ef73192b389",
       "credentials": {
@@ -1185,10 +1392,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        29040,
-        8672
+        41264,
+        9504
       ],
-      "id": "293f804c-cbff-4ddc-a791-b147cd84fdc2",
+      "id": "0327b3f0-07a5-4d58-969d-e723d591dbc2",
       "name": "Discord – Unknown Command",
       "webhookId": "b1f5cb13-d7d7-4b63-a4e3-10c45a8abdeb",
       "credentials": {
@@ -1212,10 +1419,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        28592,
-        8960
+        40816,
+        9792
       ],
-      "id": "b910aba9-f396-4003-a40d-2ef53f373f05",
+      "id": "07c205b8-6629-42e4-8e22-79d5536a06d5",
       "name": "Download Image"
     },
     {
@@ -1226,10 +1433,10 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        28816,
-        8960
+        41040,
+        9792
       ],
-      "id": "26860a04-1a60-45ae-bf66-9a0fa90f063b",
+      "id": "aaa2380f-17e7-43ad-bc91-e9e41e402d7b",
       "name": "To Base64"
     },
     {
@@ -1252,10 +1459,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        29040,
-        8960
+        41264,
+        9792
       ],
-      "id": "986d2103-f101-4911-9d5b-1df5e543eb34",
+      "id": "113abc70-064b-49b4-9836-8b602b99a5f8",
       "name": "Gemini Vision LLM",
       "credentials": {
         "googlePalmApi": {
@@ -1286,10 +1493,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        31056,
-        9248
+        43280,
+        10080
       ],
-      "id": "40a40095-dc1e-40e8-a283-2f9dd62a54a9",
+      "id": "7a05d2d9-5efc-4a74-8ee4-50cb8d5038db",
       "name": "Discord – LLM Busy",
       "webhookId": "1494f3de-3a8b-46fa-8592-a94fc2e8a792",
       "credentials": {
@@ -1306,10 +1513,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        29264,
-        8864
+        41488,
+        9696
       ],
-      "id": "755e886e-1686-4857-883b-aca9760543dc",
+      "id": "815d230c-f961-4cd3-af8b-5251f60cc42a",
       "name": "Parse & Flatten"
     },
     {
@@ -1339,10 +1546,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        29488,
-        8864
+        41712,
+        9696
       ],
-      "id": "b7fac2c9-af8d-47d2-88d4-f4076beb538c",
+      "id": "13c489de-12d4-4998-abbc-29f89d112eda",
       "name": "Is Receipt?"
     },
     {
@@ -1366,10 +1573,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        31056,
-        9056
+        43280,
+        9888
       ],
-      "id": "d71becab-8eee-4396-bc75-7623e5f71273",
+      "id": "e787824a-c49b-48fc-a959-4d178d984b83",
       "name": "Discord – Not a Receipt",
       "webhookId": "528c0bd7-106e-4cd8-b37a-550c3fed21bc",
       "credentials": {
@@ -1407,10 +1614,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
       "position": [
-        29712,
-        8768
+        41936,
+        9600
       ],
-      "id": "955e7525-78f1-48aa-a01e-b483173c15b2",
+      "id": "878e3409-b7cd-429e-b3d6-eb6d908644a4",
       "name": "Filter Empty Rows"
     },
     {
@@ -1423,10 +1630,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        29936,
-        8768
+        42160,
+        9600
       ],
-      "id": "bf29f48d-a058-4a18-9496-5a8e0ec20eec",
+      "id": "3a4aa1f6-6cd5-47a8-b1b4-f1072464a278",
       "name": "Read Existing Receipts",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1442,10 +1649,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        30160,
-        8768
+        42384,
+        9600
       ],
-      "id": "fe761c03-1e40-474f-8218-9953594bf8d5",
+      "id": "45817f25-bfc2-42e2-adb9-1ab33971d578",
       "name": "Check Duplicate"
     },
     {
@@ -1475,10 +1682,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        30384,
-        8768
+        42608,
+        9600
       ],
-      "id": "a732fc53-6b29-4e0f-ab3f-4be60aae1850",
+      "id": "a7fc90e1-3231-4bfb-a946-80a25b2d63eb",
       "name": "Is Duplicate?"
     },
     {
@@ -1831,10 +2038,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        30608,
-        8480
+        42832,
+        9408
       ],
-      "id": "0d74d3f2-bd54-42a8-a048-b77d09c7a20e",
+      "id": "5a15129e-24c8-4ce1-b786-a248694f8c9f",
       "name": "Append to Google Sheets",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1848,10 +2055,10 @@
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        30832,
-        8480
+        43056,
+        9408
       ],
-      "id": "0f323f87-3063-4bd8-9a51-ad4d64e70b3f",
+      "id": "2be2dc19-e74d-47d1-83ae-7d9e01b779ce",
       "name": "Limit"
     },
     {
@@ -1875,10 +2082,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        31056,
-        8480
+        43280,
+        9408
       ],
-      "id": "783ef0e5-b0e9-4d51-83b8-fe3307e94c02",
+      "id": "aea1639d-f35a-4205-971b-f8077423667a",
       "name": "Discord – Success",
       "webhookId": "1b296015-d305-457c-b815-82d046fbda6a",
       "credentials": {
@@ -1893,10 +2100,10 @@
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        30832,
-        8864
+        43056,
+        9696
       ],
-      "id": "f1906781-4650-4c98-ac86-a8bab526d8e9",
+      "id": "ba57d42a-7981-4207-9696-b2f8004e985f",
       "name": "Limit Duplicate"
     },
     {
@@ -1920,10 +2127,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        31056,
-        8864
+        43280,
+        9696
       ],
-      "id": "60f7f023-e7bf-416b-af6e-76f1b880f88f",
+      "id": "e1a1cc77-4a26-4411-bb91-eafa3527b46b",
       "name": "Discord – Duplicate Warning",
       "webhookId": "17f4b74b-a5b9-428d-9995-be3d18d99bd5",
       "credentials": {
@@ -1954,10 +2161,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        31280,
-        8960
+        43504,
+        9792
       ],
-      "id": "bc249eb5-86ea-4f71-af8e-f34d06fb4495",
+      "id": "227d2f37-d671-4c0f-9a42-3296e97064e7",
       "name": "Discord – Photo Deleted",
       "webhookId": "82edcffd-5419-4480-9904-6e963725f90b",
       "credentials": {
@@ -1978,10 +2185,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        31504,
-        8960
+        43728,
+        9792
       ],
-      "id": "92196042-b9d1-4168-a186-68e6187efeb8",
+      "id": "3cd20b14-a88e-418a-a052-f8d63811da5e",
       "name": "Delete Discord Message",
       "credentials": {
         "httpHeaderAuth": {
@@ -2225,6 +2432,90 @@
         [
           {
             "node": "Discord – Last",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Discord – Last": {
+      "main": [
+        [
+          {
+            "node": "Read Users (last export)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Users (last export)": {
+      "main": [
+        [
+          {
+            "node": "Find Email (last export)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Email (last export)": {
+      "main": [
+        [
+          {
+            "node": "Last Export Has Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last Export Has Email?": {
+      "main": [
+        [
+          {
+            "node": "Build Last CSV",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Discord – Last No Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Last CSV": {
+      "main": [
+        [
+          {
+            "node": "Prepare Last Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Last Attachment": {
+      "main": [
+        [
+          {
+            "node": "Send Last Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Last Email": {
+      "main": [
+        [
+          {
+            "node": "Discord – Last Export Sent",
             "type": "main",
             "index": 0
           }
@@ -2573,8 +2864,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "177b8dc6-51da-4d1c-bdd7-6fee1083ea6b",
-  "activeVersionId": "177b8dc6-51da-4d1c-bdd7-6fee1083ea6b",
+  "versionId": "73d814ea-4a72-4c33-9e17-6c6edf4425cd",
+  "activeVersionId": "73d814ea-4a72-4c33-9e17-6c6edf4425cd",
   "triggerCount": 1,
   "shared": [
     {
@@ -2586,9 +2877,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-05-25T14:40:20.000Z",
-    "createdAt": "2026-05-25T14:40:18.129Z",
-    "versionId": "177b8dc6-51da-4d1c-bdd7-6fee1083ea6b",
+    "updatedAt": "2026-05-26T13:27:20.000Z",
+    "createdAt": "2026-05-26T13:27:17.410Z",
+    "versionId": "73d814ea-4a72-4c33-9e17-6c6edf4425cd",
     "workflowId": "3NCMrTYPgB51SgQz",
     "nodes": [
       {
@@ -2600,10 +2891,10 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          27920,
-          8480
+          40144,
+          9312
         ],
-        "id": "1b867867-0dcd-4361-affa-022a02dafacc",
+        "id": "bb2dc6c4-4136-4fb3-93fb-6fb35fc05897",
         "name": "Webhook",
         "webhookId": "c48a00c3-492f-41e9-900e-e8ad76f96671"
       },
@@ -2634,10 +2925,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          28144,
-          8480
+          40368,
+          9312
         ],
-        "id": "44325ffe-9c82-42c0-85e9-a37bedec6d86",
+        "id": "5a3d411e-4316-4827-b39b-8a168086e31a",
         "name": "Secret Check"
       },
       {
@@ -2701,23 +2992,23 @@
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.2,
         "position": [
-          28368,
-          8480
+          40592,
+          9312
         ],
-        "id": "dc70797c-4372-4755-ba9e-2968b6b64352",
+        "id": "06f65f4f-0083-4be8-b9b1-19ab4bf0435e",
         "name": "Message Router"
       },
       {
         "parameters": {
-          "jsCode": "const content = $json.body.content.trim();\nconst discordUser = $json.body.author.username;\nconst parts = content.split(/\\s+/);\nconst cmd = parts[0].toLowerCase();\n\nconst now = new Date();\nconst fourWeeksAgo = new Date(now);\nfourWeeksAgo.setDate(now.getDate() - 28);\nconst defaultDateFrom = fourWeeksAgo.toISOString().slice(0, 10);\nconst defaultDateTo = now.toISOString().slice(0, 10);\n\nconst fiftyTwoWeeksAgo = new Date(now);\nfiftyTwoWeeksAgo.setDate(now.getDate() - 364);\nconst storesDateFrom = fiftyTwoWeeksAgo.toISOString().slice(0, 10);\n\nfunction parseYYYYMMDD(s) {\n  if (!s || !/^\\d{8}$/.test(s)) return null;\n  return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;\n}\n\nfunction formatDisplayDate(isoDate) {\n  if (!isoDate) return '';\n  const d = new Date(isoDate);\n  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\n}\n\nlet result = { cmd, discordUser, valid: true, error: null };\n\nif (cmd === '!help') {\n  result.action = 'help';\n\n} else if (cmd === '!email') {\n  const email = parts[1] ?? null;\n  if (!email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) {\n    result.valid = false;\n    result.error = '❌ Invalid email address. Usage: !email you@example.com';\n  } else {\n    result.action = 'email';\n    result.email = email;\n  }\n\n} else if (cmd === '!stores') {\n  result.action = 'stores';\n  result.dateFrom = storesDateFrom;\n  result.dateTo = defaultDateTo;\n\n} else if (cmd === '!last') {\n  let n = parseInt(parts[1] ?? '5', 10);\n  if (isNaN(n) || n < 1) {\n    result.valid = false;\n    result.error = '❌ Invalid number. Usage: !last N (e.g. !last 5)';\n  } else if (n > 20) {\n    result.valid = false;\n    result.error = '❌ Maximum allowed is 20. Usage: !last N (e.g. !last 20)';\n  } else {\n    result.action = 'last';\n    result.n = n;\n  }\n\n} else if (cmd === '!summary') {\n  let dateFrom, dateTo;\n  if (parts.length >= 3) {\n    dateFrom = parseYYYYMMDD(parts[1]);\n    dateTo = parseYYYYMMDD(parts[2]);\n    if (!dateFrom || !dateTo) {\n      result.valid = false;\n      result.error = '❌ Invalid date format. Usage: !summary YYYYMMDD YYYYMMDD\\nExample: !summary 20260501 20260524';\n    } else if (dateFrom > dateTo) {\n      result.valid = false;\n      result.error = '❌ Start date must be before end date.';\n    }\n  } else {\n    dateFrom = defaultDateFrom;\n    dateTo = defaultDateTo;\n  }\n  if (result.valid) {\n    result.action = 'summary';\n    result.dateFrom = dateFrom;\n    result.dateTo = dateTo;\n    result.displayFrom = formatDisplayDate(dateFrom);\n    result.displayTo = formatDisplayDate(dateTo);\n  }\n\n} else if (cmd === '!export') {\n  let dateFrom, dateTo;\n  if (parts.length >= 3) {\n    dateFrom = parseYYYYMMDD(parts[1]);\n    dateTo = parseYYYYMMDD(parts[2]);\n    if (!dateFrom || !dateTo) {\n      result.valid = false;\n      result.error = '❌ Invalid date format. Usage: !export YYYYMMDD YYYYMMDD\\nExample: !export 20260501 20260524';\n    } else if (dateFrom > dateTo) {\n      result.valid = false;\n      result.error = '❌ Start date must be before end date.';\n    }\n  } else {\n    dateFrom = defaultDateFrom;\n    dateTo = defaultDateTo;\n  }\n  if (result.valid) {\n    result.action = 'export';\n    result.dateFrom = dateFrom;\n    result.dateTo = dateTo;\n    result.displayFrom = formatDisplayDate(dateFrom);\n    result.displayTo = formatDisplayDate(dateTo);\n  }\n\n} else {\n  result.action = 'unknown';\n}\n\nreturn [{ json: result }];\n"
+          "jsCode": "const content = $json.body.content.trim();\nconst discordUser = $json.body.author.username;\nconst parts = content.split(/\\s+/);\nconst cmd = parts[0].toLowerCase();\n\nconst now = new Date();\nconst fourWeeksAgo = new Date(now);\nfourWeeksAgo.setDate(now.getDate() - 28);\nconst defaultDateFrom = fourWeeksAgo.toISOString().slice(0, 10);\nconst defaultDateTo = now.toISOString().slice(0, 10);\n\nconst fiftyTwoWeeksAgo = new Date(now);\nfiftyTwoWeeksAgo.setDate(now.getDate() - 364);\nconst storesDateFrom = fiftyTwoWeeksAgo.toISOString().slice(0, 10);\n\nfunction parseYYYYMMDD(s) {\n  if (!s || !/^\\d{8}$/.test(s)) return null;\n  return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;\n}\n\nfunction formatDisplayDate(isoDate) {\n  if (!isoDate) return '';\n  const d = new Date(isoDate);\n  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\n}\n\nlet result = { cmd, discordUser, valid: true, error: null };\n\nif (cmd === '!help') {\n  result.action = 'help';\n\n} else if (cmd === '!email') {\n  const email = parts[1] ?? null;\n  if (!email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) {\n    result.valid = false;\n    result.error = '❌ Invalid email address. Usage: !email you@example.com';\n  } else {\n    result.action = 'email';\n    result.email = email;\n  }\n\n} else if (cmd === '!stores') {\n  result.action = 'stores';\n  result.dateFrom = storesDateFrom;\n  result.dateTo = defaultDateTo;\n\n} else if (cmd === '!last') {\n  let n = parseInt(parts[1] ?? '1', 10);\n  if (isNaN(n) || n < 1) {\n    result.valid = false;\n    result.error = '❌ Invalid number. Usage: !last N (e.g. !last 5)';\n  } else if (n > 20) {\n    result.valid = false;\n    result.error = '❌ Maximum allowed is 20. Usage: !last N (e.g. !last 20)';\n  } else {\n    result.action = 'last';\n    result.n = n;\n  }\n\n} else if (cmd === '!summary') {\n  let dateFrom, dateTo;\n  if (parts.length >= 3) {\n    dateFrom = parseYYYYMMDD(parts[1]);\n    dateTo = parseYYYYMMDD(parts[2]);\n    if (!dateFrom || !dateTo) {\n      result.valid = false;\n      result.error = '❌ Invalid date format. Usage: !summary YYYYMMDD YYYYMMDD\\nExample: !summary 20260501 20260524';\n    } else if (dateFrom > dateTo) {\n      result.valid = false;\n      result.error = '❌ Start date must be before end date.';\n    }\n  } else {\n    dateFrom = defaultDateFrom;\n    dateTo = defaultDateTo;\n  }\n  if (result.valid) {\n    result.action = 'summary';\n    result.dateFrom = dateFrom;\n    result.dateTo = dateTo;\n    result.displayFrom = formatDisplayDate(dateFrom);\n    result.displayTo = formatDisplayDate(dateTo);\n  }\n\n} else if (cmd === '!export') {\n  let dateFrom, dateTo;\n  if (parts.length >= 3) {\n    dateFrom = parseYYYYMMDD(parts[1]);\n    dateTo = parseYYYYMMDD(parts[2]);\n    if (!dateFrom || !dateTo) {\n      result.valid = false;\n      result.error = '❌ Invalid date format. Usage: !export YYYYMMDD YYYYMMDD\\nExample: !export 20260501 20260524';\n    } else if (dateFrom > dateTo) {\n      result.valid = false;\n      result.error = '❌ Start date must be before end date.';\n    }\n  } else {\n    dateFrom = defaultDateFrom;\n    dateTo = defaultDateTo;\n  }\n  if (result.valid) {\n    result.action = 'export';\n    result.dateFrom = dateFrom;\n    result.dateTo = dateTo;\n    result.displayFrom = formatDisplayDate(dateFrom);\n    result.displayTo = formatDisplayDate(dateTo);\n  }\n\n} else {\n  result.action = 'unknown';\n}\n\nreturn [{ json: result }];\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          28592,
-          8000
+          40816,
+          8736
         ],
-        "id": "f64b9ac5-81a3-4d97-b6bf-60dbcd92f780",
+        "id": "b6d1e250-f09f-40bb-8f96-8475034d1c0a",
         "name": "Parse Command"
       },
       {
@@ -2901,10 +3192,10 @@
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.2,
         "position": [
-          28816,
-          7904
+          41040,
+          8640
         ],
-        "id": "8ec186d1-d83c-44d3-bc72-085182f4e179",
+        "id": "95a0c83e-ac11-4e18-a8d5-59afd8e9a6c7",
         "name": "Command Router"
       },
       {
@@ -2928,10 +3219,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          29040,
-          7328
+          41264,
+          8064
         ],
-        "id": "f865f258-7c1a-4c23-8eb9-10ce6a12cf3d",
+        "id": "15f0cdde-637b-4de8-a30e-409e6affc906",
         "name": "Discord – Error",
         "webhookId": "e2a307f2-5847-40b5-bcb2-4b67c68de3c1",
         "credentials": {
@@ -2956,16 +3247,16 @@
             "mode": "list",
             "cachedResultName": "receipts"
           },
-          "content": "📖 ReceiptFlow Commands\n─────────────────────────────\n!summary [YYYYMMDD YYYYMMDD]\n  → Your receipt summary for a date range\n  → Defaults to last 4 weeks if no dates given\n  → Example: !summary 20260501 20260524\n\n!last [N]\n  → Your last N receipts (default 5, max 20)\n  → Example: !last 5\n\n!stores\n  → Stores you have visited in the last 52 weeks with spend totals\n\n!email you@example.com\n  → Register or update your email address\n\n!export [YYYYMMDD YYYYMMDD]\n  → Email a CSV report to your registered email\n  → Defaults to last 4 weeks if no dates given\n  → Example: !export 20260501 20260524\n\n!help\n  → Show this help message\n\n─────────────────────────────\n⚠️ Disclaimer\nReceiptFlow uses AI (LLM) to parse receipt images. Receipt data may be used by the LLM provider for model training. This system is in testing — accuracy is not guaranteed and records may be deleted without prior notice. Use at your own discretion.",
+          "content": "📖 ReceiptFlow Commands\n─────────────────────────────\n!summary [YYYYMMDD YYYYMMDD]\n  → Your receipt summary for a date range\n  → Defaults to last 4 weeks if no dates given\n  → Example: !summary 20260501 20260524\n\n!last [N]\n  → Emails a CSV of your last N receipts to your registered email\n  → Sorted by import date — most recently captured first\n  → Defaults to last 1 receipt, max 20\n  → Example: !last 3\n\n!stores\n  → Stores you have visited in the last 52 weeks with spend totals\n\n!email you@example.com\n  → Register or update your email address\n\n!export [YYYYMMDD YYYYMMDD]\n  → Email a CSV report to your registered email\n  → Defaults to last 4 weeks if no dates given\n  → Example: !export 20260501 20260524\n\n!help\n  → Show this help message\n\n─────────────────────────────\n⚠️ Disclaimer\nReceiptFlow uses AI (LLM) to parse receipt images. Receipt data may be used by the LLM provider for model training. This system is in testing — accuracy is not guaranteed and records may be deleted without prior notice. Use at your own discretion.",
           "options": {}
         },
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          29040,
-          7520
+          41264,
+          8256
         ],
-        "id": "e971fa24-ba10-431a-8b4e-ac37e997d944",
+        "id": "b943f9c3-c7bc-4ffe-94cf-8afeab29674c",
         "name": "Discord – Help",
         "webhookId": "2ea8ae51-5130-49cb-9b91-316f657bf8cb",
         "credentials": {
@@ -3024,10 +3315,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          29040,
-          7712
+          41264,
+          8448
         ],
-        "id": "5dbc6b36-2921-489c-a61f-0c2a9cb8bddb",
+        "id": "77398c1c-1c71-4756-b17f-075ae73a1c14",
         "name": "Append Email (email cmd)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3056,10 +3347,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          29264,
-          7712
+          41488,
+          8448
         ],
-        "id": "4578eba1-7189-4c48-b3fd-3d4eedd01539",
+        "id": "8a656eeb-686e-4803-aad4-869804b9fae3",
         "name": "Read All Users (cleanup)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3077,10 +3368,10 @@
         "type": "n8n-nodes-base.aggregate",
         "typeVersion": 1,
         "position": [
-          29264,
-          7712
+          41712,
+          8448
         ],
-        "id": "873587ec-cb19-4031-8248-343aa3ca414f",
+        "id": "28cf553e-3780-4068-8cfd-376907a02c5e",
         "name": "Aggregate Users"
       },
       {
@@ -3090,10 +3381,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          29488,
-          7712
+          41936,
+          8448
         ],
-        "id": "bf140868-3aa6-4a44-8df5-c0302a9b2b23",
+        "id": "d0020249-a5dd-4efb-b650-2c7ff052aaf3",
         "name": "Find Old Rows"
       },
       {
@@ -3123,10 +3414,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          29712,
-          7712
+          42160,
+          8448
         ],
-        "id": "072ac6be-d77c-4f24-88f4-efb4f89f6851",
+        "id": "28387795-93ff-4f3a-a9b5-532937644bf5",
         "name": "Has Old Rows?"
       },
       {
@@ -3143,10 +3434,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          29936,
-          7648
+          42384,
+          8384
         ],
-        "id": "3e753056-0a51-4336-a85b-4245dd3a222f",
+        "id": "91e16399-d867-4862-bd75-30fc3a76c1ff",
         "name": "Delete Old Rows",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3176,10 +3467,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          30160,
-          7712
+          42608,
+          8448
         ],
-        "id": "3c058adc-ba47-4d60-b615-841725745e27",
+        "id": "ca2e9dcd-81d5-44e4-bf35-117036c44c6e",
         "name": "Discord – Email Updated",
         "webhookId": "628c3958-645c-4a85-8feb-ceef9fcacbed",
         "credentials": {
@@ -3200,10 +3491,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          30384,
-          7712
+          42832,
+          8448
         ],
-        "id": "8403593d-ace5-4d31-803b-f23939191781",
+        "id": "5b66d138-219f-47f8-b3a6-14385cf53bd7",
         "name": "Delete Discord Message (cmd)",
         "credentials": {
           "httpHeaderAuth": {
@@ -3231,10 +3522,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          29040,
-          7904
+          41264,
+          8640
         ],
-        "id": "78fd0415-1c2a-409d-88f2-0117d1ac4d61",
+        "id": "cd856b16-04ec-4011-bba2-d2e6ae34882b",
         "name": "Read Sheets (stores)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3250,10 +3541,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          29264,
-          7904
+          41488,
+          8640
         ],
-        "id": "a599de8d-1d5c-412e-b8ee-a758e7af01e2",
+        "id": "20810fac-ae63-4c6c-b396-0472a24fe48c",
         "name": "Aggregate Stores"
       },
       {
@@ -3277,10 +3568,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          29488,
-          7904
+          41712,
+          8640
         ],
-        "id": "1b373853-e373-4ea3-8eb9-6b6a06506439",
+        "id": "c55d7639-dc5b-428a-83f5-6de4807d5900",
         "name": "Discord – Stores",
         "webhookId": "8e3b784f-4b1f-4a25-9850-7db98542c840",
         "credentials": {
@@ -3309,10 +3600,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          29040,
-          8096
+          41264,
+          8832
         ],
-        "id": "0410baff-a5fa-4c86-b1e5-fd282582e338",
+        "id": "463e8b90-caf5-4741-b6c0-2519209bbdd4",
         "name": "Read Sheets (last)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3328,10 +3619,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          29264,
-          8096
+          41488,
+          8832
         ],
-        "id": "dee07750-ae00-4af8-9037-bdcac70ab5ee",
+        "id": "9589df00-b397-417b-96dc-2c1add12dfdc",
         "name": "Aggregate Last"
       },
       {
@@ -3349,18 +3640,223 @@
             "mode": "list",
             "cachedResultName": "receipts"
           },
-          "content": "={{ $json._empty ? '⚠️ No receipts found.' : $json.message }}",
+          "content": "=📧 Last {{ $('Parse Command').first().json.n }} receipt(s) will be sent to your registered email.",
           "options": {}
         },
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          29488,
-          8096
+          41712,
+          8832
         ],
-        "id": "0a977985-575a-457c-aa60-6340120af7cd",
+        "id": "f02f20f7-6c65-4991-b9e3-c1990b5df773",
         "name": "Discord – Last",
         "webhookId": "d79a8aa9-11ac-45c7-887c-2df80810cb3d",
+        "credentials": {
+          "discordBotApi": {
+            "id": "uMc0msEp6imVVJtp",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "12QQW6b1ezpWcXGg-XCQodaSRpIknEKpewvSAsnxx4jQ",
+            "mode": "list",
+            "cachedResultName": "Receipts"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "1905451540",
+            "mode": "list",
+            "cachedResultName": "users"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          41936,
+          8832
+        ],
+        "id": "a8edbd59-f7bf-4c54-a0de-392efcb62a37",
+        "name": "Read Users (last export)",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DgucYvkJJQVWqK51",
+            "name": "Job.Automation Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const discordUser = $('Parse Command').first().json.discordUser.toLowerCase();\nconst rows = $input.all().filter(r => (r.json.discord_user ?? '').toString().toLowerCase() === discordUser);\nconst match = rows.length > 0 ? rows[rows.length - 1] : null;\nreturn [{ json: { email: match ? (match.json.email ?? '') : '' } }];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          42160,
+          8832
+        ],
+        "id": "484b0f07-e873-4047-b5a3-d4aca263fdab",
+        "name": "Find Email (last export)"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "cond-last-has-email",
+                "leftValue": "={{ $json.email }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          42384,
+          8832
+        ],
+        "id": "cfaf688c-65d7-4a26-beb0-4bb99719d93a",
+        "name": "Last Export Has Email?"
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1467482881210323021",
+            "mode": "list",
+            "cachedResultName": "donut-automation"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1507421686805434479",
+            "mode": "list",
+            "cachedResultName": "receipts"
+          },
+          "content": "❌ No email registered. Use !email you@example.com to register your email first.",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          42608,
+          8928
+        ],
+        "id": "4811efec-f713-46a0-98d7-835e62bd916f",
+        "name": "Discord – Last No Email",
+        "webhookId": "67a25c8d-1903-4622-b02f-1d988fa5b8fb",
+        "credentials": {
+          "discordBotApi": {
+            "id": "uMc0msEp6imVVJtp",
+            "name": "Discord Bot account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const parsed = $('Parse Command').first().json;\nconst rows = $('Read Sheets (last)').all();\nconst user = (parsed.discordUser ?? '').toLowerCase();\nconst n = parsed.n ?? 1;\nconst email = $input.first().json.email;\n\n// Filter to this user's rows\nconst userRows = rows.filter(r => (r.json.discord_user ?? '').toLowerCase() === user);\n\n// Group by receipt_id, keep latest created_at per receipt\nconst receiptMap = new Map();\nfor (const row of userRows) {\n  const r = row.json;\n  const id = r.receipt_id;\n  if (!receiptMap.has(id)) {\n    receiptMap.set(id, { createdAt: r.created_at ?? '', rows: [] });\n  }\n  receiptMap.get(id).rows.push(r);\n  if ((r.created_at ?? '') > receiptMap.get(id).createdAt) {\n    receiptMap.get(id).createdAt = r.created_at ?? '';\n  }\n}\n\n// Sort by created_at desc, take N\nconst sortedIds = [...receiptMap.entries()]\n  .sort((a, b) => b[1].createdAt.localeCompare(a[1].createdAt))\n  .slice(0, n)\n  .map(([id]) => id);\n\nconst selectedIdSet = new Set(sortedIds);\nconst filtered = userRows\n  .map(r => r.json)\n  .filter(r => selectedIdSet.has(r.receipt_id));\n\nif (filtered.length === 0) return [{ json: { _empty: true, email } }];\n\nconst headers = ['receipt_id','receipt_date','receipt_time','store_name','store_branch','line_number','product_name','normalised_name','category','quantity','unit_price','line_total','is_discount_line','discount_amount','is_taxable','tax_rate_percent','receipt_total','payment_method'];\n\nfiltered.forEach(r => { r.receipt_total = r.total_amount; });\n\nconst csvRows = [headers.join(',')];\nfor (const r of filtered) {\n  const row = headers.map(h => {\n    const v = r[h] ?? '';\n    const s = String(v);\n    return s.includes(',') || s.includes('\"') || s.includes('\\n') ? `\"${s.replace(/\"/g, '\"\"')}\"` : s;\n  });\n  csvRows.push(row.join(','));\n}\n\nconst csv = csvRows.join('\\n');\nconst csv_base64 = Buffer.from(csv).toString('base64');\nconst receiptCount = sortedIds.length;\nconst totalSpend = [...receiptMap.entries()]\n  .filter(([id]) => selectedIdSet.has(id))\n  .reduce((sum, [, v]) => sum + parseFloat(v.rows[0].total_amount ?? 0), 0)\n  .toFixed(2);\n\nconst today = new Date().toISOString().slice(0, 10).replace(/-/g, '');\nconst filename = `receipts_last${n}_${today}.csv`;\n\nreturn [{ json: { _empty: false, email, csv_base64, filename, receiptCount, totalSpend, discordUser: parsed.discordUser } }];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          42608,
+          8736
+        ],
+        "id": "991e5759-5df2-4fec-b307-aec0f8c6d556",
+        "name": "Build Last CSV"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $input.first().json;\nreturn [{\n  json: {\n    email: data.email,\n    receiptCount: data.receiptCount,\n    totalSpend: data.totalSpend,\n    filename: data.filename,\n    discordUser: data.discordUser\n  },\n  binary: {\n    attachment: {\n      data: data.csv_base64,\n      mimeType: 'text/csv',\n      fileName: data.filename\n    }\n  }\n}];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          42832,
+          8736
+        ],
+        "id": "ddd4cf76-eb64-41eb-9cdc-c26f68ef38d6",
+        "name": "Prepare Last Attachment"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.email }}",
+          "subject": "=ReceiptFlow – Last {{ $json.receiptCount }} Receipt{{ $json.receiptCount !== 1 ? 's' : '' }}",
+          "emailType": "text",
+          "message": "=Hi {{ $json.discordUser }},\n\nPlease find your last {{ $json.receiptCount }} receipt{{ $json.receiptCount !== 1 ? 's' : '' }} attached for your review.\n\nReceipts: {{ $json.receiptCount }}\nTotal spend: £{{ $json.totalSpend }}\n\n---\n⚠️ This report was generated by ReceiptFlow (AI-assisted). Data accuracy is not guaranteed. Records may be deleted without prior notice.\n\nReceiptFlow",
+          "options": {
+            "attachmentsUi": {
+              "attachmentsBinary": [
+                {
+                  "property": "attachment"
+                }
+              ]
+            },
+            "senderName": "Super Market Receipt Flow",
+            "replyTo": "no-reply@noreply.com"
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          43056,
+          8736
+        ],
+        "id": "f5bb8a5e-59a2-4d29-9574-a31c50493bbb",
+        "name": "Send Last Email",
+        "webhookId": "8cc7c0f9-4196-4999-ba39-f0e80de44555",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "ON4cMVnRGPKgOQl0",
+            "name": "Job.Automation Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1467482881210323021",
+            "mode": "list",
+            "cachedResultName": "donut-automation"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1507421686805434479",
+            "mode": "list",
+            "cachedResultName": "receipts"
+          },
+          "content": "=✅ Receipt report sent to your registered email.",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          43280,
+          8736
+        ],
+        "id": "b3fd5461-4064-4489-8317-a4a7bb7c1916",
+        "name": "Discord – Last Export Sent",
+        "webhookId": "5ad50248-970f-43b3-8044-b728eb0c654f",
         "credentials": {
           "discordBotApi": {
             "id": "uMc0msEp6imVVJtp",
@@ -3387,10 +3883,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          29040,
-          8288
+          41264,
+          9024
         ],
-        "id": "85154884-963a-4220-99dc-328b08e47bbd",
+        "id": "aca1e591-cb57-45fa-8b20-42f49457bedf",
         "name": "Read Sheets (summary)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3406,10 +3902,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          29264,
-          8288
+          41488,
+          9024
         ],
-        "id": "6b357ca8-3b31-44aa-813c-76f6d4b2fadd",
+        "id": "ae336dca-5d0d-4828-831f-b2dc05352b58",
         "name": "Aggregate Summary"
       },
       {
@@ -3433,10 +3929,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          29488,
-          8288
+          41712,
+          9024
         ],
-        "id": "09b38538-b926-4083-9ae7-150daf00baab",
+        "id": "b7f832bc-6cec-467f-86db-684c4b3034b2",
         "name": "Discord – Summary",
         "webhookId": "fb3dbe2c-0fc9-4124-ace9-9e4bffeefa96",
         "credentials": {
@@ -3466,10 +3962,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          29040,
-          8480
+          41264,
+          9312
         ],
-        "id": "70e65ff9-bf19-442f-95a2-455ed52f0e84",
+        "id": "ae1b4f06-b81a-48e2-bb8b-d13e1e1c41c7",
         "name": "Read Users (export)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3485,10 +3981,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          29264,
-          8480
+          41488,
+          9312
         ],
-        "id": "7cc47cc4-3379-4270-89d8-f397f66077e2",
+        "id": "cc715831-1795-42b8-8d34-a9f0c662a6b7",
         "name": "Find Email (export)"
       },
       {
@@ -3519,10 +4015,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          29488,
-          8480
+          41712,
+          9312
         ],
-        "id": "305a8dd1-68f5-4b66-ba3d-110d461e6fd3",
+        "id": "dce16cf5-7946-45ab-9eac-46237cbaf947",
         "name": "Export Has Email?"
       },
       {
@@ -3546,10 +4042,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          29712,
-          8576
+          41936,
+          9408
         ],
-        "id": "ecae50be-8ff3-4017-9004-dab7f750b2ec",
+        "id": "a7c7742f-5c6d-4080-bb39-e85bb7e54f3f",
         "name": "Discord – Export No Email",
         "webhookId": "f7e40aa9-7b86-4419-bfbd-6155aee08eef",
         "credentials": {
@@ -3578,10 +4074,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          29712,
-          8288
+          41936,
+          9216
         ],
-        "id": "a2aa43bb-1d8f-4257-9334-84942722f7ab",
+        "id": "734a5608-c5f9-41c7-bdb7-eace2a7966b3",
         "name": "Read Sheets (export)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3597,10 +4093,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          29936,
-          8288
+          42160,
+          9216
         ],
-        "id": "ee667ee3-5881-4377-95b8-86d04a6cca5a",
+        "id": "a003dfe8-957d-4f96-8ebe-082dab81093d",
         "name": "Build CSV"
       },
       {
@@ -3630,10 +4126,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          30160,
-          8288
+          42384,
+          9216
         ],
-        "id": "abd640fb-7572-49ae-9f89-607a8fd4367b",
+        "id": "69d1f680-7757-4ceb-8fda-6011b311a64e",
         "name": "Export Has Data?"
       },
       {
@@ -3657,10 +4153,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          30384,
-          8384
+          42608,
+          9312
         ],
-        "id": "cdb22a7a-05e5-43b3-a8c1-f703b08958c7",
+        "id": "b416df14-df89-4247-8cd4-ed42221e611e",
         "name": "Discord – Export Empty",
         "webhookId": "977ece98-f71e-4532-a3a5-8853388dee02",
         "credentials": {
@@ -3677,10 +4173,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          30384,
-          8192
+          42608,
+          9120
         ],
-        "id": "0a4ef259-4366-4483-a61d-3eee342389ca",
+        "id": "25224d96-a3b7-49cf-af7b-b7cd61649f86",
         "name": "Prepare Attachment"
       },
       {
@@ -3696,16 +4192,18 @@
                   "property": "attachment"
                 }
               ]
-            }
+            },
+            "senderName": "Super Market Receipt Flow",
+            "replyTo": "no-reply@noreply.com"
           }
         },
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
         "position": [
-          30608,
-          8192
+          42832,
+          9120
         ],
-        "id": "1169fdf2-1b5e-440e-9411-7ecc8870d69c",
+        "id": "be3f2927-283c-435f-ab63-f1bd0566e334",
         "name": "Send Email",
         "webhookId": "042b38da-ebac-4c9f-b431-cf52a46ce325",
         "credentials": {
@@ -3736,10 +4234,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          30832,
-          8192
+          43056,
+          9120
         ],
-        "id": "77c94cf7-efdd-4f22-b594-a06cd9a956be",
+        "id": "8b3fa68d-f1ea-4412-a25c-026226cada3b",
         "name": "Discord – Export Sent",
         "webhookId": "51788cb6-695f-41cb-80c3-6ef73192b389",
         "credentials": {
@@ -3770,10 +4268,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          29040,
-          8672
+          41264,
+          9504
         ],
-        "id": "293f804c-cbff-4ddc-a791-b147cd84fdc2",
+        "id": "0327b3f0-07a5-4d58-969d-e723d591dbc2",
         "name": "Discord – Unknown Command",
         "webhookId": "b1f5cb13-d7d7-4b63-a4e3-10c45a8abdeb",
         "credentials": {
@@ -3797,10 +4295,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          28592,
-          8960
+          40816,
+          9792
         ],
-        "id": "b910aba9-f396-4003-a40d-2ef53f373f05",
+        "id": "07c205b8-6629-42e4-8e22-79d5536a06d5",
         "name": "Download Image"
       },
       {
@@ -3811,10 +4309,10 @@
         "type": "n8n-nodes-base.extractFromFile",
         "typeVersion": 1.1,
         "position": [
-          28816,
-          8960
+          41040,
+          9792
         ],
-        "id": "26860a04-1a60-45ae-bf66-9a0fa90f063b",
+        "id": "aaa2380f-17e7-43ad-bc91-e9e41e402d7b",
         "name": "To Base64"
       },
       {
@@ -3837,10 +4335,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          29040,
-          8960
+          41264,
+          9792
         ],
-        "id": "986d2103-f101-4911-9d5b-1df5e543eb34",
+        "id": "113abc70-064b-49b4-9836-8b602b99a5f8",
         "name": "Gemini Vision LLM",
         "credentials": {
           "googlePalmApi": {
@@ -3871,10 +4369,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          31056,
-          9248
+          43280,
+          10080
         ],
-        "id": "40a40095-dc1e-40e8-a283-2f9dd62a54a9",
+        "id": "7a05d2d9-5efc-4a74-8ee4-50cb8d5038db",
         "name": "Discord – LLM Busy",
         "webhookId": "1494f3de-3a8b-46fa-8592-a94fc2e8a792",
         "credentials": {
@@ -3891,10 +4389,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          29264,
-          8864
+          41488,
+          9696
         ],
-        "id": "755e886e-1686-4857-883b-aca9760543dc",
+        "id": "815d230c-f961-4cd3-af8b-5251f60cc42a",
         "name": "Parse & Flatten"
       },
       {
@@ -3924,10 +4422,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          29488,
-          8864
+          41712,
+          9696
         ],
-        "id": "b7fac2c9-af8d-47d2-88d4-f4076beb538c",
+        "id": "13c489de-12d4-4998-abbc-29f89d112eda",
         "name": "Is Receipt?"
       },
       {
@@ -3951,10 +4449,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          31056,
-          9056
+          43280,
+          9888
         ],
-        "id": "d71becab-8eee-4396-bc75-7623e5f71273",
+        "id": "e787824a-c49b-48fc-a959-4d178d984b83",
         "name": "Discord – Not a Receipt",
         "webhookId": "528c0bd7-106e-4cd8-b37a-550c3fed21bc",
         "credentials": {
@@ -3992,10 +4490,10 @@
         "type": "n8n-nodes-base.filter",
         "typeVersion": 2.3,
         "position": [
-          29712,
-          8768
+          41936,
+          9600
         ],
-        "id": "955e7525-78f1-48aa-a01e-b483173c15b2",
+        "id": "878e3409-b7cd-429e-b3d6-eb6d908644a4",
         "name": "Filter Empty Rows"
       },
       {
@@ -4008,10 +4506,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          29936,
-          8768
+          42160,
+          9600
         ],
-        "id": "bf29f48d-a058-4a18-9496-5a8e0ec20eec",
+        "id": "3a4aa1f6-6cd5-47a8-b1b4-f1072464a278",
         "name": "Read Existing Receipts",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -4027,10 +4525,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          30160,
-          8768
+          42384,
+          9600
         ],
-        "id": "fe761c03-1e40-474f-8218-9953594bf8d5",
+        "id": "45817f25-bfc2-42e2-adb9-1ab33971d578",
         "name": "Check Duplicate"
       },
       {
@@ -4060,10 +4558,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          30384,
-          8768
+          42608,
+          9600
         ],
-        "id": "a732fc53-6b29-4e0f-ab3f-4be60aae1850",
+        "id": "a7fc90e1-3231-4bfb-a946-80a25b2d63eb",
         "name": "Is Duplicate?"
       },
       {
@@ -4416,10 +4914,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          30608,
-          8480
+          42832,
+          9408
         ],
-        "id": "0d74d3f2-bd54-42a8-a048-b77d09c7a20e",
+        "id": "5a15129e-24c8-4ce1-b786-a248694f8c9f",
         "name": "Append to Google Sheets",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -4433,10 +4931,10 @@
         "type": "n8n-nodes-base.limit",
         "typeVersion": 1,
         "position": [
-          30832,
-          8480
+          43056,
+          9408
         ],
-        "id": "0f323f87-3063-4bd8-9a51-ad4d64e70b3f",
+        "id": "2be2dc19-e74d-47d1-83ae-7d9e01b779ce",
         "name": "Limit"
       },
       {
@@ -4460,10 +4958,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          31056,
-          8480
+          43280,
+          9408
         ],
-        "id": "783ef0e5-b0e9-4d51-83b8-fe3307e94c02",
+        "id": "aea1639d-f35a-4205-971b-f8077423667a",
         "name": "Discord – Success",
         "webhookId": "1b296015-d305-457c-b815-82d046fbda6a",
         "credentials": {
@@ -4478,10 +4976,10 @@
         "type": "n8n-nodes-base.limit",
         "typeVersion": 1,
         "position": [
-          30832,
-          8864
+          43056,
+          9696
         ],
-        "id": "f1906781-4650-4c98-ac86-a8bab526d8e9",
+        "id": "ba57d42a-7981-4207-9696-b2f8004e985f",
         "name": "Limit Duplicate"
       },
       {
@@ -4505,10 +5003,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          31056,
-          8864
+          43280,
+          9696
         ],
-        "id": "60f7f023-e7bf-416b-af6e-76f1b880f88f",
+        "id": "e1a1cc77-4a26-4411-bb91-eafa3527b46b",
         "name": "Discord – Duplicate Warning",
         "webhookId": "17f4b74b-a5b9-428d-9995-be3d18d99bd5",
         "credentials": {
@@ -4539,10 +5037,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          31280,
-          8960
+          43504,
+          9792
         ],
-        "id": "bc249eb5-86ea-4f71-af8e-f34d06fb4495",
+        "id": "227d2f37-d671-4c0f-9a42-3296e97064e7",
         "name": "Discord – Photo Deleted",
         "webhookId": "82edcffd-5419-4480-9904-6e963725f90b",
         "credentials": {
@@ -4563,10 +5061,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          31504,
-          8960
+          43728,
+          9792
         ],
-        "id": "92196042-b9d1-4168-a186-68e6187efeb8",
+        "id": "3cd20b14-a88e-418a-a052-f8d63811da5e",
         "name": "Delete Discord Message",
         "credentials": {
           "httpHeaderAuth": {
@@ -4810,6 +5308,90 @@
           [
             {
               "node": "Discord – Last",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Discord – Last": {
+        "main": [
+          [
+            {
+              "node": "Read Users (last export)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Users (last export)": {
+        "main": [
+          [
+            {
+              "node": "Find Email (last export)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Email (last export)": {
+        "main": [
+          [
+            {
+              "node": "Last Export Has Email?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Last Export Has Email?": {
+        "main": [
+          [
+            {
+              "node": "Build Last CSV",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Discord – Last No Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Last CSV": {
+        "main": [
+          [
+            {
+              "node": "Prepare Last Attachment",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Last Attachment": {
+        "main": [
+          [
+            {
+              "node": "Send Last Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Last Email": {
+        "main": [
+          [
+            {
+              "node": "Discord – Last Export Sent",
               "type": "main",
               "index": 0
             }
@@ -5150,13 +5732,13 @@
       }
     },
     "authors": "4you donut",
-    "name": "Version 177b8dc6",
+    "name": "Version 73d814ea",
     "description": "",
     "autosaved": true
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-05-26T01:00:19.223Z",
+    "backed_up_at": "2026-05-27T01:00:19.206Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
