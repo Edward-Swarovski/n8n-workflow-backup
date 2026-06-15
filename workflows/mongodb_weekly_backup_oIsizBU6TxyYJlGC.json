@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-12T14:08:24.670Z",
+  "updatedAt": "2026-06-14T17:19:41.137Z",
   "createdAt": "2026-05-12T12:40:39.794Z",
   "id": "oIsizBU6TxyYJlGC",
   "name": "MongoDB Weekly Backup",
@@ -67,7 +67,7 @@
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": false,
+            "caseSensitive": true,
             "leftValue": "",
             "typeValidation": "strict",
             "version": 1
@@ -79,7 +79,8 @@
               "operator": {
                 "type": "boolean",
                 "operation": "true"
-              }
+              },
+              "id": "d4b67051-d1f5-4608-a344-71499b904bde"
             }
           ],
           "combinator": "and"
@@ -198,8 +199,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "ccead526-7e40-420a-9345-6c8951519cc4",
-  "activeVersionId": "4a1d2670-b221-497b-9882-fd6741863b28",
+  "versionId": "a1a07a5d-6047-42e5-99d5-44c7ee2ab568",
+  "activeVersionId": "a1a07a5d-6047-42e5-99d5-44c7ee2ab568",
   "triggerCount": 1,
   "shared": [
     {
@@ -211,9 +212,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-05-12T12:41:37.000Z",
-    "createdAt": "2026-05-12T12:40:39.798Z",
-    "versionId": "4a1d2670-b221-497b-9882-fd6741863b28",
+    "updatedAt": "2026-06-14T17:20:50.000Z",
+    "createdAt": "2026-06-14T17:19:41.138Z",
+    "versionId": "a1a07a5d-6047-42e5-99d5-44c7ee2ab568",
     "workflowId": "oIsizBU6TxyYJlGC",
     "nodes": [
       {
@@ -227,27 +228,51 @@
             ]
           }
         },
-        "id": "b1c880fa-5a9b-4057-9a9d-66aa47b6ea58",
-        "name": "Every Thursday 11:30 PM",
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.2,
         "position": [
-          -656,
-          112
-        ]
+          -736,
+          96
+        ],
+        "id": "09bcfb43-81a8-46a8-8803-4cc3c893779f",
+        "name": "Every Thursday 11:30 PM"
       },
       {
         "parameters": {
-          "command": "bash $HOME/mongodb/scripts/mongodb_backup.sh >> $HOME/mongodb/logs/backup.log 2>&1 && echo 'SUCCESS' || echo 'FAILED'"
+          "authentication": "privateKey",
+          "command": "bash ~/mongodb/scripts/mongodb_backup.sh",
+          "cwd": "/home/uroot"
         },
-        "id": "691447f2-6b92-4e30-99dc-9157246891e8",
-        "name": "Run Backup Script",
-        "type": "n8n-nodes-base.executeCommand",
+        "type": "n8n-nodes-base.ssh",
         "typeVersion": 1,
         "position": [
-          -448,
-          112
-        ]
+          -432,
+          96
+        ],
+        "id": "43d425f6-c4b9-4b4b-b9a6-6b774e212efe",
+        "name": "Run MongoDB Backup",
+        "maxTries": 3,
+        "waitBetweenTries": 5000,
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "CPlKuA0owWNSPR1X",
+            "name": "ubuntu07 SSH Private Key"
+          }
+        },
+        "onError": "retryOnFail"
+      },
+      {
+        "parameters": {
+          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst hasError = stdout.includes('error') || stderr.includes('Error') || stderr.includes('Traceback') || !stdout.includes('MongoDB backup job completed successfully');\nreturn [{ json: { hasError, stdout, stderr } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -176,
+          96
+        ],
+        "id": "26ead143-bd27-4b1b-85b9-ce1789907995",
+        "name": "Check Backup Output"
       },
       {
         "parameters": {
@@ -260,53 +285,63 @@
             },
             "conditions": [
               {
-                "id": "check-success",
-                "leftValue": "={{ $json.stdout }}",
-                "rightValue": "SUCCESS",
+                "leftValue": "={{ $json.hasError }}",
+                "rightValue": true,
                 "operator": {
-                  "type": "string",
-                  "operation": "contains"
-                }
+                  "type": "boolean",
+                  "operation": "true"
+                },
+                "id": "d4b67051-d1f5-4608-a344-71499b904bde"
               }
             ],
             "combinator": "and"
           },
           "options": {}
         },
-        "id": "fe753061-beca-4ede-8124-206329d84805",
-        "name": "Check Result",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          -224,
-          112
-        ]
+          96,
+          96
+        ],
+        "id": "7daf9636-05c9-49fb-966c-47fa338eb07d",
+        "name": "Backup Failed?"
       },
       {
         "parameters": {
-          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst now = new Date().toISOString();\n\nreturn [{\n  json: {\n    status: 'success',\n    timestamp: now,\n    message: 'MongoDB backup completed and uploaded to MinIO successfully.',\n    stdout: stdout.trim()\n  }\n}];"
+          "fromEmail": "edwardtong@gmail.com",
+          "toEmail": "edwardtong@gmail.com",
+          "subject": "[ALERT] MongoDB Backup Failed",
+          "options": {}
         },
-        "id": "f7535308-923d-4843-af8a-ba65ca3ee159",
-        "name": "Format Success",
-        "type": "n8n-nodes-base.code",
+        "type": "n8n-nodes-base.emailSend",
         "typeVersion": 2,
         "position": [
-          0,
-          0
-        ]
+          352,
+          -32
+        ],
+        "id": "ccb195b6-7d18-4974-a8ba-83e71ca9e255",
+        "name": "Alert: Backup Failed",
+        "webhookId": "3333f306-ac37-407f-9437-076e8a61f2e7",
+        "credentials": {
+          "smtp": {
+            "id": "EuvA9jLaKOedTzoo",
+            "name": "Gmail SMTP account"
+          }
+        }
       },
       {
         "parameters": {
-          "jsCode": "const stdout = $input.item.json.stdout || '';\nconst stderr = $input.item.json.stderr || '';\nconst now = new Date().toISOString();\n\nreturn [{\n  json: {\n    status: 'failed',\n    timestamp: now,\n    message: 'MongoDB backup FAILED. Check logs at ~/mongodb/logs/backup.log',\n    stdout: stdout.trim(),\n    stderr: stderr.trim()\n  }\n}];"
+          "jsCode": "return [{ json: { status: 'success', message: 'MongoDB backup completed and uploaded to MinIO successfully.', timestamp: new Date().toISOString(), stdout: $input.item.json.stdout.trim() } }];"
         },
-        "id": "d6d65bfe-5fa5-4ce3-a1b5-3b8db94bdd0a",
-        "name": "Format Failure",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          0,
-          224
-        ]
+          352,
+          208
+        ],
+        "id": "4522251d-b707-45e7-a1a2-7db7ba05b6c4",
+        "name": "Backup Successful"
       }
     ],
     "connections": {
@@ -314,36 +349,47 @@
         "main": [
           [
             {
-              "node": "Run Backup Script",
+              "node": "Run MongoDB Backup",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Run Backup Script": {
+      "Run MongoDB Backup": {
         "main": [
           [
             {
-              "node": "Check Result",
+              "node": "Check Backup Output",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Check Result": {
+      "Check Backup Output": {
         "main": [
           [
             {
-              "node": "Format Success",
+              "node": "Backup Failed?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Backup Failed?": {
+        "main": [
+          [
+            {
+              "node": "Alert: Backup Failed",
               "type": "main",
               "index": 0
             }
           ],
           [
             {
-              "node": "Format Failure",
+              "node": "Backup Successful",
               "type": "main",
               "index": 0
             }
@@ -352,7 +398,7 @@
       }
     },
     "authors": "4you donut",
-    "name": "Version 4a1d2670",
+    "name": "Version a1a07a5d",
     "description": "",
     "autosaved": true
   },
@@ -377,7 +423,7 @@
     }
   ],
   "_backup": {
-    "backed_up_at": "2026-05-13T01:00:19.199Z",
+    "backed_up_at": "2026-06-15T01:00:15.894Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
