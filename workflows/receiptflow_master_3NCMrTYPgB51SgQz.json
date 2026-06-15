@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-05T17:08:29.473Z",
+  "updatedAt": "2026-06-14T22:04:12.180Z",
   "createdAt": "2026-05-24T15:55:51.661Z",
   "id": "3NCMrTYPgB51SgQz",
   "name": "ReceiptFlow – Master",
@@ -15,10 +15,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        39072,
-        9432
+        38368,
+        18096
       ],
-      "id": "5276a36b-e890-407d-b220-2f6b23b7124f",
+      "id": "9bfb3f97-959e-4d0e-a7f8-4ca54f297796",
       "name": "Webhook",
       "webhookId": "c48a00c3-492f-41e9-900e-e8ad76f96671"
     },
@@ -49,10 +49,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        39296,
-        9432
+        38592,
+        18096
       ],
-      "id": "31e425e0-cdf1-4cdd-971f-78c42b65150a",
+      "id": "f6fa1ab0-af97-462e-99c3-72529974b1d5",
       "name": "Secret Check"
     },
     {
@@ -116,10 +116,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        39520,
-        9432
+        38816,
+        18096
       ],
-      "id": "15354374-3465-4fd5-9757-00227df9c0ff",
+      "id": "fcf5e538-b6db-4254-9ad5-fddff63d66ac",
       "name": "Message Router"
     },
     {
@@ -129,10 +129,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        39744,
-        8688
+        39040,
+        17424
       ],
-      "id": "a07e8eba-7631-426a-8fd5-55156f4c6c1f",
+      "id": "4c252b6a-6424-4473-8456-324e3b165bd7",
       "name": "Parse Command"
     },
     {
@@ -340,10 +340,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        39968,
-        8576
+        39264,
+        17312
       ],
-      "id": "6f9ad114-745a-45c8-8532-828c46590d89",
+      "id": "b1071834-b875-4c60-9cc1-3988d8856b92",
       "name": "Command Router"
     },
     {
@@ -367,10 +367,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        40192,
-        7920
+        39488,
+        16656
       ],
-      "id": "e67cc3fb-574f-4892-bde8-159be3dd77cd",
+      "id": "ce636d58-83ba-4d56-ac77-d1104850a40f",
       "name": "Discord – Error",
       "webhookId": "e2a307f2-5847-40b5-bcb2-4b67c68de3c1",
       "credentials": {
@@ -401,10 +401,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        40192,
-        8112
+        39488,
+        16848
       ],
-      "id": "84dd9b3c-c468-4bd0-88e2-2eae4b14fe59",
+      "id": "b8ee7856-e463-4e99-9e50-e7841e200cfe",
       "name": "Discord – Help",
       "webhookId": "2ea8ae51-5130-49cb-9b91-316f657bf8cb",
       "credentials": {
@@ -463,10 +463,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        40192,
-        8304
+        39488,
+        17040
       ],
-      "id": "f2cc394d-ce70-4b13-8244-33c8385d6289",
+      "id": "64eabc18-fedb-4d57-b1b1-d86a3786aba3",
       "name": "Append Email (email cmd)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -495,10 +495,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        40416,
-        8304
+        39712,
+        17040
       ],
-      "id": "6c489472-25a4-4ab0-9e26-a93b461ddcd2",
+      "id": "6aa9633f-4358-4f37-93c8-ea14cbcaea91",
       "name": "Read All Users (cleanup)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -516,10 +516,10 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        40640,
-        8304
+        39936,
+        17040
       ],
-      "id": "4f541985-42b0-45c9-9082-78035076de82",
+      "id": "5f7c31c6-cdf6-45e5-abe1-b52a1e197af9",
       "name": "Aggregate Users"
     },
     {
@@ -529,10 +529,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        40864,
-        8304
+        40160,
+        17040
       ],
-      "id": "a273e6eb-5e38-407f-a798-d96f14b1d79c",
+      "id": "a52e48bf-18c7-49e8-bc31-e65f3adf814b",
       "name": "Find Old Rows"
     },
     {
@@ -562,10 +562,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        41088,
-        8304
+        40384,
+        17040
       ],
-      "id": "e4b0ea6f-59fa-48fe-9c2f-dd91a8f29a4d",
+      "id": "a63bc4c1-85bc-468b-85b9-4c52ca6cb5f0",
       "name": "Has Old Rows?"
     },
     {
@@ -582,10 +582,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        41312,
-        8232
+        40608,
+        16960
       ],
-      "id": "72c3da40-cb46-4482-80df-9ded4cdf5fc0",
+      "id": "ac0abd77-f0f7-4562-9dc9-dfd6c2e1ad1d",
       "name": "Delete Old Rows",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -615,10 +615,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        41536,
-        8304
+        40832,
+        17040
       ],
-      "id": "8209c589-f614-4df2-a2e0-4c0cb68fa95e",
+      "id": "57fb3280-0fcf-4293-89e0-469215d2a103",
       "name": "Discord – Email Updated",
       "webhookId": "628c3958-645c-4a85-8feb-ceef9fcacbed",
       "credentials": {
@@ -639,10 +639,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        41760,
-        8304
+        41056,
+        17040
       ],
-      "id": "8ba560f6-0ae2-4ba2-bc9c-0e0b2887bb16",
+      "id": "20bfb54b-b942-49fe-95d0-efde4b65b56b",
       "name": "Delete Discord Message (cmd)",
       "credentials": {
         "httpHeaderAuth": {
@@ -670,10 +670,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        40192,
-        8496
+        39488,
+        17232
       ],
-      "id": "5f13dfd5-d9d4-4a3f-872a-ca1ff6959f20",
+      "id": "9d40cdaa-9bba-4e2d-9c3c-873d57fd1db3",
       "name": "Read Sheets (stores)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -689,10 +689,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        40416,
-        8496
+        39712,
+        17232
       ],
-      "id": "6af809a9-d37b-4e96-8c22-00502fe12d19",
+      "id": "e35454f8-3dcd-400b-86c1-f0f530d0475e",
       "name": "Aggregate Stores"
     },
     {
@@ -716,10 +716,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        40640,
-        8496
+        39936,
+        17232
       ],
-      "id": "7749219d-0df9-490e-873b-fdb12451bc5e",
+      "id": "b92f26cc-c135-4e25-b024-f9ddd435520e",
       "name": "Discord – Stores",
       "webhookId": "8e3b784f-4b1f-4a25-9850-7db98542c840",
       "credentials": {
@@ -748,10 +748,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        40192,
-        8688
+        39488,
+        17424
       ],
-      "id": "684f01a8-ba39-449f-9fe1-9ad09a146cfa",
+      "id": "5e5d061d-0215-43d5-9473-e725982d42bf",
       "name": "Read Sheets (last)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -767,10 +767,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        40416,
-        8688
+        39712,
+        17424
       ],
-      "id": "9f146c37-b7c9-4cc7-be45-654cdcad7a46",
+      "id": "4af0ed45-b533-40fa-a801-531d005cd630",
       "name": "Aggregate Last"
     },
     {
@@ -794,10 +794,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        40640,
-        8688
+        39936,
+        17424
       ],
-      "id": "f979ec3e-9cef-4fcf-a7ee-4b27ab70c8db",
+      "id": "d69ac859-3e0b-40b5-a410-79d7c186c6c7",
       "name": "Discord – Last",
       "webhookId": "d79a8aa9-11ac-45c7-887c-2df80810cb3d",
       "credentials": {
@@ -826,10 +826,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        40864,
-        8688
+        40160,
+        17424
       ],
-      "id": "75c91629-0e02-4579-bd1d-26c7b8154b4a",
+      "id": "039886f6-622e-413c-ad5b-68eb09af5885",
       "name": "Read Users (last export)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -845,10 +845,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        41088,
-        8688
+        40384,
+        17424
       ],
-      "id": "892681ca-579a-4450-bfed-1d0f9dcc20fa",
+      "id": "91a0cc3d-a094-4248-ad0f-fc7ead843f78",
       "name": "Find Email (last export)"
     },
     {
@@ -878,10 +878,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        41312,
-        8688
+        40608,
+        17424
       ],
-      "id": "0ca89569-020e-4846-8dcb-0f4c08320983",
+      "id": "c2ebe022-37d1-431f-bf50-78ea712f8077",
       "name": "Last Export Has Email?"
     },
     {
@@ -905,10 +905,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        41536,
-        8784
+        40832,
+        17520
       ],
-      "id": "3613f1ea-61f1-4d69-a1a8-092991daf246",
+      "id": "bd395750-ec05-4b14-9253-5f18ff7c1739",
       "name": "Discord – Last No Email",
       "webhookId": "67a25c8d-1903-4622-b02f-1d988fa5b8fb",
       "credentials": {
@@ -925,10 +925,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        41536,
-        8592
+        40832,
+        17328
       ],
-      "id": "85a21753-3127-4ce0-868d-55e78ed0272e",
+      "id": "b5161175-79e1-4ea3-8042-c33b59ed157d",
       "name": "Build Last CSV"
     },
     {
@@ -938,10 +938,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        41760,
-        8592
+        41056,
+        17328
       ],
-      "id": "7ed4a5ee-4aa2-490a-9cab-036206784cc2",
+      "id": "1727e909-7da8-4ff0-94ef-758d80aa6600",
       "name": "Prepare Last Attachment"
     },
     {
@@ -965,10 +965,10 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        41984,
-        8592
+        41280,
+        17328
       ],
-      "id": "9c4480f4-500a-42d7-b116-72e211b989ab",
+      "id": "c5838468-31ba-484a-90d1-96776b917589",
       "name": "Send Last Email",
       "webhookId": "8cc7c0f9-4196-4999-ba39-f0e80de44555",
       "credentials": {
@@ -999,10 +999,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        42208,
-        8592
+        41504,
+        17328
       ],
-      "id": "6ba57128-77c6-4b9e-9af1-a575e54203dd",
+      "id": "115fd990-e9a3-4289-9fc7-4038e0f93e11",
       "name": "Discord – Last Export Sent",
       "webhookId": "5ad50248-970f-43b3-8044-b728eb0c654f",
       "credentials": {
@@ -1031,10 +1031,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        40192,
-        8880
+        39488,
+        17616
       ],
-      "id": "af79c5df-aa3b-4aee-bf5d-1febe486d8dc",
+      "id": "12f07203-3e44-42ce-8353-5bca1c3e049c",
       "name": "Read Sheets (summary)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1050,10 +1050,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        40416,
-        8880
+        39712,
+        17616
       ],
-      "id": "eec493e4-6b35-4a2e-9de5-a7979bee50fd",
+      "id": "35a2ad25-d756-448a-b4ad-8bc172df0426",
       "name": "Aggregate Summary"
     },
     {
@@ -1077,10 +1077,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        40640,
-        8880
+        39936,
+        17616
       ],
-      "id": "9191071d-10ba-4dc4-bf12-187fba26b118",
+      "id": "a621f412-4482-4b35-8230-163eb75f9f2f",
       "name": "Discord – Summary",
       "webhookId": "fb3dbe2c-0fc9-4124-ace9-9e4bffeefa96",
       "credentials": {
@@ -1110,10 +1110,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        40192,
-        9168
+        39488,
+        17904
       ],
-      "id": "dba277bb-3ebf-4d0b-89bb-fd5e93d96a77",
+      "id": "b4ebb4cc-cc90-4d6f-aa9a-f0d0e5054c71",
       "name": "Read Users (export)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1129,10 +1129,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        40416,
-        9168
+        39712,
+        17904
       ],
-      "id": "c7199be4-9842-4b80-9fe4-5d819c907a4e",
+      "id": "b54a7903-740e-48de-a957-f765089a33f3",
       "name": "Find Email (export)"
     },
     {
@@ -1163,10 +1163,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        40640,
-        9168
+        39936,
+        17904
       ],
-      "id": "9c836504-338a-4935-a7d5-29904c22a4bf",
+      "id": "91164f3b-8bca-4b00-87df-33d613a2324a",
       "name": "Export Has Email?"
     },
     {
@@ -1190,10 +1190,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        40864,
-        9264
+        40160,
+        18000
       ],
-      "id": "fa350d91-77fe-4038-82c2-b4c4a61ce779",
+      "id": "3a0aa2f1-7d15-4fb1-be39-01dbe98d2ee0",
       "name": "Discord – Export No Email",
       "webhookId": "f7e40aa9-7b86-4419-bfbd-6155aee08eef",
       "credentials": {
@@ -1222,10 +1222,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        40864,
-        9072
+        40160,
+        17808
       ],
-      "id": "6428e722-fff1-46d7-b73d-ae3386327cf4",
+      "id": "6232131d-ae0b-4105-853b-bc5c7c553b50",
       "name": "Read Sheets (export)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1241,10 +1241,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        41088,
-        9072
+        40384,
+        17808
       ],
-      "id": "a2c36628-8148-4f44-8ee6-8df97f54199f",
+      "id": "04d01053-a197-4236-9d18-03deb138e8c1",
       "name": "Build CSV"
     },
     {
@@ -1274,10 +1274,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        41312,
-        9072
+        40608,
+        17808
       ],
-      "id": "6d5cf450-0606-4ce5-aa48-d80ed21cbccf",
+      "id": "d8a3510c-92aa-4dd9-8d1e-092e0a99df15",
       "name": "Export Has Data?"
     },
     {
@@ -1301,10 +1301,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        41536,
-        9360
+        40832,
+        18096
       ],
-      "id": "56903e2c-cc4e-4d5e-b963-b191943b807d",
+      "id": "2dc34a11-22d4-4a4b-846d-e2bc156a33a5",
       "name": "Discord – Export Empty",
       "webhookId": "977ece98-f71e-4532-a3a5-8853388dee02",
       "credentials": {
@@ -1321,10 +1321,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        41536,
-        8976
+        40832,
+        17712
       ],
-      "id": "12ccbb85-f880-4e6e-9ca0-332ee04e9b88",
+      "id": "52f09067-4f89-40ad-93fa-9118e36f8cca",
       "name": "Prepare Attachment"
     },
     {
@@ -1348,10 +1348,10 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        41760,
-        8976
+        41056,
+        17712
       ],
-      "id": "cbbb18ae-bb1d-44f4-a59b-e5a784b28219",
+      "id": "963e3ce7-e773-454c-a741-966caf715cba",
       "name": "Send Email",
       "webhookId": "042b38da-ebac-4c9f-b431-cf52a46ce325",
       "credentials": {
@@ -1382,10 +1382,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        41984,
-        8976
+        41280,
+        17712
       ],
-      "id": "e9703e7e-adad-4385-9032-018b68132ea1",
+      "id": "e4fc50e9-9903-4310-b367-b5ad9a903e23",
       "name": "Discord – Export Sent",
       "webhookId": "51788cb6-695f-41cb-80c3-6ef73192b389",
       "credentials": {
@@ -1416,10 +1416,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        40192,
-        9360
+        39488,
+        18096
       ],
-      "id": "13c0e3e2-eb53-4be9-94b8-db1d766dae9b",
+      "id": "972544ff-c726-4eb1-98b7-8623408c628c",
       "name": "Discord – Unknown Command",
       "webhookId": "b1f5cb13-d7d7-4b63-a4e3-10c45a8abdeb",
       "credentials": {
@@ -1439,10 +1439,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        40192,
-        9552
+        39488,
+        18288
       ],
-      "id": "fdb422d2-6502-4d0d-a157-902368db6973",
+      "id": "08f6cf95-ca6c-4c2c-8260-6f6686ded37b",
       "name": "Read Sheets (delast)",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1458,10 +1458,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        40416,
-        9552
+        39712,
+        18288
       ],
-      "id": "11857b25-7a28-4c11-81c3-8babe4e2747c",
+      "id": "0b0b53f2-f61b-41f7-a8a0-d9fcd0a374f5",
       "name": "Find Delast Rows"
     },
     {
@@ -1491,10 +1491,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        40640,
-        9552
+        39936,
+        18288
       ],
-      "id": "24b858de-6950-4cd5-91c1-681a9c8efab3",
+      "id": "78ddf1d4-2672-4202-8f45-664e30727367",
       "name": "Has Rows to Delete?"
     },
     {
@@ -1511,10 +1511,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        40864,
-        9456
+        40160,
+        18192
       ],
-      "id": "fc7d4e41-99ad-4d5b-ae6f-34a5cff84b23",
+      "id": "5f7e2622-a227-4eb9-aff2-203ad9e58813",
       "name": "Delete Sheet Rows",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -1544,10 +1544,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        41088,
-        9456
+        40384,
+        18192
       ],
-      "id": "d7ae4c77-c05a-4a51-b5f8-b82d6bcf097f",
+      "id": "27134c95-51ca-4c3c-946f-d17fb0c9fd4b",
       "name": "Discord – Delast Done",
       "webhookId": "3fbe622e-3820-4fb8-aecb-f500a4a9cd1b",
       "credentials": {
@@ -1578,10 +1578,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        40864,
-        9648
+        40160,
+        18384
       ],
-      "id": "622b0fa1-8f96-4f87-a0f9-83c2aa9e8a8e",
+      "id": "ac8b7d56-1e8c-46d8-a341-3d9712ee2205",
       "name": "Discord – Delast Empty",
       "webhookId": "277e26c5-cec0-42a9-bd07-0b83e2b794c1",
       "credentials": {
@@ -1605,11 +1605,24 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        39744,
-        10008
+        39040,
+        18672
       ],
-      "id": "2a8840ed-5d99-4178-b7a9-8b2d73b5f4a4",
+      "id": "bee4c807-9ae7-414e-9538-ee78c1cb0cd1",
       "name": "Download Image"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst https = require('https');\n\nconst ACCESS_KEY = $env.RECEIPT_MGT_MINIO_ACCESS_KEY;\nconst SECRET_KEY = $env.RECEIPT_MGT_MINIO_SECRET_KEY;\nconst ENDPOINT = 'minio.techcluster.duckdns.org';\nconst BUCKET = 'receipts';\nconst REGION = 'us-east-1';\n\nconst webhookBody = $('Webhook').item.json.body;\nconst user = webhookBody.author.username;\nconst msgId = webhookBody.message_id;\nconst now = new Date();\nconst yyyy = now.getFullYear();\nconst mm = String(now.getMonth() + 1).padStart(2, '0');\nconst objectKey = `${user}/${yyyy}/${mm}/${msgId}.jpg`;\n\nconst binaryData = await this.helpers.getBinaryDataBuffer(0, 'data');\n\nfunction hmacSha256(key, data) {\n  return crypto.createHmac('sha256', key).update(data).digest();\n}\nfunction sha256hex(data) {\n  return crypto.createHash('sha256').update(data).digest('hex');\n}\n\nconst amzDate = now.toISOString().replace(/[:\\-]|\\.\\d{3}/g, '').slice(0, 15) + 'Z';\nconst dateStamp = amzDate.slice(0, 8);\n\nconst payloadHash = 'UNSIGNED-PAYLOAD';\nconst canonicalUri = `/${BUCKET}/${objectKey}`;\nconst canonicalHeaders =\n  `host:${ENDPOINT}\\n` +\n  `x-amz-content-sha256:${payloadHash}\\n` +\n  `x-amz-date:${amzDate}\\n`;\nconst signedHeaders = 'host;x-amz-content-sha256;x-amz-date';\nconst canonicalRequest = ['PUT', canonicalUri, '', canonicalHeaders, signedHeaders, payloadHash].join('\\n');\n\nconst credentialScope = `${dateStamp}/${REGION}/s3/aws4_request`;\nconst stringToSign = ['AWS4-HMAC-SHA256', amzDate, credentialScope, sha256hex(canonicalRequest)].join('\\n');\n\nconst kDate    = hmacSha256(Buffer.from('AWS4' + SECRET_KEY), dateStamp);\nconst kRegion  = hmacSha256(kDate, REGION);\nconst kService = hmacSha256(kRegion, 's3');\nconst kSigning = hmacSha256(kService, 'aws4_request');\nconst signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');\n\nconst authHeader = `AWS4-HMAC-SHA256 Credential=${ACCESS_KEY}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;\n\nawait new Promise((resolve, reject) => {\n  const req = https.request({\n    hostname: ENDPOINT,\n    path: `/${BUCKET}/${objectKey}`,\n    method: 'PUT',\n    headers: {\n      'Content-Type': 'image/jpeg',\n      'Content-Length': binaryData.length,\n      'x-amz-date': amzDate,\n      'x-amz-content-sha256': payloadHash,\n      'Authorization': authHeader,\n    },\n  }, (res) => {\n    res.resume();\n    resolve();\n  });\n  req.on('error', (e) => {\n    console.log(`MinIO upload error: ${e.message}`);\n    resolve();\n  });\n  req.write(binaryData);\n  req.end();\n});\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        39264,
+        18672
+      ],
+      "id": "2f6352b7-1ec4-439a-aa3a-3e1460750dbd",
+      "name": "Upload to MinIO"
     },
     {
       "parameters": {
@@ -1619,10 +1632,10 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        39968,
-        10008
+        39488,
+        18672
       ],
-      "id": "fd00b816-72f5-4b3f-823d-563c9c7b37c2",
+      "id": "83fc4ec7-91cc-430c-9c07-6d83b0406c11",
       "name": "To Base64"
     },
     {
@@ -1645,10 +1658,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        40192,
-        10008
+        39712,
+        18672
       ],
-      "id": "1b513db8-3938-4719-a4fd-3bbedf586081",
+      "id": "2b5b269e-d8ee-4ba0-aabb-4e3e69e9623e",
       "name": "Gemini Vision LLM",
       "credentials": {
         "googlePalmApi": {
@@ -1679,10 +1692,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        42208,
-        10296
+        41728,
+        18960
       ],
-      "id": "cab9487b-4d62-4fa0-9b4e-f6cf856f3756",
+      "id": "e47bf7fe-59ee-4bbe-bcb3-a4f4e2f4a15a",
       "name": "Discord – LLM Busy",
       "webhookId": "1494f3de-3a8b-46fa-8592-a94fc2e8a792",
       "credentials": {
@@ -1694,15 +1707,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $json.candidates[0].content.parts[0].text;\nconst cleaned = raw.replace(/^```json\\s*/i, '').replace(/^```\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet parsed;\ntry { parsed = JSON.parse(cleaned); } catch (e) { return [{ json: { _not_a_receipt: true } }]; }\nif (!parsed.items || !Array.isArray(parsed.items) || parsed.items.length === 0) return [{ json: { _not_a_receipt: true } }];\n\nconst executionId = $execution.id;\nconst receiptMeta = {\n  receipt_id: executionId,\n  store_name: parsed.store_name ?? null,\n  store_branch: parsed.store_branch ?? null,\n  store_address: parsed.store_address ?? null,\n  store_postcode: parsed.store_postcode ?? null,\n  receipt_date: parsed.receipt_date ?? null,\n  receipt_time: parsed.receipt_time ?? null,\n  currency: parsed.currency ?? 'GBP',\n  subtotal: parsed.subtotal ?? null,\n  discount_total: parsed.discount_total ?? null,\n  tax_amount: parsed.tax_amount ?? null,\n  total_amount: parsed.total_amount ?? null,\n  payment_method: parsed.payment_method ?? null,\n  last4_card_digits: parsed.last4_card_digits ?? null,\n  loyalty_programme: parsed.loyalty_programme ?? null,\n  source_image_url: $('Webhook').item.json.body.attachments[0].url,\n  discord_user: $('Webhook').item.json.body.author.username,\n  created_at: new Date().toISOString(),\n};\nreturn parsed.items.map(item => ({ json: { ...receiptMeta, line_number: item.line_number, product_name: item.product_name, normalised_name: item.normalised_name, category: item.category, quantity: item.quantity, unit: item.unit ?? null, unit_price: item.unit_price ?? null, line_total: item.line_total ?? null, is_discount_line: item.is_discount_line ?? false, discount_amount: item.discount_amount ?? null, is_taxable: item.is_taxable ?? false, tax_rate_percent: item.tax_rate_percent ?? 0, brand: item.brand ?? null, sku_or_barcode: item.sku_or_barcode ?? null } }));\n"
+        "jsCode": "const raw = $json.candidates[0].content.parts[0].text;\nconst cleaned = raw.replace(/^```json\\s*/i, '').replace(/^```\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet parsed;\ntry { parsed = JSON.parse(cleaned); } catch (e) { return [{ json: { _not_a_receipt: true } }]; }\nif (!parsed.items || !Array.isArray(parsed.items) || parsed.items.length === 0) return [{ json: { _not_a_receipt: true } }];\n\nconst executionId = $execution.id;\nconst receiptMeta = {\n  receipt_id: executionId,\n  store_name: parsed.store_name ?? null,\n  store_branch: parsed.store_branch ?? null,\n  store_address: parsed.store_address ?? null,\n  store_postcode: parsed.store_postcode ?? null,\n  receipt_date: parsed.receipt_date ?? null,\n  receipt_time: parsed.receipt_time ?? null,\n  currency: parsed.currency ?? 'GBP',\n  subtotal: parsed.subtotal ?? null,\n  discount_total: parsed.discount_total ?? null,\n  tax_amount: parsed.tax_amount ?? null,\n  total_amount: parsed.total_amount ?? null,\n  payment_method: parsed.payment_method ?? null,\n  last4_card_digits: parsed.last4_card_digits ?? null,\n  loyalty_programme: parsed.loyalty_programme ?? null,\n  source_image_url: (() => { try { const msgId = $('Webhook').item.json.body.message_id; const user = $('Webhook').item.json.body.author.username; const now = new Date(); const yyyy = now.getFullYear(); const mm = String(now.getMonth()+1).padStart(2,'0'); return `https://minio-console.techcluster.duckdns.org/browser/receipts/${encodeURIComponent(user + '/' + yyyy + '/' + mm + '/' + msgId + '.jpg')}`; } catch(e) { return $('Webhook').item.json.body.attachments[0].url; } })(),\n  discord_user: $('Webhook').item.json.body.author.username,\n  created_at: new Date().toISOString(),\n};\nreturn parsed.items.map(item => ({ json: { ...receiptMeta, line_number: item.line_number, product_name: item.product_name, normalised_name: item.normalised_name, category: item.category, quantity: item.quantity, unit: item.unit ?? null, unit_price: item.unit_price ?? null, line_total: item.line_total ?? null, is_discount_line: item.is_discount_line ?? false, discount_amount: item.discount_amount ?? null, is_taxable: item.is_taxable ?? false, tax_rate_percent: item.tax_rate_percent ?? 0, brand: item.brand ?? null, sku_or_barcode: item.sku_or_barcode ?? null } }));\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        40416,
-        9912
+        39936,
+        18576
       ],
-      "id": "4f637d4c-6bf2-4965-b5ee-997cdfcc14e9",
+      "id": "ea8cacc3-38c7-4ad5-9db3-1ec85e8722a3",
       "name": "Parse & Flatten"
     },
     {
@@ -1732,10 +1745,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        40640,
-        9912
+        40160,
+        18576
       ],
-      "id": "c96e8981-5761-4e5b-8c4b-719538767fea",
+      "id": "8e606604-759b-45ff-9a2f-5ec6ef077055",
       "name": "Is Receipt?"
     },
     {
@@ -1759,10 +1772,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        42208,
-        10104
+        41728,
+        18768
       ],
-      "id": "724cc414-41e5-4890-8e48-bd80eba3b241",
+      "id": "0d7d2ae3-3154-454b-b035-5e083b51a28d",
       "name": "Discord – Not a Receipt",
       "webhookId": "528c0bd7-106e-4cd8-b37a-550c3fed21bc",
       "credentials": {
@@ -1800,10 +1813,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
       "position": [
-        40864,
-        9840
+        40384,
+        18480
       ],
-      "id": "bf32f393-319b-4838-8cf1-e94545799c86",
+      "id": "1c81987d-e938-43b2-9116-3fdb7fa32524",
       "name": "Filter Empty Rows"
     },
     {
@@ -1816,10 +1829,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        41088,
-        9840
+        40608,
+        18480
       ],
-      "id": "a307c7a0-35c3-4d03-829f-b6252acc698d",
+      "id": "ba554f02-e661-450f-92ab-dc720957a9a6",
       "name": "Read Existing Receipts",
       "retryOnFail": true,
       "waitBetweenTries": 5000,
@@ -1852,10 +1865,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        41312,
-        9960
+        40832,
+        18592
       ],
-      "id": "8f75b3be-afbe-400d-b54f-1bf8ffde773b",
+      "id": "7fc5b095-acfd-4abf-923b-a4c1e7b96d6c",
       "name": "Discord – Sheets Unavailable",
       "webhookId": "4a43ae66-ad1b-4080-8837-981572acc9f4",
       "credentials": {
@@ -1872,10 +1885,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        41312,
-        9552
+        40832,
+        18288
       ],
-      "id": "d15475ea-4f6f-477b-b6b3-9388ceef8f26",
+      "id": "d91d1504-ea91-458a-bd13-ab1e62158eeb",
       "name": "Check Duplicate"
     },
     {
@@ -1905,10 +1918,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        41536,
-        9552
+        41056,
+        18288
       ],
-      "id": "6dd3f0c4-e9d0-46c9-81de-0a975f5a64bf",
+      "id": "140b498f-77e6-4dff-9288-0d00edc52dc8",
       "name": "Is Duplicate?"
     },
     {
@@ -2261,10 +2274,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        41760,
-        9456
+        41280,
+        18192
       ],
-      "id": "b1d42bd8-15fe-4aa0-8efa-808316900c83",
+      "id": "dfbc83eb-7c56-4dff-bf37-b8a60b7c24fc",
       "name": "Append to Google Sheets",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -2278,10 +2291,10 @@
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        41984,
-        9456
+        41504,
+        18192
       ],
-      "id": "91a3cd74-1f42-45fe-9c94-526353afb035",
+      "id": "04e41fdd-c8a6-41ec-9035-352b0e709b59",
       "name": "Limit"
     },
     {
@@ -2305,10 +2318,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        42208,
-        9456
+        41728,
+        18192
       ],
-      "id": "5b4aec7e-1077-4de3-a493-b31779299510",
+      "id": "1c550b3b-df4e-4932-b3b2-5bbd2cc4fff0",
       "name": "Discord – Success",
       "webhookId": "1b296015-d305-457c-b815-82d046fbda6a",
       "credentials": {
@@ -2323,10 +2336,10 @@
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        41984,
-        9648
+        41504,
+        18384
       ],
-      "id": "79333006-6e46-4bb0-9e10-3f86b9379da0",
+      "id": "951c9790-8c21-40ec-ada0-5d3484382f9d",
       "name": "Limit Duplicate"
     },
     {
@@ -2350,10 +2363,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        42208,
-        9648
+        41728,
+        18384
       ],
-      "id": "636f8991-fb93-4ee2-b76a-e15d482dfa75",
+      "id": "862e15ba-2f30-4004-9a34-7624359ba202",
       "name": "Discord – Duplicate Warning",
       "webhookId": "17f4b74b-a5b9-428d-9995-be3d18d99bd5",
       "credentials": {
@@ -2384,10 +2397,10 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        42432,
-        10008
+        41952,
+        18672
       ],
-      "id": "7f98d940-14e2-4989-8ac4-7ef2eaf807e1",
+      "id": "6b3e8755-fcd2-419d-b87c-b2edbaef123e",
       "name": "Discord – Photo Deleted",
       "webhookId": "82edcffd-5419-4480-9904-6e963725f90b",
       "credentials": {
@@ -2408,10 +2421,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        42656,
-        10008
+        42176,
+        18672
       ],
-      "id": "8b710be9-17c5-4a33-9a0a-f8bed65f96e4",
+      "id": "490ac7c3-7f81-422f-bedb-1542941aebbf",
       "name": "Delete Discord Message",
       "credentials": {
         "httpHeaderAuth": {
@@ -2931,6 +2944,17 @@
       "main": [
         [
           {
+            "node": "Upload to MinIO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to MinIO": {
+      "main": [
+        [
+          {
             "node": "To Base64",
             "type": "main",
             "index": 0
@@ -3152,8 +3176,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "a1d8ed27-7f0e-4652-83f0-ffd8469e9605",
-  "activeVersionId": "a1d8ed27-7f0e-4652-83f0-ffd8469e9605",
+  "versionId": "78f58a39-45f9-4559-bd21-812d3439a0ff",
+  "activeVersionId": "78f58a39-45f9-4559-bd21-812d3439a0ff",
   "triggerCount": 1,
   "shared": [
     {
@@ -3165,9 +3189,9 @@
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-06-05T17:08:34.000Z",
-    "createdAt": "2026-06-05T17:08:29.476Z",
-    "versionId": "a1d8ed27-7f0e-4652-83f0-ffd8469e9605",
+    "updatedAt": "2026-06-14T22:04:17.000Z",
+    "createdAt": "2026-06-14T22:04:12.183Z",
+    "versionId": "78f58a39-45f9-4559-bd21-812d3439a0ff",
     "workflowId": "3NCMrTYPgB51SgQz",
     "nodes": [
       {
@@ -3179,10 +3203,10 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          39072,
-          9432
+          38368,
+          18096
         ],
-        "id": "5276a36b-e890-407d-b220-2f6b23b7124f",
+        "id": "9bfb3f97-959e-4d0e-a7f8-4ca54f297796",
         "name": "Webhook",
         "webhookId": "c48a00c3-492f-41e9-900e-e8ad76f96671"
       },
@@ -3213,10 +3237,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          39296,
-          9432
+          38592,
+          18096
         ],
-        "id": "31e425e0-cdf1-4cdd-971f-78c42b65150a",
+        "id": "f6fa1ab0-af97-462e-99c3-72529974b1d5",
         "name": "Secret Check"
       },
       {
@@ -3280,10 +3304,10 @@
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.2,
         "position": [
-          39520,
-          9432
+          38816,
+          18096
         ],
-        "id": "15354374-3465-4fd5-9757-00227df9c0ff",
+        "id": "fcf5e538-b6db-4254-9ad5-fddff63d66ac",
         "name": "Message Router"
       },
       {
@@ -3293,10 +3317,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          39744,
-          8688
+          39040,
+          17424
         ],
-        "id": "a07e8eba-7631-426a-8fd5-55156f4c6c1f",
+        "id": "4c252b6a-6424-4473-8456-324e3b165bd7",
         "name": "Parse Command"
       },
       {
@@ -3504,10 +3528,10 @@
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.2,
         "position": [
-          39968,
-          8576
+          39264,
+          17312
         ],
-        "id": "6f9ad114-745a-45c8-8532-828c46590d89",
+        "id": "b1071834-b875-4c60-9cc1-3988d8856b92",
         "name": "Command Router"
       },
       {
@@ -3531,10 +3555,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          40192,
-          7920
+          39488,
+          16656
         ],
-        "id": "e67cc3fb-574f-4892-bde8-159be3dd77cd",
+        "id": "ce636d58-83ba-4d56-ac77-d1104850a40f",
         "name": "Discord – Error",
         "webhookId": "e2a307f2-5847-40b5-bcb2-4b67c68de3c1",
         "credentials": {
@@ -3565,10 +3589,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          40192,
-          8112
+          39488,
+          16848
         ],
-        "id": "84dd9b3c-c468-4bd0-88e2-2eae4b14fe59",
+        "id": "b8ee7856-e463-4e99-9e50-e7841e200cfe",
         "name": "Discord – Help",
         "webhookId": "2ea8ae51-5130-49cb-9b91-316f657bf8cb",
         "credentials": {
@@ -3627,10 +3651,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          40192,
-          8304
+          39488,
+          17040
         ],
-        "id": "f2cc394d-ce70-4b13-8244-33c8385d6289",
+        "id": "64eabc18-fedb-4d57-b1b1-d86a3786aba3",
         "name": "Append Email (email cmd)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3659,10 +3683,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          40416,
-          8304
+          39712,
+          17040
         ],
-        "id": "6c489472-25a4-4ab0-9e26-a93b461ddcd2",
+        "id": "6aa9633f-4358-4f37-93c8-ea14cbcaea91",
         "name": "Read All Users (cleanup)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3680,10 +3704,10 @@
         "type": "n8n-nodes-base.aggregate",
         "typeVersion": 1,
         "position": [
-          40640,
-          8304
+          39936,
+          17040
         ],
-        "id": "4f541985-42b0-45c9-9082-78035076de82",
+        "id": "5f7c31c6-cdf6-45e5-abe1-b52a1e197af9",
         "name": "Aggregate Users"
       },
       {
@@ -3693,10 +3717,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          40864,
-          8304
+          40160,
+          17040
         ],
-        "id": "a273e6eb-5e38-407f-a798-d96f14b1d79c",
+        "id": "a52e48bf-18c7-49e8-bc31-e65f3adf814b",
         "name": "Find Old Rows"
       },
       {
@@ -3726,10 +3750,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          41088,
-          8304
+          40384,
+          17040
         ],
-        "id": "e4b0ea6f-59fa-48fe-9c2f-dd91a8f29a4d",
+        "id": "a63bc4c1-85bc-468b-85b9-4c52ca6cb5f0",
         "name": "Has Old Rows?"
       },
       {
@@ -3746,10 +3770,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          41312,
-          8232
+          40608,
+          16960
         ],
-        "id": "72c3da40-cb46-4482-80df-9ded4cdf5fc0",
+        "id": "ac0abd77-f0f7-4562-9dc9-dfd6c2e1ad1d",
         "name": "Delete Old Rows",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3779,10 +3803,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          41536,
-          8304
+          40832,
+          17040
         ],
-        "id": "8209c589-f614-4df2-a2e0-4c0cb68fa95e",
+        "id": "57fb3280-0fcf-4293-89e0-469215d2a103",
         "name": "Discord – Email Updated",
         "webhookId": "628c3958-645c-4a85-8feb-ceef9fcacbed",
         "credentials": {
@@ -3803,10 +3827,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          41760,
-          8304
+          41056,
+          17040
         ],
-        "id": "8ba560f6-0ae2-4ba2-bc9c-0e0b2887bb16",
+        "id": "20bfb54b-b942-49fe-95d0-efde4b65b56b",
         "name": "Delete Discord Message (cmd)",
         "credentials": {
           "httpHeaderAuth": {
@@ -3834,10 +3858,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          40192,
-          8496
+          39488,
+          17232
         ],
-        "id": "5f13dfd5-d9d4-4a3f-872a-ca1ff6959f20",
+        "id": "9d40cdaa-9bba-4e2d-9c3c-873d57fd1db3",
         "name": "Read Sheets (stores)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3853,10 +3877,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          40416,
-          8496
+          39712,
+          17232
         ],
-        "id": "6af809a9-d37b-4e96-8c22-00502fe12d19",
+        "id": "e35454f8-3dcd-400b-86c1-f0f530d0475e",
         "name": "Aggregate Stores"
       },
       {
@@ -3880,10 +3904,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          40640,
-          8496
+          39936,
+          17232
         ],
-        "id": "7749219d-0df9-490e-873b-fdb12451bc5e",
+        "id": "b92f26cc-c135-4e25-b024-f9ddd435520e",
         "name": "Discord – Stores",
         "webhookId": "8e3b784f-4b1f-4a25-9850-7db98542c840",
         "credentials": {
@@ -3912,10 +3936,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          40192,
-          8688
+          39488,
+          17424
         ],
-        "id": "684f01a8-ba39-449f-9fe1-9ad09a146cfa",
+        "id": "5e5d061d-0215-43d5-9473-e725982d42bf",
         "name": "Read Sheets (last)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -3931,10 +3955,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          40416,
-          8688
+          39712,
+          17424
         ],
-        "id": "9f146c37-b7c9-4cc7-be45-654cdcad7a46",
+        "id": "4af0ed45-b533-40fa-a801-531d005cd630",
         "name": "Aggregate Last"
       },
       {
@@ -3958,10 +3982,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          40640,
-          8688
+          39936,
+          17424
         ],
-        "id": "f979ec3e-9cef-4fcf-a7ee-4b27ab70c8db",
+        "id": "d69ac859-3e0b-40b5-a410-79d7c186c6c7",
         "name": "Discord – Last",
         "webhookId": "d79a8aa9-11ac-45c7-887c-2df80810cb3d",
         "credentials": {
@@ -3990,10 +4014,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          40864,
-          8688
+          40160,
+          17424
         ],
-        "id": "75c91629-0e02-4579-bd1d-26c7b8154b4a",
+        "id": "039886f6-622e-413c-ad5b-68eb09af5885",
         "name": "Read Users (last export)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -4009,10 +4033,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          41088,
-          8688
+          40384,
+          17424
         ],
-        "id": "892681ca-579a-4450-bfed-1d0f9dcc20fa",
+        "id": "91a0cc3d-a094-4248-ad0f-fc7ead843f78",
         "name": "Find Email (last export)"
       },
       {
@@ -4042,10 +4066,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          41312,
-          8688
+          40608,
+          17424
         ],
-        "id": "0ca89569-020e-4846-8dcb-0f4c08320983",
+        "id": "c2ebe022-37d1-431f-bf50-78ea712f8077",
         "name": "Last Export Has Email?"
       },
       {
@@ -4069,10 +4093,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          41536,
-          8784
+          40832,
+          17520
         ],
-        "id": "3613f1ea-61f1-4d69-a1a8-092991daf246",
+        "id": "bd395750-ec05-4b14-9253-5f18ff7c1739",
         "name": "Discord – Last No Email",
         "webhookId": "67a25c8d-1903-4622-b02f-1d988fa5b8fb",
         "credentials": {
@@ -4089,10 +4113,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          41536,
-          8592
+          40832,
+          17328
         ],
-        "id": "85a21753-3127-4ce0-868d-55e78ed0272e",
+        "id": "b5161175-79e1-4ea3-8042-c33b59ed157d",
         "name": "Build Last CSV"
       },
       {
@@ -4102,10 +4126,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          41760,
-          8592
+          41056,
+          17328
         ],
-        "id": "7ed4a5ee-4aa2-490a-9cab-036206784cc2",
+        "id": "1727e909-7da8-4ff0-94ef-758d80aa6600",
         "name": "Prepare Last Attachment"
       },
       {
@@ -4129,10 +4153,10 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
         "position": [
-          41984,
-          8592
+          41280,
+          17328
         ],
-        "id": "9c4480f4-500a-42d7-b116-72e211b989ab",
+        "id": "c5838468-31ba-484a-90d1-96776b917589",
         "name": "Send Last Email",
         "webhookId": "8cc7c0f9-4196-4999-ba39-f0e80de44555",
         "credentials": {
@@ -4163,10 +4187,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          42208,
-          8592
+          41504,
+          17328
         ],
-        "id": "6ba57128-77c6-4b9e-9af1-a575e54203dd",
+        "id": "115fd990-e9a3-4289-9fc7-4038e0f93e11",
         "name": "Discord – Last Export Sent",
         "webhookId": "5ad50248-970f-43b3-8044-b728eb0c654f",
         "credentials": {
@@ -4195,10 +4219,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          40192,
-          8880
+          39488,
+          17616
         ],
-        "id": "af79c5df-aa3b-4aee-bf5d-1febe486d8dc",
+        "id": "12f07203-3e44-42ce-8353-5bca1c3e049c",
         "name": "Read Sheets (summary)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -4214,10 +4238,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          40416,
-          8880
+          39712,
+          17616
         ],
-        "id": "eec493e4-6b35-4a2e-9de5-a7979bee50fd",
+        "id": "35a2ad25-d756-448a-b4ad-8bc172df0426",
         "name": "Aggregate Summary"
       },
       {
@@ -4241,10 +4265,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          40640,
-          8880
+          39936,
+          17616
         ],
-        "id": "9191071d-10ba-4dc4-bf12-187fba26b118",
+        "id": "a621f412-4482-4b35-8230-163eb75f9f2f",
         "name": "Discord – Summary",
         "webhookId": "fb3dbe2c-0fc9-4124-ace9-9e4bffeefa96",
         "credentials": {
@@ -4274,10 +4298,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          40192,
-          9168
+          39488,
+          17904
         ],
-        "id": "dba277bb-3ebf-4d0b-89bb-fd5e93d96a77",
+        "id": "b4ebb4cc-cc90-4d6f-aa9a-f0d0e5054c71",
         "name": "Read Users (export)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -4293,10 +4317,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          40416,
-          9168
+          39712,
+          17904
         ],
-        "id": "c7199be4-9842-4b80-9fe4-5d819c907a4e",
+        "id": "b54a7903-740e-48de-a957-f765089a33f3",
         "name": "Find Email (export)"
       },
       {
@@ -4327,10 +4351,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          40640,
-          9168
+          39936,
+          17904
         ],
-        "id": "9c836504-338a-4935-a7d5-29904c22a4bf",
+        "id": "91164f3b-8bca-4b00-87df-33d613a2324a",
         "name": "Export Has Email?"
       },
       {
@@ -4354,10 +4378,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          40864,
-          9264
+          40160,
+          18000
         ],
-        "id": "fa350d91-77fe-4038-82c2-b4c4a61ce779",
+        "id": "3a0aa2f1-7d15-4fb1-be39-01dbe98d2ee0",
         "name": "Discord – Export No Email",
         "webhookId": "f7e40aa9-7b86-4419-bfbd-6155aee08eef",
         "credentials": {
@@ -4386,10 +4410,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          40864,
-          9072
+          40160,
+          17808
         ],
-        "id": "6428e722-fff1-46d7-b73d-ae3386327cf4",
+        "id": "6232131d-ae0b-4105-853b-bc5c7c553b50",
         "name": "Read Sheets (export)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -4405,10 +4429,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          41088,
-          9072
+          40384,
+          17808
         ],
-        "id": "a2c36628-8148-4f44-8ee6-8df97f54199f",
+        "id": "04d01053-a197-4236-9d18-03deb138e8c1",
         "name": "Build CSV"
       },
       {
@@ -4438,10 +4462,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          41312,
-          9072
+          40608,
+          17808
         ],
-        "id": "6d5cf450-0606-4ce5-aa48-d80ed21cbccf",
+        "id": "d8a3510c-92aa-4dd9-8d1e-092e0a99df15",
         "name": "Export Has Data?"
       },
       {
@@ -4465,10 +4489,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          41536,
-          9360
+          40832,
+          18096
         ],
-        "id": "56903e2c-cc4e-4d5e-b963-b191943b807d",
+        "id": "2dc34a11-22d4-4a4b-846d-e2bc156a33a5",
         "name": "Discord – Export Empty",
         "webhookId": "977ece98-f71e-4532-a3a5-8853388dee02",
         "credentials": {
@@ -4485,10 +4509,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          41536,
-          8976
+          40832,
+          17712
         ],
-        "id": "12ccbb85-f880-4e6e-9ca0-332ee04e9b88",
+        "id": "52f09067-4f89-40ad-93fa-9118e36f8cca",
         "name": "Prepare Attachment"
       },
       {
@@ -4512,10 +4536,10 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
         "position": [
-          41760,
-          8976
+          41056,
+          17712
         ],
-        "id": "cbbb18ae-bb1d-44f4-a59b-e5a784b28219",
+        "id": "963e3ce7-e773-454c-a741-966caf715cba",
         "name": "Send Email",
         "webhookId": "042b38da-ebac-4c9f-b431-cf52a46ce325",
         "credentials": {
@@ -4546,10 +4570,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          41984,
-          8976
+          41280,
+          17712
         ],
-        "id": "e9703e7e-adad-4385-9032-018b68132ea1",
+        "id": "e4fc50e9-9903-4310-b367-b5ad9a903e23",
         "name": "Discord – Export Sent",
         "webhookId": "51788cb6-695f-41cb-80c3-6ef73192b389",
         "credentials": {
@@ -4580,10 +4604,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          40192,
-          9360
+          39488,
+          18096
         ],
-        "id": "13c0e3e2-eb53-4be9-94b8-db1d766dae9b",
+        "id": "972544ff-c726-4eb1-98b7-8623408c628c",
         "name": "Discord – Unknown Command",
         "webhookId": "b1f5cb13-d7d7-4b63-a4e3-10c45a8abdeb",
         "credentials": {
@@ -4603,10 +4627,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          40192,
-          9552
+          39488,
+          18288
         ],
-        "id": "fdb422d2-6502-4d0d-a157-902368db6973",
+        "id": "08f6cf95-ca6c-4c2c-8260-6f6686ded37b",
         "name": "Read Sheets (delast)",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -4622,10 +4646,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          40416,
-          9552
+          39712,
+          18288
         ],
-        "id": "11857b25-7a28-4c11-81c3-8babe4e2747c",
+        "id": "0b0b53f2-f61b-41f7-a8a0-d9fcd0a374f5",
         "name": "Find Delast Rows"
       },
       {
@@ -4655,10 +4679,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          40640,
-          9552
+          39936,
+          18288
         ],
-        "id": "24b858de-6950-4cd5-91c1-681a9c8efab3",
+        "id": "78ddf1d4-2672-4202-8f45-664e30727367",
         "name": "Has Rows to Delete?"
       },
       {
@@ -4675,10 +4699,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          40864,
-          9456
+          40160,
+          18192
         ],
-        "id": "fc7d4e41-99ad-4d5b-ae6f-34a5cff84b23",
+        "id": "5f7e2622-a227-4eb9-aff2-203ad9e58813",
         "name": "Delete Sheet Rows",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -4708,10 +4732,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          41088,
-          9456
+          40384,
+          18192
         ],
-        "id": "d7ae4c77-c05a-4a51-b5f8-b82d6bcf097f",
+        "id": "27134c95-51ca-4c3c-946f-d17fb0c9fd4b",
         "name": "Discord – Delast Done",
         "webhookId": "3fbe622e-3820-4fb8-aecb-f500a4a9cd1b",
         "credentials": {
@@ -4742,10 +4766,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          40864,
-          9648
+          40160,
+          18384
         ],
-        "id": "622b0fa1-8f96-4f87-a0f9-83c2aa9e8a8e",
+        "id": "ac8b7d56-1e8c-46d8-a341-3d9712ee2205",
         "name": "Discord – Delast Empty",
         "webhookId": "277e26c5-cec0-42a9-bd07-0b83e2b794c1",
         "credentials": {
@@ -4769,11 +4793,24 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          39744,
-          10008
+          39040,
+          18672
         ],
-        "id": "2a8840ed-5d99-4178-b7a9-8b2d73b5f4a4",
+        "id": "bee4c807-9ae7-414e-9538-ee78c1cb0cd1",
         "name": "Download Image"
+      },
+      {
+        "parameters": {
+          "jsCode": "const crypto = require('crypto');\nconst https = require('https');\n\nconst ACCESS_KEY = $env.RECEIPT_MGT_MINIO_ACCESS_KEY;\nconst SECRET_KEY = $env.RECEIPT_MGT_MINIO_SECRET_KEY;\nconst ENDPOINT = 'minio.techcluster.duckdns.org';\nconst BUCKET = 'receipts';\nconst REGION = 'us-east-1';\n\nconst webhookBody = $('Webhook').item.json.body;\nconst user = webhookBody.author.username;\nconst msgId = webhookBody.message_id;\nconst now = new Date();\nconst yyyy = now.getFullYear();\nconst mm = String(now.getMonth() + 1).padStart(2, '0');\nconst objectKey = `${user}/${yyyy}/${mm}/${msgId}.jpg`;\n\nconst binaryData = await this.helpers.getBinaryDataBuffer(0, 'data');\n\nfunction hmacSha256(key, data) {\n  return crypto.createHmac('sha256', key).update(data).digest();\n}\nfunction sha256hex(data) {\n  return crypto.createHash('sha256').update(data).digest('hex');\n}\n\nconst amzDate = now.toISOString().replace(/[:\\-]|\\.\\d{3}/g, '').slice(0, 15) + 'Z';\nconst dateStamp = amzDate.slice(0, 8);\n\nconst payloadHash = 'UNSIGNED-PAYLOAD';\nconst canonicalUri = `/${BUCKET}/${objectKey}`;\nconst canonicalHeaders =\n  `host:${ENDPOINT}\\n` +\n  `x-amz-content-sha256:${payloadHash}\\n` +\n  `x-amz-date:${amzDate}\\n`;\nconst signedHeaders = 'host;x-amz-content-sha256;x-amz-date';\nconst canonicalRequest = ['PUT', canonicalUri, '', canonicalHeaders, signedHeaders, payloadHash].join('\\n');\n\nconst credentialScope = `${dateStamp}/${REGION}/s3/aws4_request`;\nconst stringToSign = ['AWS4-HMAC-SHA256', amzDate, credentialScope, sha256hex(canonicalRequest)].join('\\n');\n\nconst kDate    = hmacSha256(Buffer.from('AWS4' + SECRET_KEY), dateStamp);\nconst kRegion  = hmacSha256(kDate, REGION);\nconst kService = hmacSha256(kRegion, 's3');\nconst kSigning = hmacSha256(kService, 'aws4_request');\nconst signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');\n\nconst authHeader = `AWS4-HMAC-SHA256 Credential=${ACCESS_KEY}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;\n\nawait new Promise((resolve, reject) => {\n  const req = https.request({\n    hostname: ENDPOINT,\n    path: `/${BUCKET}/${objectKey}`,\n    method: 'PUT',\n    headers: {\n      'Content-Type': 'image/jpeg',\n      'Content-Length': binaryData.length,\n      'x-amz-date': amzDate,\n      'x-amz-content-sha256': payloadHash,\n      'Authorization': authHeader,\n    },\n  }, (res) => {\n    res.resume();\n    resolve();\n  });\n  req.on('error', (e) => {\n    console.log(`MinIO upload error: ${e.message}`);\n    resolve();\n  });\n  req.write(binaryData);\n  req.end();\n});\n\nreturn $input.item;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          39264,
+          18672
+        ],
+        "id": "2f6352b7-1ec4-439a-aa3a-3e1460750dbd",
+        "name": "Upload to MinIO"
       },
       {
         "parameters": {
@@ -4783,10 +4820,10 @@
         "type": "n8n-nodes-base.extractFromFile",
         "typeVersion": 1.1,
         "position": [
-          39968,
-          10008
+          39488,
+          18672
         ],
-        "id": "fd00b816-72f5-4b3f-823d-563c9c7b37c2",
+        "id": "83fc4ec7-91cc-430c-9c07-6d83b0406c11",
         "name": "To Base64"
       },
       {
@@ -4809,10 +4846,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          40192,
-          10008
+          39712,
+          18672
         ],
-        "id": "1b513db8-3938-4719-a4fd-3bbedf586081",
+        "id": "2b5b269e-d8ee-4ba0-aabb-4e3e69e9623e",
         "name": "Gemini Vision LLM",
         "credentials": {
           "googlePalmApi": {
@@ -4843,10 +4880,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          42208,
-          10296
+          41728,
+          18960
         ],
-        "id": "cab9487b-4d62-4fa0-9b4e-f6cf856f3756",
+        "id": "e47bf7fe-59ee-4bbe-bcb3-a4f4e2f4a15a",
         "name": "Discord – LLM Busy",
         "webhookId": "1494f3de-3a8b-46fa-8592-a94fc2e8a792",
         "credentials": {
@@ -4858,15 +4895,15 @@
       },
       {
         "parameters": {
-          "jsCode": "const raw = $json.candidates[0].content.parts[0].text;\nconst cleaned = raw.replace(/^```json\\s*/i, '').replace(/^```\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet parsed;\ntry { parsed = JSON.parse(cleaned); } catch (e) { return [{ json: { _not_a_receipt: true } }]; }\nif (!parsed.items || !Array.isArray(parsed.items) || parsed.items.length === 0) return [{ json: { _not_a_receipt: true } }];\n\nconst executionId = $execution.id;\nconst receiptMeta = {\n  receipt_id: executionId,\n  store_name: parsed.store_name ?? null,\n  store_branch: parsed.store_branch ?? null,\n  store_address: parsed.store_address ?? null,\n  store_postcode: parsed.store_postcode ?? null,\n  receipt_date: parsed.receipt_date ?? null,\n  receipt_time: parsed.receipt_time ?? null,\n  currency: parsed.currency ?? 'GBP',\n  subtotal: parsed.subtotal ?? null,\n  discount_total: parsed.discount_total ?? null,\n  tax_amount: parsed.tax_amount ?? null,\n  total_amount: parsed.total_amount ?? null,\n  payment_method: parsed.payment_method ?? null,\n  last4_card_digits: parsed.last4_card_digits ?? null,\n  loyalty_programme: parsed.loyalty_programme ?? null,\n  source_image_url: $('Webhook').item.json.body.attachments[0].url,\n  discord_user: $('Webhook').item.json.body.author.username,\n  created_at: new Date().toISOString(),\n};\nreturn parsed.items.map(item => ({ json: { ...receiptMeta, line_number: item.line_number, product_name: item.product_name, normalised_name: item.normalised_name, category: item.category, quantity: item.quantity, unit: item.unit ?? null, unit_price: item.unit_price ?? null, line_total: item.line_total ?? null, is_discount_line: item.is_discount_line ?? false, discount_amount: item.discount_amount ?? null, is_taxable: item.is_taxable ?? false, tax_rate_percent: item.tax_rate_percent ?? 0, brand: item.brand ?? null, sku_or_barcode: item.sku_or_barcode ?? null } }));\n"
+          "jsCode": "const raw = $json.candidates[0].content.parts[0].text;\nconst cleaned = raw.replace(/^```json\\s*/i, '').replace(/^```\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet parsed;\ntry { parsed = JSON.parse(cleaned); } catch (e) { return [{ json: { _not_a_receipt: true } }]; }\nif (!parsed.items || !Array.isArray(parsed.items) || parsed.items.length === 0) return [{ json: { _not_a_receipt: true } }];\n\nconst executionId = $execution.id;\nconst receiptMeta = {\n  receipt_id: executionId,\n  store_name: parsed.store_name ?? null,\n  store_branch: parsed.store_branch ?? null,\n  store_address: parsed.store_address ?? null,\n  store_postcode: parsed.store_postcode ?? null,\n  receipt_date: parsed.receipt_date ?? null,\n  receipt_time: parsed.receipt_time ?? null,\n  currency: parsed.currency ?? 'GBP',\n  subtotal: parsed.subtotal ?? null,\n  discount_total: parsed.discount_total ?? null,\n  tax_amount: parsed.tax_amount ?? null,\n  total_amount: parsed.total_amount ?? null,\n  payment_method: parsed.payment_method ?? null,\n  last4_card_digits: parsed.last4_card_digits ?? null,\n  loyalty_programme: parsed.loyalty_programme ?? null,\n  source_image_url: (() => { try { const msgId = $('Webhook').item.json.body.message_id; const user = $('Webhook').item.json.body.author.username; const now = new Date(); const yyyy = now.getFullYear(); const mm = String(now.getMonth()+1).padStart(2,'0'); return `https://minio-console.techcluster.duckdns.org/browser/receipts/${encodeURIComponent(user + '/' + yyyy + '/' + mm + '/' + msgId + '.jpg')}`; } catch(e) { return $('Webhook').item.json.body.attachments[0].url; } })(),\n  discord_user: $('Webhook').item.json.body.author.username,\n  created_at: new Date().toISOString(),\n};\nreturn parsed.items.map(item => ({ json: { ...receiptMeta, line_number: item.line_number, product_name: item.product_name, normalised_name: item.normalised_name, category: item.category, quantity: item.quantity, unit: item.unit ?? null, unit_price: item.unit_price ?? null, line_total: item.line_total ?? null, is_discount_line: item.is_discount_line ?? false, discount_amount: item.discount_amount ?? null, is_taxable: item.is_taxable ?? false, tax_rate_percent: item.tax_rate_percent ?? 0, brand: item.brand ?? null, sku_or_barcode: item.sku_or_barcode ?? null } }));\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          40416,
-          9912
+          39936,
+          18576
         ],
-        "id": "4f637d4c-6bf2-4965-b5ee-997cdfcc14e9",
+        "id": "ea8cacc3-38c7-4ad5-9db3-1ec85e8722a3",
         "name": "Parse & Flatten"
       },
       {
@@ -4896,10 +4933,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          40640,
-          9912
+          40160,
+          18576
         ],
-        "id": "c96e8981-5761-4e5b-8c4b-719538767fea",
+        "id": "8e606604-759b-45ff-9a2f-5ec6ef077055",
         "name": "Is Receipt?"
       },
       {
@@ -4923,10 +4960,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          42208,
-          10104
+          41728,
+          18768
         ],
-        "id": "724cc414-41e5-4890-8e48-bd80eba3b241",
+        "id": "0d7d2ae3-3154-454b-b035-5e083b51a28d",
         "name": "Discord – Not a Receipt",
         "webhookId": "528c0bd7-106e-4cd8-b37a-550c3fed21bc",
         "credentials": {
@@ -4964,10 +5001,10 @@
         "type": "n8n-nodes-base.filter",
         "typeVersion": 2.3,
         "position": [
-          40864,
-          9840
+          40384,
+          18480
         ],
-        "id": "bf32f393-319b-4838-8cf1-e94545799c86",
+        "id": "1c81987d-e938-43b2-9116-3fdb7fa32524",
         "name": "Filter Empty Rows"
       },
       {
@@ -4980,10 +5017,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.3,
         "position": [
-          41088,
-          9840
+          40608,
+          18480
         ],
-        "id": "a307c7a0-35c3-4d03-829f-b6252acc698d",
+        "id": "ba554f02-e661-450f-92ab-dc720957a9a6",
         "name": "Read Existing Receipts",
         "retryOnFail": true,
         "waitBetweenTries": 5000,
@@ -5016,10 +5053,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          41312,
-          9960
+          40832,
+          18592
         ],
-        "id": "8f75b3be-afbe-400d-b54f-1bf8ffde773b",
+        "id": "7fc5b095-acfd-4abf-923b-a4c1e7b96d6c",
         "name": "Discord – Sheets Unavailable",
         "webhookId": "4a43ae66-ad1b-4080-8837-981572acc9f4",
         "credentials": {
@@ -5036,10 +5073,10 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          41312,
-          9552
+          40832,
+          18288
         ],
-        "id": "d15475ea-4f6f-477b-b6b3-9388ceef8f26",
+        "id": "d91d1504-ea91-458a-bd13-ab1e62158eeb",
         "name": "Check Duplicate"
       },
       {
@@ -5069,10 +5106,10 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          41536,
-          9552
+          41056,
+          18288
         ],
-        "id": "6dd3f0c4-e9d0-46c9-81de-0a975f5a64bf",
+        "id": "140b498f-77e6-4dff-9288-0d00edc52dc8",
         "name": "Is Duplicate?"
       },
       {
@@ -5425,10 +5462,10 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          41760,
-          9456
+          41280,
+          18192
         ],
-        "id": "b1d42bd8-15fe-4aa0-8efa-808316900c83",
+        "id": "dfbc83eb-7c56-4dff-bf37-b8a60b7c24fc",
         "name": "Append to Google Sheets",
         "credentials": {
           "googleSheetsOAuth2Api": {
@@ -5442,10 +5479,10 @@
         "type": "n8n-nodes-base.limit",
         "typeVersion": 1,
         "position": [
-          41984,
-          9456
+          41504,
+          18192
         ],
-        "id": "91a3cd74-1f42-45fe-9c94-526353afb035",
+        "id": "04e41fdd-c8a6-41ec-9035-352b0e709b59",
         "name": "Limit"
       },
       {
@@ -5469,10 +5506,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          42208,
-          9456
+          41728,
+          18192
         ],
-        "id": "5b4aec7e-1077-4de3-a493-b31779299510",
+        "id": "1c550b3b-df4e-4932-b3b2-5bbd2cc4fff0",
         "name": "Discord – Success",
         "webhookId": "1b296015-d305-457c-b815-82d046fbda6a",
         "credentials": {
@@ -5487,10 +5524,10 @@
         "type": "n8n-nodes-base.limit",
         "typeVersion": 1,
         "position": [
-          41984,
-          9648
+          41504,
+          18384
         ],
-        "id": "79333006-6e46-4bb0-9e10-3f86b9379da0",
+        "id": "951c9790-8c21-40ec-ada0-5d3484382f9d",
         "name": "Limit Duplicate"
       },
       {
@@ -5514,10 +5551,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          42208,
-          9648
+          41728,
+          18384
         ],
-        "id": "636f8991-fb93-4ee2-b76a-e15d482dfa75",
+        "id": "862e15ba-2f30-4004-9a34-7624359ba202",
         "name": "Discord – Duplicate Warning",
         "webhookId": "17f4b74b-a5b9-428d-9995-be3d18d99bd5",
         "credentials": {
@@ -5548,10 +5585,10 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          42432,
-          10008
+          41952,
+          18672
         ],
-        "id": "7f98d940-14e2-4989-8ac4-7ef2eaf807e1",
+        "id": "6b3e8755-fcd2-419d-b87c-b2edbaef123e",
         "name": "Discord – Photo Deleted",
         "webhookId": "82edcffd-5419-4480-9904-6e963725f90b",
         "credentials": {
@@ -5572,10 +5609,10 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          42656,
-          10008
+          42176,
+          18672
         ],
-        "id": "8b710be9-17c5-4a33-9a0a-f8bed65f96e4",
+        "id": "490ac7c3-7f81-422f-bedb-1542941aebbf",
         "name": "Delete Discord Message",
         "credentials": {
           "httpHeaderAuth": {
@@ -6095,6 +6132,17 @@
         "main": [
           [
             {
+              "node": "Upload to MinIO",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload to MinIO": {
+        "main": [
+          [
+            {
               "node": "To Base64",
               "type": "main",
               "index": 0
@@ -6308,13 +6356,13 @@
       }
     },
     "authors": "4you donut",
-    "name": "Version a1d8ed27",
+    "name": "Version 78f58a39",
     "description": "",
     "autosaved": true
   },
   "tags": [],
   "_backup": {
-    "backed_up_at": "2026-06-06T01:00:19.212Z",
+    "backed_up_at": "2026-06-15T01:00:15.894Z",
     "source": "n8n",
     "backup_type": "workflow",
     "status": "published"
